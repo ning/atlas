@@ -1,6 +1,8 @@
 package com.ning.atlas.template;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class ServerTemplate extends DeployTemplate
 {
@@ -10,6 +12,10 @@ public class ServerTemplate extends DeployTemplate
     {
         super(name);
         this.installations = installations;
+    }
+
+    public static ServerTemplate create(String name, Map<String, String> args) {
+        return new ServerTemplate(name, Collections.<String>emptyList());
     }
 
     @Override

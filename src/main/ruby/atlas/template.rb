@@ -21,12 +21,13 @@ module Atlas
 
       # this is the little language for creating the system templates
 
-      def system name, *args
+      def system name, args={}
 
-        sys = Atlas::Template::SystemTemplate.new name
+        sys = Atlas::Template::SystemTemplate.create(name, args.inject({}) { |h, (k, v)| h[k.to_s] = v.to_s; h })
 
         if @last then
-          @last.addChild(sys, 1)
+          cnt = args[:count] || 1
+          @last.addChild(sys, cnt)
         else
           @root = sys
         end
@@ -35,9 +36,10 @@ module Atlas
         yield if block_given?
       end
 
-      def server name, *args
-        serv = Atlas::Template::ServerTemplate.new name, []
-        @last.addChild(serv, 1);
+      def server name, args={}
+        serv = Atlas::Template::ServerTemplate.create(name, args.inject({}) { |h, (k, v)| h[k.to_s] = v.to_s; h })
+        cnt = args[:count] || 1
+        @last.addChild(serv, cnt);
       end
 
       def aka from, to

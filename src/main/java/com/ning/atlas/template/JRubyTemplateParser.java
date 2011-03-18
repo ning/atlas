@@ -26,8 +26,6 @@ public class JRubyTemplateParser
             throw new IllegalStateException("cannot open atlas/template.rb from classpath", e);
         }
 
-        container.runScriptlet("TEMPLATE_PATH='" + template + "\'");
-
         return (SystemTemplate) container.runScriptlet("Atlas::Template::SystemTemplateParser.new('" +
                                                        template.getAbsolutePath() +
                                                        "').parse");
