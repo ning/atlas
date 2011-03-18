@@ -1,7 +1,4 @@
-
 require 'java'
-
-
 
 module Atlas
 
