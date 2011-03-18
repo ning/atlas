@@ -1,8 +1,8 @@
 
 
-require '../../main/ruby/atlas/system_template_parser'
+require '../../main/ruby/atlas/template'
 
-a = Atlas::SystemTemplateParser.new 'ex1/system-template.rb'
+a = Atlas::Template::SystemTemplateParser.new 'ex1/system-template.rb'
 model = a.parse
 
 puts model
