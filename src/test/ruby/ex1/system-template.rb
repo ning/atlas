@@ -13,19 +13,17 @@ aka "ec2-ami:ami-somethingbig", "wafflehut-2.4.37"
 system "shebang" do
 
   server "geponsole", :image => "spatulacave-2.1",
-                      :deploy => ["http://s3/gepo-2.7",
-                                  "http://s3/gonsole-2.7"]
+                      :install => ["http://s3/gepo-2.7", "http://s3/gonsole-2.7"]
 
   system "ning" do
     server "resolver", :image => "spatulacave-2.1",
-                       :deploy => "gepo:load-balancer-9.3",
+                       :install => "gepo:load-balancer-9.3",
                        :count => 8
 
     system "aclu", :count=> 2 do
       server "appcore", :image => "wafflehut-2.4.37",
                         :count => 5,
-                        :deploy => ["gepo:app-server-2.4.37",
-                                    "gepo:cache-server-1.0.2"]
+                        :install => ["gepo:app-server-2.4.37","gepo:cache-server-1.0.2"]
     end
 
     system "arecibo", :external => "http://something/3.1415/arecibo_template.rb"
