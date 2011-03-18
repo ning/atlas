@@ -9,7 +9,7 @@ import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 
-public class TestDeploymentBuilder
+public class TestDeployment
 {
     @Test
     public void testSomethingUseful() throws Exception
@@ -32,8 +32,7 @@ public class TestDeploymentBuilder
 
         env.addDeployVar("aclu-names", Arrays.<String>asList("00", "01"));
 
-        DeploymentBuilder b = new DeploymentBuilder();
-        Deployment d = b.build(env, root);
+        Deployment d = Deployment.build(env, root);
         assertFalse(d.getInstances().isEmpty());
     }
 
@@ -48,9 +47,8 @@ public class TestDeploymentBuilder
 
         DeployTemplate dt = new AppCore();
 
-        DeploymentBuilder db = new DeploymentBuilder();
 
-        Deployment d = db.build(env, dt);
+        Deployment d = Deployment.build(env, dt);
 
         List<Instance> faults = d.validate();
         assertEquals(1, faults.size());
@@ -66,9 +64,7 @@ public class TestDeploymentBuilder
 
         DeployTemplate dt = new AppCore();
 
-        DeploymentBuilder db = new DeploymentBuilder();
-
-        Deployment d = db.build(env, dt);
+        Deployment d = Deployment.build(env, dt);
 
         List<Instance> faults = d.validate();
         assertEquals(0, faults.size());
@@ -89,9 +85,8 @@ public class TestDeploymentBuilder
 
         sys.addChild(appCore, 5); // 5 appcores
 
-        DeploymentBuilder db = new DeploymentBuilder();
 
-        Deployment d = db.build(env, sys);
+        Deployment d = Deployment.build(env, sys);
 
         assertEquals(5, d.getInstances().size());
 
@@ -117,9 +112,7 @@ public class TestDeploymentBuilder
 
         sys.addChild(appCore, 5); // 5 appcores
 
-        DeploymentBuilder db = new DeploymentBuilder();
-
-        Deployment d = db.build(env, sys);
+        Deployment d = Deployment.build(env, sys);
 
         assertEquals(3, d.getInstances().size());
 
@@ -139,9 +132,7 @@ public class TestDeploymentBuilder
         DeployTemplate aclu = root.addChild(new SystemTemplate("aclu"), 2);
         aclu.addChild(new AppCore(), 5); // 5 appcores
 
-        DeploymentBuilder db = new DeploymentBuilder();
-
-        Deployment d = db.build(env, root);
+        Deployment d = Deployment.build(env, root);
 
         assertEquals(10, d.getInstances().size());
 
@@ -161,9 +152,7 @@ public class TestDeploymentBuilder
         DeployTemplate aclu = root.addChild(new SystemTemplate("aclu"), 2);
         aclu.addChild(new AppCore(), 5);
 
-        DeploymentBuilder db = new DeploymentBuilder();
-
-        Deployment d = db.build(env, root);
+        Deployment d = Deployment.build(env, root);
 
         assertEquals(25, d.getInstances().size());
     }
@@ -184,9 +173,7 @@ public class TestDeploymentBuilder
         DeployTemplate aclu2 = aclu.addChild(new SystemTemplate("aclu2"), 2);
         aclu2.addChild(new AppCore(), 5);
 
-        DeploymentBuilder db = new DeploymentBuilder();
-
-        Deployment d = db.build(env, root);
+        Deployment d = Deployment.build(env, root);
 
         assertEquals(20, d.getInstances().size());
     }
@@ -207,9 +194,7 @@ public class TestDeploymentBuilder
         DeployTemplate aclu2 = aclu.addChild(new SystemTemplate("aclu2"), 2);
         aclu2.addChild(new AppCore(), 5);
 
-        DeploymentBuilder db = new DeploymentBuilder();
-
-        Deployment d = db.build(env, root);
+        Deployment d = Deployment.build(env, root);
 
         assertEquals(30, d.getInstances().size());
     }
@@ -224,9 +209,7 @@ public class TestDeploymentBuilder
 
         sys.addChild(named, 5);
 
-        DeploymentBuilder db = new DeploymentBuilder();
-
-        Deployment d = db.build(env, sys);
+        Deployment d = Deployment.build(env, sys);
 
         assertEquals(5, d.getInstances().size());
 
