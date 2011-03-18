@@ -28,7 +28,7 @@ system "shebang" do
                                     "gepo:cache-server-1.0.2"]
     end
 
-    system "arecibo", :external => "http://something/arecibo_template.rb"
+    system "arecibo", :external => "http://something/3.1415/arecibo_template.rb"
   end
 end
 
