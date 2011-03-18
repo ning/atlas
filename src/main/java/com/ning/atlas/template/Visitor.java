@@ -16,5 +16,5 @@ public interface Visitor<T>
     /**
      * Called on leaf services
      */
-    T visitService(ServiceTemplate node, int cardinality, T baton);
+    T visitService(ServerTemplate node, int cardinality, T baton);
 }

@@ -1,22 +1,22 @@
 package com.ning.atlas.template;
 
-public class ServiceTemplate extends DeployTemplate
+public class ServerTemplate extends DeployTemplate
 {
-    public ServiceTemplate(String name)
+    public ServerTemplate(String name)
     {
         super(name);
     }
 
     @Override
-    public DeployTemplate addChild(DeployTemplate unit, int i)
+    public DeployTemplate addChild(DeployTemplate unit, int count)
     {
-        throw new UnsupportedOperationException("May not add children to a service");
+        throw new UnsupportedOperationException("May not add children to a server");
     }
 
     @Override
     public DeployTemplate shallowClone()
     {
-        ServiceTemplate t = new ServiceTemplate(getName());
+        ServerTemplate t = new ServerTemplate(getName());
         for (String required_prop : getRequiredProperties()) {
             t.addRequiredProperty(required_prop);
         }

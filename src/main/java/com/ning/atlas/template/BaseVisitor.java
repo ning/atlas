@@ -12,7 +12,7 @@ public class BaseVisitor<T> implements Visitor<T>
         return baton;
     }
 
-    public T visitService(ServiceTemplate node, int cardinality, T baton)
+    public T visitService(ServerTemplate node, int cardinality, T baton)
     {
         return baton;
     }

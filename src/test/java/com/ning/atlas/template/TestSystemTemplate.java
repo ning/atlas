@@ -16,7 +16,7 @@ public class TestSystemTemplate
     {
         SystemTemplate root = new SystemTemplate("root");
         SystemTemplate aclu = new SystemTemplate("aclu");
-        aclu.addChild(new ServiceTemplate("appcore"), 1);
+        aclu.addChild(new ServerTemplate("appcore"), 1);
         root.addChild(aclu, 1);
 
         List<String> rs = root.visit(new ArrayList<String>(), new Visitor<List<String>>()
@@ -34,7 +34,7 @@ public class TestSystemTemplate
                 return baton;
             }
 
-            public List<String> visitService(ServiceTemplate service, int cardinality, List<String> baton)
+            public List<String> visitService(ServerTemplate service, int cardinality, List<String> baton)
             {
                 baton.add(service.getName());
                 return baton;

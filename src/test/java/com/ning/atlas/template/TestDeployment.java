@@ -81,7 +81,7 @@ public class TestDeployment
 
 
         SystemTemplate sys = new SystemTemplate("test");
-        ServiceTemplate appCore = new AppCore();
+        ServerTemplate appCore = new AppCore();
 
         sys.addChild(appCore, 5); // 5 appcores
 
@@ -108,7 +108,7 @@ public class TestDeployment
         env.overrideCardinality("/test/appcore", 3);  // 3 appcore sin this env
 
         SystemTemplate sys = new SystemTemplate("test");
-        ServiceTemplate appCore = new AppCore();
+        ServerTemplate appCore = new AppCore();
 
         sys.addChild(appCore, 5); // 5 appcores
 
@@ -205,7 +205,7 @@ public class TestDeployment
     {
         EnvironmentConfig env = new EnvironmentConfig();
         SystemTemplate sys = new SystemTemplate("test");
-        ServiceTemplate named = new NamedCore();
+        ServerTemplate named = new NamedCore();
 
         sys.addChild(named, 5);
 
@@ -221,14 +221,14 @@ public class TestDeployment
     /* support classes */
 
 
-    class NamedCore extends ServiceTemplate
+    class NamedCore extends ServerTemplate
     {
         NamedCore() {
             super("named-<id>");
         }
     }
 
-    class AppCore extends ServiceTemplate
+    class AppCore extends ServerTemplate
     {
         public AppCore()
         {
@@ -239,7 +239,7 @@ public class TestDeployment
         }
     }
 
-    class Memcache extends ServiceTemplate
+    class Memcache extends ServerTemplate
     {
 
         public Memcache()
@@ -248,7 +248,7 @@ public class TestDeployment
         }
     }
 
-    class JobCore extends ServiceTemplate
+    class JobCore extends ServerTemplate
     {
 
         public JobCore()
@@ -257,7 +257,7 @@ public class TestDeployment
         }
     }
 
-    class Resolver extends ServiceTemplate
+    class Resolver extends ServerTemplate
     {
 
         public Resolver()

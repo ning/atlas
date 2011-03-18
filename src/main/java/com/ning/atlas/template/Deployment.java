@@ -65,7 +65,7 @@ public class Deployment
                     return previousParent;
                 }
 
-                public DeployTemplate visitService(ServiceTemplate node, int cardinality, DeployTemplate parent)
+                public DeployTemplate visitService(ServerTemplate node, int cardinality, DeployTemplate parent)
                 {
                     names.push(node.getName());
 
@@ -106,7 +106,7 @@ public class Deployment
                 return super.leaveSystem(node, cardinality, baton);
             }
 
-            public Deployment visitService(ServiceTemplate node, int cardinality, Deployment baton)
+            public Deployment visitService(ServerTemplate node, int cardinality, Deployment baton)
             {
                 names.push(node.getName());
                 final String full_name = flatten(names);

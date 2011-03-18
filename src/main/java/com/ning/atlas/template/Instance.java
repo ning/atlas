@@ -7,10 +7,10 @@ import java.util.Map;
 public class Instance
 {
     private final String name;
-    private final ServiceTemplate template;
+    private final ServerTemplate template;
     private final Map<String, String> props;
 
-    public Instance(String name, ServiceTemplate template, Map<String, String> props)
+    public Instance(String name, ServerTemplate template, Map<String, String> props)
     {
         this.name = name;
         this.template = template;
@@ -34,7 +34,7 @@ public class Instance
         return name;
     }
 
-    public ServiceTemplate getTemplate()
+    public ServerTemplate getTemplate()
     {
         return template;
     }
