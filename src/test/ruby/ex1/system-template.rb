@@ -1,7 +1,4 @@
 
-
-
-
 # example of per-whole-thing aliases
 
 aka "ec2-ami:ami-f8b35e91", "spatulacave-2.1"

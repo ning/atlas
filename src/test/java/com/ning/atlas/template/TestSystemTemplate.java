@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -16,7 +17,7 @@ public class TestSystemTemplate
     {
         SystemTemplate root = new SystemTemplate("root");
         SystemTemplate aclu = new SystemTemplate("aclu");
-        aclu.addChild(new ServerTemplate("appcore"), 1);
+        aclu.addChild(new ServerTemplate("appcore", Collections.<String>emptyList()), 1);
         root.addChild(aclu, 1);
 
         List<String> rs = root.visit(new ArrayList<String>(), new Visitor<List<String>>()

@@ -1,10 +1,15 @@
 package com.ning.atlas.template;
 
+import java.util.List;
+
 public class ServerTemplate extends DeployTemplate
 {
-    public ServerTemplate(String name)
+    private final List<String> installations;
+
+    public ServerTemplate(String name, List<String> installations)
     {
         super(name);
+        this.installations = installations;
     }
 
     @Override
@@ -16,7 +21,7 @@ public class ServerTemplate extends DeployTemplate
     @Override
     public DeployTemplate shallowClone()
     {
-        ServerTemplate t = new ServerTemplate(getName());
+        ServerTemplate t = new ServerTemplate(getName(), getInstallations());
         for (String required_prop : getRequiredProperties()) {
             t.addRequiredProperty(required_prop);
         }
@@ -35,5 +40,10 @@ public class ServerTemplate extends DeployTemplate
     public UnitType getUnitType()
     {
         return UnitType.Service;
+    }
+
+    public List<String> getInstallations()
+    {
+        return installations;
     }
 }

@@ -3,6 +3,7 @@ package com.ning.atlas.template;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
@@ -224,7 +225,7 @@ public class TestDeployment
     class NamedCore extends ServerTemplate
     {
         NamedCore() {
-            super("named-<id>");
+            super("named-<id>", Collections.<String>emptyList());
         }
     }
 
@@ -232,7 +233,7 @@ public class TestDeployment
     {
         public AppCore()
         {
-            super("appcore");
+            super("appcore", Collections.<String>emptyList());
             addRequiredProperties("xn.db.url",
                                   "xn.db.user",
                                   "xn.db.password");
@@ -244,7 +245,7 @@ public class TestDeployment
 
         public Memcache()
         {
-            super("memcache");
+            super("memcache", Collections.<String>emptyList());
         }
     }
 
@@ -253,7 +254,7 @@ public class TestDeployment
 
         public JobCore()
         {
-            super("jobc");
+            super("jobc", Collections.<String>emptyList());
         }
     }
 
@@ -262,7 +263,7 @@ public class TestDeployment
 
         public Resolver()
         {
-            super("resolver");
+            super("resolver", Collections.<String>emptyList());
             addRequiredProperties("xn.external.base-domain",
                                   "xn.db.url",
                                   "xn.db.user",
