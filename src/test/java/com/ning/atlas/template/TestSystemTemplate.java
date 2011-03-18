@@ -17,7 +17,7 @@ public class TestSystemTemplate
     {
         SystemTemplate root = new SystemTemplate("root");
         SystemTemplate aclu = new SystemTemplate("aclu");
-        aclu.addChild(new ServerTemplate("appcore", Collections.<String>emptyList()), 1);
+        aclu.addChild(new ServerTemplate("appcore"), 1);
         root.addChild(aclu, 1);
 
         List<String> rs = root.visit(new ArrayList<String>(), new Visitor<List<String>>()

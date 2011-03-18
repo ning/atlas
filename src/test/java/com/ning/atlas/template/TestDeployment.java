@@ -224,8 +224,9 @@ public class TestDeployment
 
     class NamedCore extends ServerTemplate
     {
-        NamedCore() {
-            super("named-<id>", Collections.<String>emptyList());
+        NamedCore()
+        {
+            super("named-<id>");
         }
     }
 
@@ -233,7 +234,7 @@ public class TestDeployment
     {
         public AppCore()
         {
-            super("appcore", Collections.<String>emptyList());
+            super("appcore");
             addRequiredProperties("xn.db.url",
                                   "xn.db.user",
                                   "xn.db.password");
@@ -245,7 +246,7 @@ public class TestDeployment
 
         public Memcache()
         {
-            super("memcache", Collections.<String>emptyList());
+            super("memcache");
         }
     }
 
@@ -254,7 +255,7 @@ public class TestDeployment
 
         public JobCore()
         {
-            super("jobc", Collections.<String>emptyList());
+            super("jobc");
         }
     }
 
@@ -263,7 +264,7 @@ public class TestDeployment
 
         public Resolver()
         {
-            super("resolver", Collections.<String>emptyList());
+            super("resolver");
             addRequiredProperties("xn.external.base-domain",
                                   "xn.db.url",
                                   "xn.db.user",

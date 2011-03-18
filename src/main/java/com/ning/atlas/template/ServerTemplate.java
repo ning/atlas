@@ -1,21 +1,27 @@
 package com.ning.atlas.template;
 
-import java.util.Collections;
+import com.google.common.collect.Lists;
+
 import java.util.List;
 import java.util.Map;
 
 public class ServerTemplate extends DeployTemplate
 {
-    private final List<String> installations;
+    private String image;
+    private final List<String> installations = Lists.newArrayList();
 
-    public ServerTemplate(String name, List<String> installations)
+    public ServerTemplate(String name)
     {
         super(name);
-        this.installations = installations;
     }
 
-    public static ServerTemplate create(String name, Map<String, String> args) {
-        return new ServerTemplate(name, Collections.<String>emptyList());
+    public static ServerTemplate create(String name, Map<String, String> args)
+    {
+        ServerTemplate t = new ServerTemplate(name);
+
+        t.setImage(args.get("image"));
+
+        return t;
     }
 
     @Override
@@ -27,7 +33,9 @@ public class ServerTemplate extends DeployTemplate
     @Override
     public DeployTemplate shallowClone()
     {
-        ServerTemplate t = new ServerTemplate(getName(), getInstallations());
+        ServerTemplate t = new ServerTemplate(getName());
+        t.setImage(getImage());
+        t.addInstallations(getInstallations());
         for (String required_prop : getRequiredProperties()) {
             t.addRequiredProperty(required_prop);
         }
@@ -51,5 +59,20 @@ public class ServerTemplate extends DeployTemplate
     public List<String> getInstallations()
     {
         return installations;
+    }
+
+    public void setImage(String image)
+    {
+        this.image = image;
+    }
+
+    public String getImage()
+    {
+        return image;
+    }
+
+    public void addInstallations(List<String> installations)
+    {
+        this.installations.addAll(installations);
     }
 }

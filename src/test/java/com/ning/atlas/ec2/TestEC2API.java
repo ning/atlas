@@ -37,7 +37,7 @@ public class TestEC2API
         RunInstancesRequest req = new RunInstancesRequest("ami-f8b35e91", min_count, max_count);
         req.setKeyName(config.getKeyPairId());
 
-        RunInstancesResult rs2 = ec2.runInstances(new RunInstancesRequest("ami-a6f504cf", min_count, max_count));
+        RunInstancesResult rs2 = ec2.runInstances(req);
 
 
         for (Instance instance : rs2.getReservation().getInstances()) {
