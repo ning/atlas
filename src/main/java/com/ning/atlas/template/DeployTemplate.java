@@ -102,6 +102,15 @@ public abstract class DeployTemplate
         {
             return template;
         }
+
+        @Override
+        public String toString()
+        {
+            return "SizedChild{" +
+                   "template=" + template +
+                   ", cardinality=" + cardinality +
+                   '}';
+        }
     }
 
     @Override
