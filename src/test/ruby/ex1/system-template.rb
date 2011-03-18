@@ -10,17 +10,17 @@
 system "shebang" do
 
   server "geponsole", :image => "ami-f8b35e91",
-                      :install => ["http://s3/gepo-2.7", "http://s3/gonsole-2.7"]
+                      :install => ["chef:gepo-2.7", "chef:gonsole-2.7"]
 
   system "ning" do
     server "resolver", :image => "ami-f8b35e91",
-                       :install => "gepo:load-balancer-9.3",
+                       :install => "galaxy:load-balancer-9.3",
                        :count => 8
 
     system "aclu", :count=> 2 do
       server "appcore", :image => "ami-f8b35e91",
                         :count => 5,
-                        :install => ["gepo:app-server-2.4.37","gepo:cache-server-1.0.2"]
+                        :install => ["galaxy:app-server-2.4.37","chef:cache-server-1.0.2"]
     end
 
     # system "arecibo", :external => "http://something/3.1415/arecibo_template.rb"
