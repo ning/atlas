@@ -8,6 +8,7 @@ import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.ning.atlas.ec2.AWSConfig;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
 
@@ -19,6 +20,7 @@ import java.util.Properties;
 public class TestEC2API
 {
     @Test
+    @Ignore
     public void testApp() throws IOException
     {
         Properties props = new Properties();

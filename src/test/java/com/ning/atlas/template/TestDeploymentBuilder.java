@@ -25,7 +25,6 @@ public class TestDeploymentBuilder
 
         root.addChild(new JobCore(), 1);
 
-
         EnvironmentConfig env = new EnvironmentConfig();
         env.addConfigVar("xn.db.url", "jdbc:kyoto:/tmp/foo.kch");
         env.addConfigVar("xn.db.user", "joe");
@@ -126,11 +125,6 @@ public class TestDeploymentBuilder
 
         List<Instance> faults = d.validate();
         assertEquals(0, faults.size());
-        for (Instance instance : d.getInstances()) {
-            System.out.println(instance.getName());
-        }
-        System.out.flush();
-
     }
 
     @Test
