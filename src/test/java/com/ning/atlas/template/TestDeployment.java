@@ -269,6 +269,5 @@ public class TestDeployment
                                   "xn.db.user",
                                   "xn.db.password");
         }
-
     }
 }

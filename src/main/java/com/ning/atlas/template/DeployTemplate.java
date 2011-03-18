@@ -32,7 +32,7 @@ public abstract class DeployTemplate
     {
         switch (getUnitType()) {
             case Service:
-                return visitor.visitService((ServerTemplate) this, cardinality, baton);
+                return visitor.visitServer((ServerTemplate) this, cardinality, baton);
             case System:
                 T next = visitor.enterSystem((SystemTemplate) this, cardinality, baton);
                 for (SizedChild child : children) {

@@ -35,7 +35,7 @@ public class TestSystemTemplate
                 return baton;
             }
 
-            public List<String> visitService(ServerTemplate service, int cardinality, List<String> baton)
+            public List<String> visitServer(ServerTemplate service, int cardinality, List<String> baton)
             {
                 baton.add(service.getName());
                 return baton;
