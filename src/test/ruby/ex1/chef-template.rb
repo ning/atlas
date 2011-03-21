@@ -19,7 +19,7 @@ system "chef" do
                           sudo apt-get -y install libhighline-ruby
                           sudo apt-get -y install libfog-ruby
 
-                          # debconf preseed bits
+                          # TODO debconf preseed bits
                           sudo apt-get install chef chef-server
                         EOS
 end
