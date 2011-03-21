@@ -21,6 +21,10 @@ system "shebang" do
       server "appcore", :image => "ami-f8b35e91",
                         :count => 5,
                         :install => ["chef:galaxy", "galaxy:app-server-2.4.37"]
+
+      server "content", :image => "ami-f8b35e91",
+                        :count => 2,
+                        :install => ["chef:galaxy", "galaxy:content-service-1.0.6"]
     end
 
     # system "arecibo", :external => "http://something/3.1415/arecibo_template.rb"

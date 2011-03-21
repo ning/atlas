@@ -18,7 +18,7 @@ public class TestJRubyTemplateParser
         assertThat(t, notNullValue());
         Deployment d = Deployment.build(new EnvironmentConfig(), t);
 
-        assertThat(d.getInstances().size(), equalTo(19));
+        assertThat(d.getInstances().size(), equalTo(13));
 
         for (Instance instance : d.getInstances()) {
             System.out.println(instance.getTemplate().getImage());
