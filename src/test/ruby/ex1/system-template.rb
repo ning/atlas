@@ -14,13 +14,13 @@ system "shebang" do
 
   system "ning" do
     server "resolver", :image => "ami-f8b35e91",
-                       :install => "galaxy:load-balancer-9.3",
+                       :install => ["chef:galaxy", "galaxy:load-balancer-9.3"],
                        :count => 8
 
     system "aclu", :count=> 2 do
       server "appcore", :image => "ami-f8b35e91",
                         :count => 5,
-                        :install => ["galaxy:app-server-2.4.37","chef:cache-server-1.0.2"]
+                        :install => ["chef:galaxy", "galaxy:app-server-2.4.37"]
     end
 
     # system "arecibo", :external => "http://something/3.1415/arecibo_template.rb"
