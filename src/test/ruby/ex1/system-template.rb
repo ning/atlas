@@ -27,7 +27,7 @@ system "shebang" do
                         :install => ["chef:galaxy", "galaxy:content-service-1.0.6"]
     end
 
-    # system "arecibo", :external => "http://something/3.1415/arecibo_template.rb"
+    system "arecibo", :external => "http://something/3.1415/arecibo_template.rb"
   end
 end
 
