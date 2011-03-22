@@ -19,10 +19,5 @@ public class TestJRubyTemplateParser
         Manifest d = Manifest.build(new EnvironmentConfig(), t);
 
         assertThat(d.getInstances().size(), equalTo(23));
-
-        for (InstanceSpecification instance : d.getInstances()) {
-            System.out.println(instance.getTemplate().getImage());
-        }
-
     }
 }
