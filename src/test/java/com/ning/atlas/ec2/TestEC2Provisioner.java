@@ -6,17 +6,23 @@ import com.ning.atlas.template.EnvironmentConfig;
 import com.ning.atlas.template.Manifest;
 import com.ning.atlas.template.ServerTemplate;
 import com.ning.atlas.template.SystemTemplate;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.util.Properties;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeThat;
+import static org.junit.Assume.assumeTrue;
 
 public class TestEC2Provisioner
 {
@@ -25,6 +31,8 @@ public class TestEC2Provisioner
     @Before
     public void setUp() throws Exception
     {
+        assumeThat(new File(".aws2creds"), exists());
+
         Properties props = new Properties();
         props.load(new FileInputStream(".awscreds"));
         ConfigurationObjectFactory f = new ConfigurationObjectFactory(props);
@@ -32,11 +40,9 @@ public class TestEC2Provisioner
     }
 
     @Test
-    @Ignore
     public void testFoo() throws Exception
     {
         SystemTemplate root = new SystemTemplate("root");
-
         SystemTemplate cluster = new SystemTemplate("cluster");
         ServerTemplate server = new ServerTemplate("server");
         server.setImage("ami-a6f504cf");
@@ -55,5 +61,23 @@ public class TestEC2Provisioner
         finally {
             p.destroy(servers);
         }
+    }
+
+
+    public static Matcher<File> exists()
+    {
+        return new BaseMatcher<File>()
+        {
+            public boolean matches(Object item)
+            {
+                File f = (File) item;
+                return f.exists();
+            }
+
+            public void describeTo(Description description)
+            {
+                description.appendText("the expected file does not exist");
+            }
+        };
     }
 }

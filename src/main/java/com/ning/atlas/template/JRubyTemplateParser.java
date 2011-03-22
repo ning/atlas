@@ -9,12 +9,6 @@ import java.nio.charset.Charset;
 
 public class JRubyTemplateParser
 {
-
-    public JRubyTemplateParser()
-    {
-    }
-
-
     public SystemTemplate parse(File template)
     {
         ScriptingContainer container = new ScriptingContainer();
