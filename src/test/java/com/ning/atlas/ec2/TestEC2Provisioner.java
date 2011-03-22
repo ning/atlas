@@ -31,7 +31,7 @@ public class TestEC2Provisioner
     @Before
     public void setUp() throws Exception
     {
-        assumeThat(new File(".aws2creds"), exists());
+        assumeThat(new File(".awscreds"), exists());
 
         Properties props = new Properties();
         props.load(new FileInputStream(".awscreds"));
