@@ -7,22 +7,22 @@ import java.util.Stack;
 
 public class Manifest
 {
-    private final List<InstanceSpecification> instances = new ArrayList<InstanceSpecification>();
+    private final List<ServerSpec> instances = new ArrayList<ServerSpec>();
 
-    public List<InstanceSpecification> getInstances()
+    public List<ServerSpec> getInstances()
     {
         return Collections.unmodifiableList(instances);
     }
 
-    public void addInstance(InstanceSpecification instance)
+    public void addInstance(ServerSpec instance)
     {
         this.instances.add(instance);
     }
 
-    public List<InstanceSpecification> validate()
+    public List<ServerSpec> validate()
     {
-        List<InstanceSpecification> bads = new ArrayList<InstanceSpecification>();
-        for (InstanceSpecification instance : instances) {
+        List<ServerSpec> bads = new ArrayList<ServerSpec>();
+        for (ServerSpec instance : instances) {
             List<String> problems = instance.validate();
             if (!problems.isEmpty()) {
                 bads.add(instance);
@@ -110,7 +110,7 @@ public class Manifest
             {
                 names.push(node.getName());
                 final String full_name = flatten(names);
-                baton.addInstance(new InstanceSpecification(full_name, node, env.propsFor(full_name)));
+                baton.addInstance(new ServerSpec(full_name, node, env.propsFor(full_name)));
                 names.pop();
                 return baton;
             }

@@ -12,7 +12,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.ning.atlas.Server;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.template.InstanceSpecification;
+import com.ning.atlas.template.ServerSpec;
 import com.ning.atlas.template.Manifest;
 
 import java.util.Collection;
@@ -34,16 +34,14 @@ public class EC2Provisioner implements Provisioner
 
     public Set<Server> provisionServers(Manifest m)
     {
-
-
-        Multimap<String, InstanceSpecification> by_type = ArrayListMultimap.create();
-        for (InstanceSpecification instance : m.getInstances()) {
+        Multimap<String, ServerSpec> by_type = ArrayListMultimap.create();
+        for (ServerSpec instance : m.getInstances()) {
             by_type.put(instance.getTemplate().getImage(), instance);
         }
 
         Multimap<String, Instance> results = ArrayListMultimap.create();
 
-        for (Map.Entry<String, Collection<InstanceSpecification>> entry : by_type.asMap().entrySet()) {
+        for (Map.Entry<String, Collection<ServerSpec>> entry : by_type.asMap().entrySet()) {
             String ami = entry.getKey();
             int count = entry.getValue().size();
             RunInstancesRequest req = new RunInstancesRequest(ami, count, count);
@@ -54,7 +52,7 @@ public class EC2Provisioner implements Provisioner
 
         Set<Server> servers = Sets.newLinkedHashSet();
 
-        for (InstanceSpecification spec : m.getInstances()) {
+        for (ServerSpec spec : m.getInstances()) {
             Collection<Instance> instances = results.get(spec.getTemplate().getImage());
             Instance i = instances.iterator().next();
             results.remove(spec.getTemplate().getImage(), i);
@@ -81,16 +79,16 @@ public class EC2Provisioner implements Provisioner
 
     static class EC2Server implements Server
     {
-        private final InstanceSpecification spec;
+        private final ServerSpec spec;
         private final Instance              instance;
 
-        EC2Server(InstanceSpecification spec, Instance instance)
+        EC2Server(ServerSpec spec, Instance instance)
         {
             this.spec = spec;
             this.instance = instance;
         }
 
-        InstanceSpecification getSpec()
+        ServerSpec getSpec()
         {
             return spec;
         }

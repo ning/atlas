@@ -7,6 +7,7 @@ import com.ning.atlas.template.Manifest;
 import com.ning.atlas.template.ServerTemplate;
 import com.ning.atlas.template.SystemTemplate;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
 
@@ -31,6 +32,7 @@ public class TestEC2Provisioner
     }
 
     @Test
+    @Ignore
     public void testFoo() throws Exception
     {
         SystemTemplate root = new SystemTemplate("root");

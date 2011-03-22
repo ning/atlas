@@ -1,9 +1,6 @@
 
-# example of per-whole-thing aliases
-
-# aka "ec2-ami:ami-f8b35e91", "spatulacave-2.1"
-# aka "ec2-ami:ami-somethingbig", "wafflehut-2.4.37"
-
+# aliases, can be defined here or in a site descriptor
+aka "ubuntu-small" => "ami-a6f504cf"
 
 # example of a system template
 
@@ -11,20 +8,20 @@ system "shebang" do
 
   system "chef", :external => "http://something/chef-bootstrap-1.0.2.rb"
 
-  server "geponsole", :image => "ami-a6f504cf",
+  server "geponsole", :image => "ubuntu-small",
                       :install => ["chef:gepo-2.7", "chef:gonsole-2.7"]
 
   system "ning" do
-    server "resolver", :image => "ami-a6f504cf",
+    server "resolver", :image => "ubuntu-small",
                        :install => ["chef:galaxy", "galaxy:load-balancer-9.3"],
                        :count => 8
 
     system "aclu", :count=> 2 do
-      server "appcore", :image => "ami-a6f504cf",
+      server "appcore", :image => "ubuntu-small",
                         :count => 5,
                         :install => ["chef:galaxy", "galaxy:app-server-2.4.37"]
 
-      server "content", :image => "ami-a6f504cf",
+      server "content", :image => "ubuntu-small",
                         :count => 2,
                         :install => ["chef:galaxy", "galaxy:content-service-1.0.6"]
     end

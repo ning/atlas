@@ -11,6 +11,7 @@ module Atlas
         @template = File.read template_path
         @template_path = template_path
         @last = false
+        @aliases = {}
       end
 
       def parse
@@ -21,9 +22,12 @@ module Atlas
 
       # this is the little language for creating the system templates
 
-      def system name, args={}
+      def aka args = {}
+        @aliases = @aliases.merge args
+      end
 
-        sys = Atlas::Template::SystemTemplate.create(name, args.inject({}) { |h, (k, v)| h[k.to_s] = v.to_s; h })
+      def system name, args={}
+        sys = Atlas::Template::SystemTemplate.create(name, __mungify(args))
 
         if @last then
           cnt = args[:count] || 1
@@ -37,17 +41,19 @@ module Atlas
       end
 
       def server name, args={}
-        serv = Atlas::Template::ServerTemplate.create(name, args.inject({}) { |h, (k, v)| h[k.to_s] = v.to_s; h })
+        serv = Atlas::Template::ServerTemplate.create(name, __mungify(args))
         cnt = args[:count] || 1
         @last.addChild(serv, cnt);
       end
 
-      def aka from, to
+      def override name, value
 
       end
 
-      def override name, value
-
+      private
+      # ensure that all keys and values are strings, and replace values with aliases
+      def __mungify args
+        args.inject({}) { |h, (k, v)| h[k.to_s] = @aliases.fetch(v, v).to_s; h }
       end
 
     end

@@ -50,7 +50,7 @@ public class TestDeployment
 
         Manifest d = Manifest.build(env, dt);
 
-        List<InstanceSpecification> faults = d.validate();
+        List<ServerSpec> faults = d.validate();
         assertEquals(1, faults.size());
     }
 
@@ -66,7 +66,7 @@ public class TestDeployment
 
         Manifest d = Manifest.build(env, dt);
 
-        List<InstanceSpecification> faults = d.validate();
+        List<ServerSpec> faults = d.validate();
         assertEquals(0, faults.size());
     }
 
@@ -90,7 +90,7 @@ public class TestDeployment
 
         assertEquals(5, d.getInstances().size());
 
-        List<InstanceSpecification> faults = d.validate();
+        List<ServerSpec> faults = d.validate();
         assertEquals(0, faults.size());
 
 
@@ -116,7 +116,7 @@ public class TestDeployment
 
         assertEquals(3, d.getInstances().size());
 
-        List<InstanceSpecification> faults = d.validate();
+        List<ServerSpec> faults = d.validate();
         assertEquals(0, faults.size());
     }
 
@@ -213,7 +213,7 @@ public class TestDeployment
 
         assertEquals(5, d.getInstances().size());
 
-        List<InstanceSpecification> faults = d.validate();
+        List<ServerSpec> faults = d.validate();
         assertEquals(0, faults.size());
     }
 
