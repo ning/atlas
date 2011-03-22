@@ -17,7 +17,7 @@ import java.util.Set;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class TestRealizingEC2Instances
+public class TestEC2Provisioner
 {
     private AWSConfig config;
 
