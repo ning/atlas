@@ -34,14 +34,8 @@ public class ServerSpec
         return name;
     }
 
-    public ServerTemplate getTemplate()
-    {
-        return template;
-    }
-
-    public Map<String, String> getProps()
-    {
-        return props;
+    public String getImage() {
+        return template.getImage();
     }
 
     @Override

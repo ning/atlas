@@ -36,7 +36,7 @@ public class EC2Provisioner implements Provisioner
     {
         Multimap<String, ServerSpec> by_type = ArrayListMultimap.create();
         for (ServerSpec instance : m.getInstances()) {
-            by_type.put(instance.getTemplate().getImage(), instance);
+            by_type.put(instance.getImage(), instance);
         }
 
         Multimap<String, Instance> results = ArrayListMultimap.create();
@@ -53,9 +53,9 @@ public class EC2Provisioner implements Provisioner
         Set<Server> servers = Sets.newLinkedHashSet();
 
         for (ServerSpec spec : m.getInstances()) {
-            Collection<Instance> instances = results.get(spec.getTemplate().getImage());
+            Collection<Instance> instances = results.get(spec.getImage());
             Instance i = instances.iterator().next();
-            results.remove(spec.getTemplate().getImage(), i);
+            results.remove(spec.getImage(), i);
             Server s = new EC2Server(spec, i);
             servers.add(s);
         }
