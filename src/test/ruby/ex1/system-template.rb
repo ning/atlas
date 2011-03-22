@@ -9,7 +9,7 @@
 
 system "shebang" do
 
-  system "chef", :external => "file:///#{File.dirname(File.expand_path(__FILE__))}/chef-template.rb"
+  system "chef", :external => "http://something/chef-bootstrap-1.0.2.rb"
 
   server "geponsole", :image => "ami-a6f504cf",
                       :install => ["chef:gepo-2.7", "chef:gonsole-2.7"]
