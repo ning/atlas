@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class Instance
+public class InstanceSpecification
 {
     private final String name;
     private final ServerTemplate template;
     private final Map<String, String> props;
 
-    public Instance(String name, ServerTemplate template, Map<String, String> props)
+    public InstanceSpecification(String name, ServerTemplate template, Map<String, String> props)
     {
         this.name = name;
         this.template = template;

@@ -34,7 +34,7 @@ public class TestEC2API
 
         int min_count = 1, max_count = 1;
 
-        RunInstancesRequest req = new RunInstancesRequest("ami-f8b35e91", min_count, max_count);
+        RunInstancesRequest req = new RunInstancesRequest("ami-a6f504cf", min_count, max_count);
         req.setKeyName(config.getKeyPairId());
 
         RunInstancesResult rs2 = ec2.runInstances(req);

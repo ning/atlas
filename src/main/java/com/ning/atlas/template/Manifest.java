@@ -5,24 +5,24 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
-public class Deployment
+public class Manifest
 {
-    private final List<Instance> instances = new ArrayList<Instance>();
+    private final List<InstanceSpecification> instances = new ArrayList<InstanceSpecification>();
 
-    public List<Instance> getInstances()
+    public List<InstanceSpecification> getInstances()
     {
         return Collections.unmodifiableList(instances);
     }
 
-    public void addInstance(Instance instance)
+    public void addInstance(InstanceSpecification instance)
     {
         this.instances.add(instance);
     }
 
-    public List<Instance> validate()
+    public List<InstanceSpecification> validate()
     {
-        List<Instance> bads = new ArrayList<Instance>();
-        for (Instance instance : instances) {
+        List<InstanceSpecification> bads = new ArrayList<InstanceSpecification>();
+        for (InstanceSpecification instance : instances) {
             List<String> problems = instance.validate();
             if (!problems.isEmpty()) {
                 bads.add(instance);
@@ -33,7 +33,7 @@ public class Deployment
     }
 
 
-    public static Deployment build(final EnvironmentConfig env, final DeployTemplate manifest)
+    public static Manifest build(final EnvironmentConfig env, final DeployTemplate manifest)
     {
         final DeployTemplate ptree =
             manifest.visit(manifest.shallowClone(), new Visitor<DeployTemplate>()
@@ -87,30 +87,30 @@ public class Deployment
             });
 
 
-        return ptree.visit(new Deployment(), new BaseVisitor<Deployment>()
+        return ptree.visit(new Manifest(), new BaseVisitor<Manifest>()
         {
 
             private final Stack<String> names = new Stack<String>();
 
             @Override
-            public Deployment enterSystem(SystemTemplate node, int cardinality, Deployment baton)
+            public Manifest enterSystem(SystemTemplate node, int cardinality, Manifest baton)
             {
                 names.push(node.getName());
                 return super.enterSystem(node, cardinality, baton);
             }
 
             @Override
-            public Deployment leaveSystem(SystemTemplate node, int cardinality, Deployment baton)
+            public Manifest leaveSystem(SystemTemplate node, int cardinality, Manifest baton)
             {
                 names.pop();
                 return super.leaveSystem(node, cardinality, baton);
             }
 
-            public Deployment visitServer(ServerTemplate node, int cardinality, Deployment baton)
+            public Manifest visitServer(ServerTemplate node, int cardinality, Manifest baton)
             {
                 names.push(node.getName());
                 final String full_name = flatten(names);
-                baton.addInstance(new Instance(full_name, node, env.propsFor(full_name)));
+                baton.addInstance(new InstanceSpecification(full_name, node, env.propsFor(full_name)));
                 names.pop();
                 return baton;
             }

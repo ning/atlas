@@ -16,11 +16,11 @@ public class TestJRubyTemplateParser
         JRubyTemplateParser p = new JRubyTemplateParser();
         SystemTemplate t = p.parse(new File("src/test/ruby/ex1/system-template.rb"));
         assertThat(t, notNullValue());
-        Deployment d = Deployment.build(new EnvironmentConfig(), t);
+        Manifest d = Manifest.build(new EnvironmentConfig(), t);
 
         assertThat(d.getInstances().size(), equalTo(23));
 
-        for (Instance instance : d.getInstances()) {
+        for (InstanceSpecification instance : d.getInstances()) {
             System.out.println(instance.getTemplate().getImage());
         }
 
