@@ -15,15 +15,6 @@ public class ServerTemplate extends DeployTemplate
         super(name);
     }
 
-    public static ServerTemplate create(String name, Map<String, String> args)
-    {
-        ServerTemplate t = new ServerTemplate(name);
-
-        t.setImage(args.get("image"));
-
-        return t;
-    }
-
     @Override
     public DeployTemplate addChild(DeployTemplate unit, int count)
     {

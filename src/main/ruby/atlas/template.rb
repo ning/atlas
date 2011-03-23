@@ -15,7 +15,7 @@ module Atlas
       end
 
       def parse
-        eval(@template, binding, @template_path, 1)
+        eval @template, binding, @template_path, 1
         @root
       end
 
@@ -27,7 +27,7 @@ module Atlas
       end
 
       def system name, args={}
-        sys = Atlas::Template::SystemTemplate.create(name, __mungify(args))
+        sys = Atlas::Template::SystemTemplate.new name
 
         if @last then
           cnt = args[:count] || 1
@@ -41,19 +41,15 @@ module Atlas
       end
 
       def server name, args={}
-        serv = Atlas::Template::ServerTemplate.create(name, __mungify(args))
+        serv = Atlas::Template::ServerTemplate.new name
+        serv.image = @aliases.fetch args[:image], args[:image]
+
         cnt = args[:count] || 1
         @last.addChild(serv, cnt);
       end
 
       def override name, value
 
-      end
-
-      private
-      # ensure that all keys and values are strings, and replace values with aliases
-      def __mungify args
-        args.inject({}) { |h, (k, v)| h[k.to_s] = @aliases.fetch(v, v).to_s; h }
       end
 
     end

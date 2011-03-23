@@ -21,7 +21,6 @@ public class TestJRubyTemplateParser
         assertThat(d.getInstances().size(), equalTo(23));
 
         // verify aka worked for the server image
-
         assertThat("ami-a6f504cf", equalTo(d.getInstances().get(0).getImage()));
     }
 }

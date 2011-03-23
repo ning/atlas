@@ -1,16 +1,10 @@
 package com.ning.atlas.template;
 
-import java.util.Map;
-
 public class SystemTemplate extends DeployTemplate
 {
     public SystemTemplate(String name)
     {
         super(name);
-    }
-
-    public static SystemTemplate create(String name, Map<String, String> args) {
-        return new SystemTemplate(name);
     }
 
     @Override
