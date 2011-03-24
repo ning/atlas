@@ -8,6 +8,7 @@ import java.util.Map;
 public class ServerTemplate extends DeployTemplate
 {
     private String image;
+    private String bootstrap;
     private final List<String> installations = Lists.newArrayList();
 
     public ServerTemplate(String name)
@@ -65,5 +66,15 @@ public class ServerTemplate extends DeployTemplate
     public void addInstallations(List<String> installations)
     {
         this.installations.addAll(installations);
+    }
+
+    public String getBootstrap()
+    {
+        return bootstrap;
+    }
+
+    public void setBootstrap(String bootstrap)
+    {
+        this.bootstrap = bootstrap;
     }
 }

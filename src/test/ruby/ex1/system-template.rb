@@ -4,9 +4,9 @@ aka "ubuntu-small" => "ami-a6f504cf"
 
 # example of a system template
 
-system "shebang" do
+system "root" do
 
-  system "chef", :external => "http://something/chef-bootstrap-1.0.2.rb"
+  system "chef-server", :external => "http://something/chef-bootstrap-1.0.2.rb"
 
   server "geponsole", :image => "ubuntu-small",
                       :install => ["chef:gepo-2.7", "chef:gonsole-2.7"]

@@ -16,5 +16,5 @@ sudo apt-get -y install libhighline-ruby
 sudo apt-get -y install libfog-ruby
 
 # debconf preseed bits
-sudo apt-get install chef chef-server
+sudo apt-get -y install chef chef-server
 

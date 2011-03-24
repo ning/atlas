@@ -43,4 +43,9 @@ public class ServerSpec
     {
         return name;
     }
+
+    public String getBootStrap()
+    {
+        return template.getBootstrap();
+    }
 }

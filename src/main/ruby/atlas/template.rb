@@ -43,6 +43,7 @@ module Atlas
       def server name, args={}
         serv = Atlas::Template::ServerTemplate.new name
         serv.image = @aliases.fetch args[:image], args[:image]
+        serv.bootstrap = @aliases.fetch args[:bootstrap], args[:bootstrap]
 
         cnt = args[:count] || 1
         @last.addChild(serv, cnt);

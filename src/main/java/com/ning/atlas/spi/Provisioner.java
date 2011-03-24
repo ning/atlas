@@ -8,7 +8,7 @@ import java.util.Set;
 
 public interface Provisioner
 {
-    Set<Server> provisionServers(Manifest m);
+    Set<Server> provisionServers(Manifest m) throws InterruptedException;
 
     void destroy(Collection<Server> servers);
 }
