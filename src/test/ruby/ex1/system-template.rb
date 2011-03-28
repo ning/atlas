@@ -9,7 +9,7 @@ system "arecibo", :external => "http://something/3.1415/arecibo_template.rb"
 
 server "geponsole", :base => "ubuntu-small",
                     :install => ["chef:gepo-2.7", "chef:gonsole-2.7"],
-                    :order => 10
+                    :order => 10 # not yet supported
 
 system "ning" do
   server "resolver", :base => "ubuntu-small",

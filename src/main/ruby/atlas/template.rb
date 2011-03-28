@@ -10,12 +10,14 @@ module Atlas
       def initialize template_path
         @template      = File.read template_path
         @template_path = template_path
-        @last          = []
-        @aliases       = {}
-        @roots         = []
+
+        # bits of state for the parser
+        @last          = [] # stack of nodes
+        @roots         = [] # system roots
+        @aliases       = {} # value aliases to be substituted
 
         # done as lambda instead of method in order to keep from polluting DSL
-        @add_node      = lambda do |node, args, block|
+        @add_node = lambda do |node, args, block|
           if @last.last then
             cnt = args[:count] || 1
             @last.last.addChild(node, cnt)

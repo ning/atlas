@@ -1,8 +1,7 @@
 aka "ubuntu-small" => "ami-a6f504cf"
 
-system "chef" do
-  server "server", :image => "ubuntu-small",
-                   :bootstrap => <<-EOB
+
+chef_server_boot = <<-EOB
 #!/bin/sh
 # set up a chef-server
 # http://wiki.opscode.com/display/chef/Package+Installation+on+Debian+and+Ubuntu
@@ -30,4 +29,8 @@ sudo apt-get -y install libfog-ruby
 #install chef server!
 sudo apt-get -y install chef chef-server
 EOB
+
+system "chef" do
+  server "server", :image => "ubuntu-small",
+                   :bootstrap => chef_server_boot
 end
