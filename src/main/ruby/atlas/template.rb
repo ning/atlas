@@ -38,6 +38,10 @@ module Atlas
 
       # this is the little language for creating the system templates
 
+      def space name, args={}
+        # not sure how to use this yet
+      end
+
       def aka args = {}
         @aliases = @aliases.merge args
       end

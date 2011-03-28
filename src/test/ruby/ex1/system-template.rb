@@ -1,12 +1,15 @@
 # aliases, can be defined here or in a site descriptor
-aka "ubuntu-small" => "ami-a6f504cf"
 aka "galaxy" => "chef:galaxy-agent"
+aka "ubuntu-small" => "ami-a6f504cf"
 
 # example of a system template
 
-# system "chef-server", :external => "http://something/chef-bootstrap-1.0.2.rb"
-# system "arecibo", :external => "http://something/3.1415/arecibo_template.rb"
+space "ec2" do
+  # not sure how to use this concept yet, but I will figure it out :-)
+end
 
+
+# nasty interpolation to say 'next to this file' :-(
 system "galaxy", :external => "file:///#{File.expand_path(File.dirname(__FILE__))}/galaxy-template.rb"
 
 system "ning" do
