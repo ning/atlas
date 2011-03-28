@@ -3,6 +3,7 @@ package com.ning.atlas.template;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.Collection;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -14,9 +15,9 @@ public class TestJRubyTemplateParser
     public void testFoo() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
-        SystemTemplate t = p.parse(new File("src/test/ruby/ex1/system-template.rb"));
+        Collection<SystemTemplate> t = p.parse(new File("src/test/ruby/ex1/system-template.rb"));
         assertThat(t, notNullValue());
-        Manifest d = Manifest.build(new EnvironmentConfig(), t);
+        SystemManifest d = SystemManifest.build(new EnvironmentConfig(), t);
 
         assertThat(d.getInstances().size(), equalTo(23));
 

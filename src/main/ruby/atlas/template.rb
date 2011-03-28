@@ -12,11 +12,12 @@ module Atlas
         @template_path = template_path
         @last = false
         @aliases = {}
+        @roots = []
       end
 
       def parse
         eval @template, binding, @template_path, 1
-        @root
+        @roots
       end
 
 
@@ -33,7 +34,7 @@ module Atlas
           cnt = args[:count] || 1
           @last.addChild(sys, cnt)
         else
-          @root = sys
+          @roots << sys
         end
         @last = sys
 

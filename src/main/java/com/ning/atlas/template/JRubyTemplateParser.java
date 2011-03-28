@@ -6,10 +6,11 @@ import org.jruby.embed.ScriptingContainer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collection;
 
 public class JRubyTemplateParser
 {
-    public SystemTemplate parse(File template)
+    public Collection<SystemTemplate> parse(File template)
     {
         ScriptingContainer container = new ScriptingContainer();
         try {
@@ -20,8 +21,8 @@ public class JRubyTemplateParser
             throw new IllegalStateException("cannot open atlas/template.rb from classpath", e);
         }
 
-        return (SystemTemplate) container.runScriptlet("Atlas::Template::SystemTemplateParser.new('" +
-                                                       template.getAbsolutePath() +
-                                                       "').parse");
+        return (Collection<SystemTemplate>) container.runScriptlet("Atlas::Template::SystemTemplateParser.new('" +
+                                                                   template.getAbsolutePath() +
+                                                                   "').parse");
     }
 }

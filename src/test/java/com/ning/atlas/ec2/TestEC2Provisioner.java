@@ -1,14 +1,15 @@
 package com.ning.atlas.ec2;
 
+import com.google.common.collect.Lists;
 import com.ning.atlas.Server;
 import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.template.DeployTemplate;
+import com.ning.atlas.template.SystemManifest;
 import com.ning.atlas.template.EnvironmentConfig;
 import com.ning.atlas.template.JRubyTemplateParser;
-import com.ning.atlas.template.Manifest;
 import com.ning.atlas.template.ServerTemplate;
 import com.ning.atlas.template.SystemTemplate;
 import org.hamcrest.BaseMatcher;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.Before;
@@ -18,6 +19,7 @@ import org.skife.config.ConfigurationObjectFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Collection;
 import java.util.Properties;
 import java.util.Set;
 
@@ -25,7 +27,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
-import static org.junit.Assume.assumeTrue;
 
 public class TestEC2Provisioner
 {
@@ -43,6 +44,7 @@ public class TestEC2Provisioner
     }
 
     @Test
+    @Ignore
     public void testALot() throws Exception
     {
         SystemTemplate root = new SystemTemplate("root");
@@ -52,7 +54,7 @@ public class TestEC2Provisioner
         cluster.addChild(server, 2);
         root.addChild(cluster, 1);
 
-        Manifest m = Manifest.build(new EnvironmentConfig(), root);
+        SystemManifest m = SystemManifest.build(new EnvironmentConfig(), Lists.<DeployTemplate>newArrayList(root));
 
         Provisioner p = new EC2Provisioner(config);
 
@@ -67,6 +69,7 @@ public class TestEC2Provisioner
     }
 
     @Test
+    @Ignore
     public void testServersHaveInternalAddresses() throws Exception
     {
         SystemTemplate root = new SystemTemplate("root");
@@ -75,7 +78,7 @@ public class TestEC2Provisioner
         server.setImage("ami-a6f504cf");
         root.addChild(server, 1);
 
-        Manifest m = Manifest.build(new EnvironmentConfig(), root);
+        SystemManifest m = SystemManifest.build(new EnvironmentConfig(), Lists.<DeployTemplate>newArrayList(root));
 
         Provisioner p = new EC2Provisioner(config);
 
@@ -95,8 +98,9 @@ public class TestEC2Provisioner
     @Ignore
     public void bootstrapChef() throws InterruptedException {
         JRubyTemplateParser parser = new JRubyTemplateParser();
-        SystemTemplate root = parser.parse(new File("src/test/ruby/ex1/chef-server.rb"));
-        Manifest m = Manifest.build(new EnvironmentConfig(), root);
+        Collection<SystemTemplate> roots = parser.parse(new File("src/test/ruby/ex1/chef-server.rb"));
+
+        SystemManifest m = SystemManifest.build(new EnvironmentConfig(), roots);
 
 
         Provisioner p = new EC2Provisioner(config);

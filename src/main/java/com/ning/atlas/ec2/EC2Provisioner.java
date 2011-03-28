@@ -2,31 +2,24 @@ package com.ning.atlas.ec2;
 
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2AsyncClient;
-import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.DescribeInstanceAttributeRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
-import com.google.common.base.Strings;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.ning.atlas.Server;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.template.ServerSpec;
-import com.ning.atlas.template.Manifest;
+import com.ning.atlas.template.SystemManifest;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 public class EC2Provisioner implements Provisioner
 {
@@ -40,7 +33,7 @@ public class EC2Provisioner implements Provisioner
         ec2 = new AmazonEC2AsyncClient(credentials);
     }
 
-    public Set<Server> provisionServers(Manifest m) throws InterruptedException
+    public Set<Server> provisionServers(SystemManifest m) throws InterruptedException
     {
         final Set<Callable<Boolean>> waiting = Sets.newLinkedHashSet();
         final Set<Server> servers = Sets.newLinkedHashSet();
@@ -57,9 +50,9 @@ public class EC2Provisioner implements Provisioner
                 {
                     DescribeInstancesRequest req = new DescribeInstancesRequest();
                     req.setInstanceIds(Lists.newArrayList(i.getInstanceId()));
-                    DescribeInstancesResult res = ec2.describeInstances();
+                    DescribeInstancesResult res = ec2.describeInstances(req);
                     Instance i2 = res.getReservations().get(0).getInstances().get(0);
-                    if (Strings.isNullOrEmpty(i2.getPrivateIpAddress())) {
+                    if (!"running".equals(i2.getState().getName())) {
                         return false;
                     }
 
@@ -68,7 +61,6 @@ public class EC2Provisioner implements Provisioner
                     return true;
                 }
             });
-
 
             do {
                 Thread.sleep(1000);
@@ -89,36 +81,6 @@ public class EC2Provisioner implements Provisioner
         }
 
         return servers;
-
-        /*
-        Multimap<String, ServerSpec> by_type = ArrayListMultimap.create();
-        for (ServerSpec instance : m.getInstances()) {
-            by_type.put(instance.getImage(), instance);
-        }
-
-        Multimap<String, Instance> results = ArrayListMultimap.create();
-
-        for (Map.Entry<String, Collection<ServerSpec>> entry : by_type.asMap().entrySet()) {
-            String ami = entry.getKey();
-            int count = entry.getValue().size();
-            RunInstancesRequest req = new RunInstancesRequest(ami, count, count);
-            req.setKeyName(config.getKeyPairId());
-            RunInstancesResult res = ec2.runInstances(req);
-            results.putAll(ami, res.getReservation().getInstances());
-        }
-
-        Set<Server> servers = Sets.newLinkedHashSet();
-
-        for (ServerSpec spec : m.getInstances()) {
-            Collection<Instance> instances = results.get(spec.getImage());
-            Instance i = instances.iterator().next();
-            results.remove(spec.getImage(), i);
-            Server s = new EC2Server(spec, i);
-            servers.add(s);
-        }
-        return servers;
-
-        */
     }
 
     public void destroy(Collection<Server> servers)

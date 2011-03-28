@@ -1,5 +1,6 @@
 package com.ning.atlas.template;
 
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -32,7 +33,7 @@ public class TestDeployment
 
         env.addDeployVar("aclu-names", Arrays.<String>asList("00", "01"));
 
-        Manifest d = Manifest.build(env, root);
+        SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(root));
         assertFalse(d.getInstances().isEmpty());
     }
 
@@ -48,7 +49,7 @@ public class TestDeployment
         DeployTemplate dt = new AppCore();
 
 
-        Manifest d = Manifest.build(env, dt);
+        SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(dt));
 
         List<ServerSpec> faults = d.validate();
         assertEquals(1, faults.size());
@@ -64,7 +65,7 @@ public class TestDeployment
 
         DeployTemplate dt = new AppCore();
 
-        Manifest d = Manifest.build(env, dt);
+        SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(dt));
 
         List<ServerSpec> faults = d.validate();
         assertEquals(0, faults.size());
@@ -86,7 +87,7 @@ public class TestDeployment
         sys.addChild(appCore, 5); // 5 appcores
 
 
-        Manifest d = Manifest.build(env, sys);
+        SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(sys));
 
         assertEquals(5, d.getInstances().size());
 
@@ -112,7 +113,7 @@ public class TestDeployment
 
         sys.addChild(appCore, 5); // 5 appcores
 
-        Manifest d = Manifest.build(env, sys);
+        SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(sys));
 
         assertEquals(3, d.getInstances().size());
 
@@ -132,7 +133,7 @@ public class TestDeployment
         DeployTemplate aclu = root.addChild(new SystemTemplate("aclu"), 2);
         aclu.addChild(new AppCore(), 5); // 5 appcores
 
-        Manifest d = Manifest.build(env, root);
+        SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(root));
 
         assertEquals(10, d.getInstances().size());
 
@@ -152,7 +153,7 @@ public class TestDeployment
         DeployTemplate aclu = root.addChild(new SystemTemplate("aclu"), 2);
         aclu.addChild(new AppCore(), 5);
 
-        Manifest d = Manifest.build(env, root);
+        SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(root));
 
         assertEquals(25, d.getInstances().size());
     }
@@ -173,7 +174,7 @@ public class TestDeployment
         DeployTemplate aclu2 = aclu.addChild(new SystemTemplate("aclu2"), 2);
         aclu2.addChild(new AppCore(), 5);
 
-        Manifest d = Manifest.build(env, root);
+        SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(root));
 
         assertEquals(20, d.getInstances().size());
     }
@@ -194,7 +195,7 @@ public class TestDeployment
         DeployTemplate aclu2 = aclu.addChild(new SystemTemplate("aclu2"), 2);
         aclu2.addChild(new AppCore(), 5);
 
-        Manifest d = Manifest.build(env, root);
+        SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(root));
 
         assertEquals(30, d.getInstances().size());
     }
@@ -209,7 +210,7 @@ public class TestDeployment
 
         sys.addChild(named, 5);
 
-        Manifest d = Manifest.build(env, sys);
+        SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(sys));
 
         assertEquals(5, d.getInstances().size());
 
