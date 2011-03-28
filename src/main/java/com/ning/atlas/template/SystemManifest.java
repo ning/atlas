@@ -29,7 +29,6 @@ public class SystemManifest
                 bads.add(instance);
             }
         }
-
         return bads;
     }
 
