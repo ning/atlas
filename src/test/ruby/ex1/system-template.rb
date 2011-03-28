@@ -4,12 +4,10 @@ aka "galaxy" => "chef:galaxy-agent"
 
 # example of a system template
 
-system "chef-server", :external => "http://something/chef-bootstrap-1.0.2.rb"
-system "arecibo", :external => "http://something/3.1415/arecibo_template.rb"
+# system "chef-server", :external => "http://something/chef-bootstrap-1.0.2.rb"
+# system "arecibo", :external => "http://something/3.1415/arecibo_template.rb"
 
-server "geponsole", :base => "ubuntu-small",
-                    :install => ["chef:gepo-2.7", "chef:gonsole-2.7"],
-                    :order => 10 # not yet supported
+system "galaxy", :external => "file:///#{File.expand_path(File.dirname(__FILE__))}/galaxy-template.rb"
 
 system "ning" do
   server "resolver", :base => "ubuntu-small",

@@ -1,4 +1,5 @@
 require 'java'
+require 'open-uri'
 
 module Atlas
 
@@ -12,9 +13,9 @@ module Atlas
         @template_path = template_path
 
         # bits of state for the parser
-        @last          = [] # stack of nodes
-        @roots         = [] # system roots
-        @aliases       = {} # value aliases to be substituted
+        @last = [] # stack of nodes
+        @roots   = [] # system roots
+        @aliases = {} # value aliases to be substituted
 
         # done as lambda instead of method in order to keep from polluting DSL
         @add_node = lambda do |node, args, block|
@@ -41,7 +42,18 @@ module Atlas
         @aliases = @aliases.merge args
       end
 
+
       def system name, args={}, &block
+        if args[:external]
+          raise "Not allowed to define contents of external system" if block
+
+          block = lambda do
+            ext_template = open(args[:external]).read
+            eval ext_template, binding, args[:external], 1
+          end
+
+        end
+
         sys = Atlas::Template::SystemTemplate.new name
         @add_node.call sys, args, block
       end
