@@ -10,11 +10,13 @@ import com.ning.atlas.template.JRubyTemplateParser;
 import com.ning.atlas.template.ServerTemplate;
 import com.ning.atlas.template.SystemTemplate;
 import org.hamcrest.BaseMatcher;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.internal.matchers.StringContains;
 import org.skife.config.ConfigurationObjectFactory;
 
 import java.io.File;
@@ -27,6 +29,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
+import static org.junit.internal.matchers.StringContains.containsString;
 
 public class TestEC2Provisioner
 {
@@ -58,7 +61,7 @@ public class TestEC2Provisioner
 
         Provisioner p = new EC2Provisioner(config);
 
-        Set<Server> servers = p.provisionServers(m);
+        Set<Server> servers = p.provisionBareServers(m);
 
         try {
             assertThat(servers.size(), equalTo(2));
@@ -82,7 +85,7 @@ public class TestEC2Provisioner
 
         Provisioner p = new EC2Provisioner(config);
 
-        Set<Server> servers = p.provisionServers(m);
+        Set<Server> servers = p.provisionBareServers(m);
 
         try {
             assertThat(servers.size(), equalTo(1));
@@ -104,7 +107,7 @@ public class TestEC2Provisioner
 
 
         Provisioner p = new EC2Provisioner(config);
-        Set<Server> s = p.provisionServers(m);
+        Set<Server> s = p.provisionBareServers(m);
         try {
             Server chef_server = s.iterator().next();
         }
@@ -112,6 +115,29 @@ public class TestEC2Provisioner
             p.destroy(s);
         }
 
+    }
+
+    @Test
+    @Ignore
+    public void testBootStrap() throws Exception
+    {
+        SystemTemplate root = new SystemTemplate("root");
+
+        ServerTemplate server = new ServerTemplate("server");
+        server.setBootstrap("#!/bin/sh\nexport WAFFLE='hello world'\necho $WAFFLE > /tmp/booted\n");
+        server.setImage("ami-a6f504cf");
+        root.addChild(server, 1);
+
+        SystemManifest m = SystemManifest.build(new EnvironmentConfig(), Lists.<DeployTemplate>newArrayList(root));
+
+        Provisioner p = new EC2Provisioner(config);
+
+        Set<Server> servers = p.provisionBareServers(m);
+        Server s = servers.iterator().next();
+
+        p.bootStrapServers(servers);
+        String out = p.executeRemote(s, "cat /tmp/booted");
+        assertThat(out, containsString("hello world"));
     }
 
 

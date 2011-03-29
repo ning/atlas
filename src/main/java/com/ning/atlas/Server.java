@@ -4,4 +4,5 @@ public interface Server
 {
     public String getExternalIpAddress();
     public String getInternalIpAddress();
+    String getBootStrap();
 }

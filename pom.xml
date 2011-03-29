@@ -17,9 +17,9 @@
     <dependencies>
 
         <dependency>
-            <groupId>jsch</groupId>
+            <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
-            <version>0.1.29</version>
+            <version>0.1.44</version>
         </dependency>
 
         <dependency>
@@ -66,5 +66,12 @@
             </resource>
         </resources>
     </build>
+
+    <repositories>
+        <repository>
+            <id>jsch</id>
+            <url>http://jsch.sf.net/maven2/</url>
+        </repository>
+    </repositories>
 
 </project>

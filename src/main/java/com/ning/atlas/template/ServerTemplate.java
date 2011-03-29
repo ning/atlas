@@ -28,6 +28,7 @@ public class ServerTemplate extends DeployTemplate
         ServerTemplate t = new ServerTemplate(getName());
         t.setImage(getImage());
         t.addInstallations(getInstallations());
+        t.setBootstrap(getBootstrap());
         for (String required_prop : getRequiredProperties()) {
             t.addRequiredProperty(required_prop);
         }
