@@ -1,6 +1,7 @@
 package com.ning.atlas.ec2;
 
 import com.google.common.collect.Lists;
+import com.ning.atlas.SSHBootStrapper;
 import com.ning.atlas.Server;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.template.DeployTemplate;
@@ -135,8 +136,13 @@ public class TestEC2Provisioner
         Set<Server> servers = p.provisionBareServers(m);
         Server s = servers.iterator().next();
 
-        p.bootStrapServers(servers);
-        String out = p.executeRemote(s, "cat /tmp/booted");
+        SSHBootStrapper bs = new SSHBootStrapper(config.getPrivateKeyFile(), config.getSshUserName());
+
+        for (Server server1 : servers) {
+            bs.bootStrap(server1);
+        }
+
+        String out = bs.executeRemote(s, "cat /tmp/booted");
         assertThat(out, containsString("hello world"));
     }
 

@@ -8,22 +8,19 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
-import com.jcraft.jsch.ChannelExec;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-import com.jcraft.jsch.UserInfo;
 import com.ning.atlas.Server;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.template.ServerSpec;
 import com.ning.atlas.template.SystemManifest;
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.connection.channel.direct.Session;
+import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
+import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
 
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -119,78 +116,25 @@ public class EC2Provisioner implements Provisioner
 
     public String executeRemote(Server s, String command) throws Exception
     {
-        EC2Server server = (EC2Server) s;
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(command), "command may not be empty or null");
 
-        final JSch jsch = new JSch();
-        int tries = 30;
+        SSHClient ssh = new SSHClient();
+        ssh.addHostKeyVerifier(new PromiscuousVerifier());
+        ssh.connect(s.getExternalIpAddress());
 
-        Session session = null;
-        while (session == null || !session.isConnected() || tries-- > 0) {
-            try {
-                session = jsch.getSession(config.getSshUserName(), server.getExternalIpAddress(), 22);
+        PKCS8KeyFile keyfile = new PKCS8KeyFile();
+        keyfile.init(config.getPrivateKeyFile());
+        ssh.authPublickey(config.getSshUserName(), keyfile);
 
-                byte[] priv_key_bytes = Files.toByteArray(config.getPrivateKeyFile());
-
-                jsch.addIdentity(config.getSshUserName(), priv_key_bytes, null, new byte[0]);
-
-                session.setUserInfo(new UserInfo()
-                {
-
-                    public String getPassphrase()
-                    {
-                        return "";
-                    }
-
-                    public String getPassword()
-                    {
-                        return "";
-                    }
-
-                    public boolean promptPassword(String s)
-                    {
-                        return false;
-                    }
-
-                    public boolean promptPassphrase(String s)
-                    {
-                        return true;
-                    }
-
-                    public boolean promptYesNo(String s)
-                    {
-                        return true;
-                    }
-
-                    public void showMessage(String s)
-                    {
-                        System.out.println(s);
-                    }
-                });
-
-                session.connect(10000);
-            }
-            catch (JSchException e) {
-                System.out.println(e.getMessage());
-                Thread.sleep(1000);
-                session.disconnect();
-            }
-        }
-
-        if (tries == 0 || session == null) {
-            throw new UnsupportedOperationException("Not Yet Implemented!");
-        }
-
-        final ChannelExec channel = (ChannelExec) session.openChannel("exec");
-        channel.setCommand(command.getBytes());
-        channel.connect();
-        InputStream out = channel.getInputStream();
+        Session session = ssh.startSession();
+        Session.Command c = session.exec(command);
         try {
-            return new String(ByteStreams.toByteArray(out));
+            return c.getOutputAsString();
         }
         finally {
-            out.close();
-            channel.disconnect();
-            session.disconnect();
+            c.close();
+            session.close();
+            ssh.disconnect();
         }
     }
 

@@ -17,12 +17,6 @@
     <dependencies>
 
         <dependency>
-            <groupId>com.jcraft</groupId>
-            <artifactId>jsch</artifactId>
-            <version>0.1.44</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.skife.config</groupId>
             <artifactId>config-magic</artifactId>
             <version>0.7</version>
@@ -42,8 +36,32 @@
 
         <dependency>
             <groupId>org.jruby</groupId>
-            <artifactId>jruby</artifactId>
+            <artifactId>jruby-complete</artifactId>
             <version>1.6.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.schmizz</groupId>
+            <artifactId>sshj</artifactId>
+            <version>0.3.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk16</artifactId>
+            <version>1.45</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.14</version>
         </dependency>
 
         <dependency>
@@ -52,6 +70,7 @@
             <version>4.8.2</version>
             <scope>test</scope>
         </dependency>
+
 
     </dependencies>
 
@@ -66,12 +85,4 @@
             </resource>
         </resources>
     </build>
-
-    <repositories>
-        <repository>
-            <id>jsch</id>
-            <url>http://jsch.sf.net/maven2/</url>
-        </repository>
-    </repositories>
-
 </project>
