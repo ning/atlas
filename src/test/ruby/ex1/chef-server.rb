@@ -2,7 +2,7 @@ aka "ubuntu-small" => "ami-a6f504cf"
 
 
 system "chef" do
-  server "server", :base => "ubuntu-small",
+  server "chef-server", :base => "ubuntu-small",
                    :bootstrap => <<-EOB.gsub(/^(\s*)(.*)/m, '\2').gsub(/^#{$1}/, '')
                                    #!/bin/sh
                                    # set up a chef-server
