@@ -99,8 +99,8 @@ public class TestEC2Provisioner
     }
 
     @Test
-    @Ignore
-    public void bootstrapChef() throws InterruptedException {
+    public void bootstrapChefServer() throws InterruptedException
+    {
         JRubyTemplateParser parser = new JRubyTemplateParser();
         Collection<DeployTemplate> roots = parser.parse(new File("src/test/ruby/ex1/chef-server.rb"));
 
@@ -111,9 +111,10 @@ public class TestEC2Provisioner
         Set<Server> s = p.provisionBareServers(m);
         try {
             Server chef_server = s.iterator().next();
+            System.out.println(chef_server.getExternalIpAddress());
         }
         finally {
-            p.destroy(s);
+//            p.destroy(s);
         }
 
     }

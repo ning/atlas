@@ -2,17 +2,20 @@ package com.ning.atlas;
 
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.Session;
+import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
+import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
+import org.apache.log4j.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 
 public class SSHBootStrapper implements BootStrapper
 {
-
     private final static Logger logger = LoggerFactory.getLogger(SSHBootStrapper.class);
 
     private final File   privateKeyFile;
@@ -33,6 +36,18 @@ public class SSHBootStrapper implements BootStrapper
             try {
                 executeRemote(s, s.getBootStrap());
                 success = true;
+            }
+            catch (ConnectException e) {
+                // sshd not running yet
+                Thread.sleep(1000);
+            }
+            catch (TransportException e) {
+                // these happen sometimes when sshd is accepting cons but not yet ready
+                Thread.sleep(1000);
+            }
+            catch (UserAuthException e) {
+                // for some reason on EC2 the key isn't available initially. NFC why.
+                Thread.sleep(1000);
             }
             catch (IOException e) {
                 logger.warn("exception trying to bootstrap", e);

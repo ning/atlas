@@ -17,6 +17,14 @@
         <level value="warn"/>
     </logger>
 
+    <logger name="net.schmizz.sshj.transport.TransportImpl">
+        <level value="fatal"/>
+    </logger>
+
+    <logger name="net.schmizz.concurrent.Event">
+        <level value="fatal"/>
+    </logger>
+
     <root>
         <priority value="INFO"/>
         <appender-ref ref="stdout"/>
