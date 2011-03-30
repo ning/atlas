@@ -19,7 +19,7 @@ public class TestJRubyTemplateParser
         assertThat(t, notNullValue());
         SystemManifest d = SystemManifest.build(new EnvironmentConfig(), t);
 
-        assertThat(d.getInstances().size(), equalTo(23));
+        assertThat(d.getInstances().size(), equalTo(24));
 
         // verify aka worked for the server image
         assertThat("ami-a6f504cf", equalTo(d.getInstances().get(0).getImage()));
