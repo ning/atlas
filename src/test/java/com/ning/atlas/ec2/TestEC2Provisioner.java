@@ -22,6 +22,7 @@ import org.skife.config.ConfigurationObjectFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.Set;
@@ -99,22 +100,32 @@ public class TestEC2Provisioner
     }
 
     @Test
-    public void bootstrapChefServer() throws InterruptedException
+    @Ignore
+    public void bootstrapChefServer() throws InterruptedException, IOException
     {
         JRubyTemplateParser parser = new JRubyTemplateParser();
         Collection<DeployTemplate> roots = parser.parse(new File("src/test/ruby/ex1/chef-server.rb"));
 
         SystemManifest m = SystemManifest.build(new EnvironmentConfig(), roots);
 
+        SSHBootStrapper bs = new SSHBootStrapper(config.getPrivateKeyFile(), config.getSshUserName());
 
         Provisioner p = new EC2Provisioner(config);
         Set<Server> s = p.provisionBareServers(m);
         try {
             Server chef_server = s.iterator().next();
+            bs.bootStrap(chef_server);
             System.out.println(chef_server.getExternalIpAddress());
+
+            String out = bs.executeRemote(chef_server, "ps wwaux");
+            assertThat(out, containsString("rabbit"));
+            assertThat(out, containsString("couchdb"));
+            assertThat(out, containsString("solr"));
+            assertThat(out, containsString("chef-server"));
+
         }
         finally {
-//            p.destroy(s);
+            p.destroy(s);
         }
 
     }

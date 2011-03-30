@@ -1,11 +1,14 @@
 package com.ning.atlas;
 
+import com.google.common.base.Splitter;
+import com.google.common.io.Files;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
+import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
 import org.apache.log4j.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
+import java.nio.charset.Charset;
 
 public class SSHBootStrapper implements BootStrapper
 {
@@ -66,15 +70,38 @@ public class SSHBootStrapper implements BootStrapper
         keyfile.init(privateKeyFile);
         ssh.authPublickey(userName, keyfile);
 
-        Session session = ssh.startSession();
-        Session.Command c = session.exec(command);
-        try {
-            return c.getOutputAsString();
-        }
-        finally {
-            c.close();
-            session.close();
+        if (command.contains("\n")) {
+            File tmp = File.createTempFile("bootstrap", "tmp");
+            Files.append(command, tmp, Charset.forName("UTF8"));
+
+            ssh.newSCPFileTransfer().upload(tmp.getAbsolutePath(), "/tmp/");
+
+            Session set_exec = ssh.startSession();
+            Session.Command c = set_exec.exec("chmod +x /tmp/" + tmp.getName());
+            c.join();
+            set_exec.close();
+
+            Session exec = ssh.startSession();
+            Session.Command c2 = exec.exec("/tmp/" + tmp.getName());
+
+            String rs = c2.getOutputAsString();
+            exec.close();
             ssh.disconnect();
+            tmp.delete();
+            return rs;
+
+        }
+        else {
+            Session session = ssh.startSession();
+            Session.Command c = session.exec(command);
+            try {
+                return c.getOutputAsString();
+            }
+            finally {
+                c.close();
+                session.close();
+                ssh.disconnect();
+            }
         }
     }
 }
