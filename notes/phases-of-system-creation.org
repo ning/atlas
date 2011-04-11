@@ -1,4 +1,4 @@
-* Phases for Atlas Spinup
+* Phases for Atlas System Spinup
 ** System Template to Physical Tree
    This takes the template, space, and various atlas config bits and
    realizes a plan for spinning up the servers. That means finding the
