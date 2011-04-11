@@ -13,12 +13,16 @@
    per-server, such as /etc/hosts data or into more application level
    stuff like galaxy config properties into the gepo.
 ** System Bootstrap
-   Considering we are provisioning a pretty bare 
+   Considering we are provisioning a pretty bare system, we need a
+   means to do things like install chef.
 ** Infra Magic
    This part is very fluid right now. It basically does the
    "chef[core]" type role assignment. It is seperate from the
    bootstrap at the moment in my thoughts, but it will probably be
    subsumed by bootstrap in my thoughts tomorrow.
+
+   This could be subsumed into the system bootstrap if the bootstrap
+   accepts a list of bootstraps and can inherit them.
 ** Installation
    Application installation via something like galaxy or cosmos. Atlas
    knows what hosts it has set up for which servers, and has assigned
