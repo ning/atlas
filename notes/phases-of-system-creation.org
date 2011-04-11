@@ -1,0 +1,31 @@
+* Phases for Atlas Spinup
+** System Template to Physical Tree
+   This takes the template, space, and various atlas config bits and
+   realizes a plan for spinning up the servers. That means finding the
+   right, and properly configured, Provisioner and Bootstrapper,
+   finding keys, credentials and so forth.
+** System Assignment
+   This uses the provisioner to spin up or assign hosts to servers in
+   the physical tree. This needs to be a seperate phase from actual
+   provisioning so that IP addresses assigned to servers are known.
+** System Provisioning
+   This interpolates atlas data into configuration (be that
+   per-server, such as /etc/hosts data or into more application level
+   stuff like galaxy config properties into the gepo.
+** System Bootstrap
+   Considering we are provisioning a pretty bare 
+** Infra Magic
+   This part is very fluid right now. It basically does the
+   "chef[core]" type role assignment. It is seperate from the
+   bootstrap at the moment in my thoughts, but it will probably be
+   subsumed by bootstrap in my thoughts tomorrow.
+** Installation
+   Application installation via something like galaxy or cosmos. Atlas
+   knows what hosts it has set up for which servers, and has assigned
+   all the roles and so on, but we now need to get the application
+   bits on disk. How this works will vary hugely by the application
+   deployment tool being used, therefore the Installer interface may
+   just accept the physical system map and need to work out its stuff,
+   alternately it may receive a list of (server, install-directive) as
+   that will probably need to be built by every implementation anyway.
+
