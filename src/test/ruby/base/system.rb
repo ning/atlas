@@ -14,13 +14,13 @@ space "ec2" do
     :bastion_host => "mrpiffles@bastion.example.com"
   }
 
-  base "java-core", :image =>  "ami-a6f504cf", 
+  base "java-core", :image =>  "ami-a6f504cf",
                     :bootstrap => ""
-      
+
 
   base "ubuntu-small" do
    image "ami-a6f504cf"
-    
+
    bootstrap <<-EOS
       sudo apt-get -y install chef
       chef-solo wibble wibble wibble
