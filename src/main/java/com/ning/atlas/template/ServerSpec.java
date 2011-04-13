@@ -17,25 +17,13 @@ public class ServerSpec
         this.props = props;
     }
 
-    public List<String> validate()
-    {
-        List<String> problems = new ArrayList<String>();
-        for (String key : template.getRequiredProperties()) {
-            if (!props.containsKey(key)) {
-                problems.add(String.format("required property '%s' missing", key));
-            }
-        }
-
-        return problems;
-    }
-
     public String getName()
     {
         return name;
     }
 
     public String getImage() {
-        return template.getImage();
+        return template.getBase();
     }
 
     @Override

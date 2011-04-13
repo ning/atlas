@@ -20,19 +20,6 @@ public class SystemManifest
         this.instances.add(instance);
     }
 
-    public List<ServerSpec> validate()
-    {
-        List<ServerSpec> bads = new ArrayList<ServerSpec>();
-        for (ServerSpec instance : instances) {
-            List<String> problems = instance.validate();
-            if (!problems.isEmpty()) {
-                bads.add(instance);
-            }
-        }
-        return bads;
-    }
-
-
     public static SystemManifest build(final EnvironmentConfig env, final Collection<? extends DeployTemplate> roots)
     {
 

@@ -11,13 +11,11 @@ import com.ning.atlas.template.JRubyTemplateParser;
 import com.ning.atlas.template.ServerTemplate;
 import com.ning.atlas.template.SystemTemplate;
 import org.hamcrest.BaseMatcher;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.internal.matchers.StringContains;
 import org.skife.config.ConfigurationObjectFactory;
 
 import java.io.File;
@@ -55,7 +53,7 @@ public class TestEC2Provisioner
         SystemTemplate root = new SystemTemplate("root");
         SystemTemplate cluster = new SystemTemplate("cluster");
         ServerTemplate server = new ServerTemplate("server");
-        server.setImage("ami-a6f504cf");
+        server.setBase("ami-a6f504cf");
         cluster.addChild(server, 2);
         root.addChild(cluster, 1);
 
@@ -80,7 +78,7 @@ public class TestEC2Provisioner
         SystemTemplate root = new SystemTemplate("root");
 
         ServerTemplate server = new ServerTemplate("server");
-        server.setImage("ami-a6f504cf");
+        server.setBase("ami-a6f504cf");
         root.addChild(server, 1);
 
         SystemManifest m = SystemManifest.build(new EnvironmentConfig(), Lists.<DeployTemplate>newArrayList(root));
@@ -138,7 +136,7 @@ public class TestEC2Provisioner
 
         ServerTemplate server = new ServerTemplate("server");
         server.setBootstrap("#!/bin/sh\nexport WAFFLE='hello world'\necho $WAFFLE > /tmp/booted\n");
-        server.setImage("ami-a6f504cf");
+        server.setBase("ami-a6f504cf");
         root.addChild(server, 1);
 
         SystemManifest m = SystemManifest.build(new EnvironmentConfig(), Lists.<DeployTemplate>newArrayList(root));

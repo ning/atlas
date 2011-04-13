@@ -37,41 +37,6 @@ public class TestDeployment
         assertFalse(d.getInstances().isEmpty());
     }
 
-
-    @Test
-    public void testDeploySingleServiceWithoutRequiredProperty() throws Exception
-    {
-        EnvironmentConfig env = new EnvironmentConfig();
-        env.addConfigVar("xn.db.url", "jdbc:kyoto:/tmp/foo.kch");
-        // env.addConfigVar("xn.db.user", "joe"); // missing required prop
-        env.addConfigVar("xn.db.password", "security-is-fun");
-
-        DeployTemplate dt = new AppCore();
-
-
-        SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(dt));
-
-        List<ServerSpec> faults = d.validate();
-        assertEquals(1, faults.size());
-    }
-
-    @Test
-    public void testDeploySingleServiceWithAllRequiredProperties() throws Exception
-    {
-        EnvironmentConfig env = new EnvironmentConfig();
-        env.addConfigVar("xn.db.url", "jdbc:kyoto:/tmp/foo.kch");
-        env.addConfigVar("xn.db.user", "joe");
-        env.addConfigVar("xn.db.password", "security-is-fun");
-
-        DeployTemplate dt = new AppCore();
-
-        SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(dt));
-
-        List<ServerSpec> faults = d.validate();
-        assertEquals(0, faults.size());
-    }
-
-
     @Test
     public void testSimpleSystem() throws Exception
     {
@@ -90,11 +55,6 @@ public class TestDeployment
         SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(sys));
 
         assertEquals(5, d.getInstances().size());
-
-        List<ServerSpec> faults = d.validate();
-        assertEquals(0, faults.size());
-
-
     }
 
 
@@ -116,9 +76,6 @@ public class TestDeployment
         SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(sys));
 
         assertEquals(3, d.getInstances().size());
-
-        List<ServerSpec> faults = d.validate();
-        assertEquals(0, faults.size());
     }
 
     @Test
@@ -213,9 +170,6 @@ public class TestDeployment
         SystemManifest d = SystemManifest.build(env, Lists.<DeployTemplate>newArrayList(sys));
 
         assertEquals(5, d.getInstances().size());
-
-        List<ServerSpec> faults = d.validate();
-        assertEquals(0, faults.size());
     }
 
 
@@ -235,9 +189,6 @@ public class TestDeployment
         public AppCore()
         {
             super("appcore");
-            addRequiredProperties("xn.db.url",
-                                  "xn.db.user",
-                                  "xn.db.password");
         }
     }
 
@@ -265,10 +216,6 @@ public class TestDeployment
         public Resolver()
         {
             super("resolver");
-            addRequiredProperties("xn.external.base-domain",
-                                  "xn.db.url",
-                                  "xn.db.user",
-                                  "xn.db.password");
         }
     }
 }

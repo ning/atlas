@@ -11,10 +11,6 @@ public class SystemTemplate extends DeployTemplate
     public DeployTemplate shallowClone()
     {
         SystemTemplate t = new SystemTemplate(getName());
-        for (String required_prop : getRequiredProperties()) {
-            t.addRequiredProperty(required_prop);
-        }
-
         return t;
     }
 

@@ -1,12 +1,13 @@
 package com.ning.atlas.template;
 
+import com.google.common.base.Objects;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public abstract class DeployTemplate
 {
-    private List<String> requiredProperties = new ArrayList();
     private final List<SizedChild> children = new ArrayList<SizedChild>();
     private final String name;
 
@@ -54,24 +55,6 @@ public abstract class DeployTemplate
         return Collections.unmodifiableList(this.children);
     }
 
-
-    public void addRequiredProperty(String key)
-    {
-        this.requiredProperties.add(key);
-    }
-
-    public void addRequiredProperties(String... keys)
-    {
-        for (String key : keys) {
-            addRequiredProperty(key);
-        }
-    }
-
-    public List<String> getRequiredProperties()
-    {
-        return Collections.unmodifiableList(requiredProperties);
-    }
-
     public abstract DeployTemplate shallowClone();
 
     public abstract DeployTemplate deepClone();
@@ -116,11 +99,10 @@ public abstract class DeployTemplate
     @Override
     public String toString()
     {
-        return "DeployTemplate{" +
-               "requiredProperties=" + requiredProperties +
-               ", children=" + children +
-               ", name='" + name + '\'' +
-               '}';
+        return Objects.toStringHelper(this)
+            .add("name", name)
+            .add("children", this.children)
+            .toString();
     }
 }
 

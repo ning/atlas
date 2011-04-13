@@ -1,13 +1,14 @@
 package com.ning.atlas.template;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import com.sun.xml.internal.bind.v2.runtime.RuntimeUtil;
 
 import java.util.List;
-import java.util.Map;
 
 public class ServerTemplate extends DeployTemplate
 {
-    private String image;
+    private String base;
     private String bootstrap;
     private final List<String> installations = Lists.newArrayList();
 
@@ -26,13 +27,9 @@ public class ServerTemplate extends DeployTemplate
     public DeployTemplate shallowClone()
     {
         ServerTemplate t = new ServerTemplate(getName());
-        t.setImage(getImage());
+        t.setBase(getBase());
         t.addInstallations(getInstallations());
         t.setBootstrap(getBootstrap());
-        for (String required_prop : getRequiredProperties()) {
-            t.addRequiredProperty(required_prop);
-        }
-
         return t;
     }
 
@@ -54,14 +51,14 @@ public class ServerTemplate extends DeployTemplate
         return installations;
     }
 
-    public void setImage(String image)
+    public void setBase(String base)
     {
-        this.image = image;
+        this.base = base;
     }
 
-    public String getImage()
+    public String getBase()
     {
-        return image;
+        return base;
     }
 
     public void addInstallations(List<String> installations)
@@ -77,5 +74,11 @@ public class ServerTemplate extends DeployTemplate
     public void setBootstrap(String bootstrap)
     {
         this.bootstrap = bootstrap;
+    }
+
+    @Override
+    public String toString()
+    {
+        return Objects.toStringHelper(this).add("base", base).toString();
     }
 }
