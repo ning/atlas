@@ -100,7 +100,7 @@ public class SystemManifest
             {
                 names.push(node.getName());
                 final String full_name = flatten(names);
-                baton.addInstance(new ServerSpec(full_name, node, env.propsFor(full_name)));
+                baton.addInstance(new ServerSpec(full_name, node));
                 names.pop();
                 return baton;
             }
