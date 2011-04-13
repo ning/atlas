@@ -15,7 +15,7 @@ public class TestJRubyTemplateParser
     public void testFoo() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
-        Collection<DeployTemplate> t = p.parse(new File("src/test/ruby/ex1/system-template.rb"));
+        DeployTemplate t = p.parse(new File("src/test/ruby/ex1/system-template.rb"));
         assertThat(t, notNullValue());
         SystemManifest d = SystemManifest.build(new EnvironmentConfig(), t);
 

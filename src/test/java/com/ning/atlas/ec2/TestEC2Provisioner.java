@@ -57,7 +57,7 @@ public class TestEC2Provisioner
         cluster.addChild(server, 2);
         root.addChild(cluster, 1);
 
-        SystemManifest m = SystemManifest.build(new EnvironmentConfig(), Lists.<DeployTemplate>newArrayList(root));
+        SystemManifest m = SystemManifest.build(new EnvironmentConfig(), root);
 
         Provisioner p = new EC2Provisioner(config);
 
@@ -81,7 +81,7 @@ public class TestEC2Provisioner
         server.setBase("ami-a6f504cf");
         root.addChild(server, 1);
 
-        SystemManifest m = SystemManifest.build(new EnvironmentConfig(), Lists.<DeployTemplate>newArrayList(root));
+        SystemManifest m = SystemManifest.build(new EnvironmentConfig(), root);
 
         Provisioner p = new EC2Provisioner(config);
 
@@ -102,7 +102,7 @@ public class TestEC2Provisioner
     public void bootstrapChefServer() throws InterruptedException, IOException
     {
         JRubyTemplateParser parser = new JRubyTemplateParser();
-        Collection<DeployTemplate> roots = parser.parse(new File("src/test/ruby/ex1/chef-server.rb"));
+        DeployTemplate roots = parser.parse(new File("src/test/ruby/ex1/chef-server.rb"));
 
         SystemManifest m = SystemManifest.build(new EnvironmentConfig(), roots);
 
@@ -139,7 +139,7 @@ public class TestEC2Provisioner
         server.setBase("ami-a6f504cf");
         root.addChild(server, 1);
 
-        SystemManifest m = SystemManifest.build(new EnvironmentConfig(), Lists.<DeployTemplate>newArrayList(root));
+        SystemManifest m = SystemManifest.build(new EnvironmentConfig(), root);
 
         Provisioner p = new EC2Provisioner(config);
 

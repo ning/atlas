@@ -10,7 +10,7 @@ import java.util.Collection;
 
 public class JRubyTemplateParser
 {
-    public Collection<DeployTemplate> parse(File template)
+    public DeployTemplate parse(File template)
     {
         ScriptingContainer container = new ScriptingContainer();
         try {
@@ -21,8 +21,8 @@ public class JRubyTemplateParser
             throw new IllegalStateException("cannot open atlas/template.rb from classpath", e);
         }
 
-        return (Collection<DeployTemplate>) container.runScriptlet("Atlas.parse('" +
-                                                                   template.getAbsolutePath() +
-                                                                   "')");
+        return (DeployTemplate) container.runScriptlet("Atlas.parse('" +
+                                                       template.getAbsolutePath() +
+                                                       "')");
     }
 }

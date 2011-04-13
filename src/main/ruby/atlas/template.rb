@@ -7,38 +7,38 @@ require 'prettyprint'
 module Atlas
   include_package "com.ning.atlas.template"
 
-  def self.parse path
-    RootParser.new(path).__parse
+  def self.parse path, name="__ROOT__"
+    RootParser.new(name, path).__parse
   end
 
   class RootParser
 
-    def initialize path
+    def initialize name, path
+      @name = name
       @template = open(path).read
       @path = path
-      @roots = []
+      @children = []
       @aliases = {}
     end
 
     def __parse
       eval @template, binding, @path, 1
-      @roots
+      root = Atlas::SystemTemplate.new @name
+      @children.each {|t, cnt| root.addChild(t, cnt)}
+      root
     end
 
     def server name, args={}, &block
-      @roots << ServerParser.new(name, args, block).__parse
+      @children << [ServerParser.new(name, args, block).__parse, args[:count] || 1]
     end
 
     def system name, args={}, &block
-      if args[:external]
-        st = Atlas::SystemTemplate.new name
-        Atlas.parse(args[:external]).each do |t|
-          st.addChild(t, 1)
-        end
-        @roots << st
-      else
-        @roots << SystemParser.new(name, args, block).__parse
-      end
+      st = if args[:external] then
+             Atlas.parse args[:external], name
+           else
+             SystemParser.new(name, args, block).__parse
+           end
+      @children << [st, args[:count] || 1]
     end
 
     def aka args = {}
