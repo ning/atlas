@@ -14,7 +14,7 @@ module Atlas
   class RootParser
 
     def initialize path
-      @template = File.read path
+      @template = open(path).read
       @path = path
       @roots = []
       @aliases = {}
@@ -30,11 +30,23 @@ module Atlas
     end
 
     def system name, args={}, &block
-      @roots << SystemParser.new(name, args, block).__parse
+      if args[:external]
+        st = Atlas::SystemTemplate.new name
+        Atlas.parse(args[:external]).each do |t|
+          st.addChild(t, 1)
+        end
+        @roots << st
+      else
+        @roots << SystemParser.new(name, args, block).__parse
+      end
     end
 
     def aka args = {}
       @aliases = @aliases.merge args
+    end
+
+    def space *args
+      # nothing to see here, move along
     end
   end
 
@@ -55,7 +67,10 @@ module Atlas
     end
 
     def system name, args={}, &block
-      @children << [SystemParser.new(name, args, block).__parse, (args[:count] || 1)]
+      if args[:external]
+      else
+        @children << [SystemParser.new(name, args, block).__parse, (args[:count] || 1)]
+      end
     end
 
     def server name, args={}, &block

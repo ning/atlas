@@ -11,6 +11,7 @@ end
 
 # nasty interpolation to say 'next to this file' :-(
 system "galaxy", :external => "file:///#{File.expand_path(File.dirname(__FILE__))}/galaxy-template.rb"
+
 system "chef", :external => "file:///#{File.expand_path(File.dirname(__FILE__))}/chef-server.rb"
 
 
