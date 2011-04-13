@@ -102,7 +102,7 @@ public class TestEC2Provisioner
     public void bootstrapChefServer() throws InterruptedException, IOException
     {
         JRubyTemplateParser parser = new JRubyTemplateParser();
-        DeployTemplate roots = parser.parse(new File("src/test/ruby/ex1/chef-server.rb"));
+        DeployTemplate roots = parser.parse(new File("src/test/ruby/ex1/chef-server.rb")).getDeploymentRoot();
 
         SystemManifest m = SystemManifest.build(new EnvironmentConfig(), roots);
 

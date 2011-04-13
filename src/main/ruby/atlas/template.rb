@@ -19,13 +19,14 @@ module Atlas
       @path = path
       @children = []
       @aliases = {}
+      @spaces = []
     end
 
     def __parse
       eval @template, binding, @path, 1
       root = Atlas::SystemTemplate.new @name
       @children.each {|t, cnt| root.addChild(t, cnt)}
-      root
+      Atlas::Root.new root, @spaces
     end
 
     def server name, args={}, &block
@@ -34,7 +35,7 @@ module Atlas
 
     def system name, args={}, &block
       st = if args[:external] then
-             Atlas.parse args[:external], name
+             Atlas.parse(args[:external], name).deployment_root
            else
              SystemParser.new(name, args, block).__parse
            end
@@ -45,8 +46,10 @@ module Atlas
       @aliases = @aliases.merge args
     end
 
-    def space *args
-      # nothing to see here, move along
+    def space name, args={}, &block
+      @spaces << Atlas::Space.new(name)
+
+      # @spaces << SpaceParser.new name, args, block
     end
   end
 

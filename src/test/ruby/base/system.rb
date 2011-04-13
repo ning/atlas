@@ -9,7 +9,7 @@ space "ec2" do
   }
 
   bootstrapper com.ning.atlas.bootstrap.SSHBootStrapper, {
-    :key_file => "~/.ec2/brianm-ning.pem",
+    :key_file => "~/.ec2/brianm-ning.pem",g
     :ssh_user => "ubuntu",
     :bastion_host => "mrpiffles@bastion.example.com"
   }

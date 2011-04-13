@@ -1,5 +1,9 @@
 
 
+space "ec2" do
+
+end
+
 server "gepo", :count => 2, :base => "centos-big"
 
 system "ning" do
