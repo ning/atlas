@@ -1,4 +1,5 @@
 
+
 server "gepo", :count => 2, :base => "centos-big"
 
 system "ning" do
