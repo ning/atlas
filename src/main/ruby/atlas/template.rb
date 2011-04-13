@@ -47,9 +47,18 @@ module Atlas
     end
 
     def space name, args={}, &block
-      @spaces << Atlas::Space.new(name)
+      @spaces << SpaceParser.new(name, args, block).__parse
+    end
+  end
 
-      # @spaces << SpaceParser.new name, args, block
+  class SpaceParser
+
+    def initialize name, args, block
+      @name, @args, @block = name, args, block
+    end
+
+    def __parse
+      Atlas::Space.new @name
     end
   end
 
