@@ -1,8 +1,5 @@
-#!/Users/brianm/.rvm/bin/jruby-1.6.0
-
 require 'java'
 require 'open-uri'
-require 'prettyprint'
 
 module Atlas
   include_package "com.ning.atlas.template"
@@ -14,12 +11,9 @@ module Atlas
   class RootParser
 
     def initialize name, path
-      @name = name
+      @name, @path = name, path
+      @children, @spaces, @aliases = [], [], {}
       @template = open(path).read
-      @path = path
-      @children = []
-      @aliases = {}
-      @spaces = []
     end
 
     def __parse

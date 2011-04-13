@@ -16,7 +16,7 @@ public class ServerSpec
         return name;
     }
 
-    public String getImage() {
+    public String getBase() {
         return template.getBase();
     }
 

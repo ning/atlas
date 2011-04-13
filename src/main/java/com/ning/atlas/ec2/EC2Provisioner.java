@@ -44,7 +44,7 @@ public class EC2Provisioner implements Provisioner
         final Set<Callable<Boolean>> waiting = Sets.newLinkedHashSet();
         final Set<Server> servers = Sets.newLinkedHashSet();
         for (final ServerSpec spec : m.getInstances()) {
-            RunInstancesRequest req = new RunInstancesRequest(spec.getImage(), 1, 1);
+            RunInstancesRequest req = new RunInstancesRequest(spec.getBase(), 1, 1);
 
             req.setKeyName(config.getKeyPairId());
             RunInstancesResult rs = ec2.runInstances(req);

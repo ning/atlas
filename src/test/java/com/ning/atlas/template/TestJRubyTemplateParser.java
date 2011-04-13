@@ -3,7 +3,6 @@ package com.ning.atlas.template;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.Collection;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -22,6 +21,6 @@ public class TestJRubyTemplateParser
         assertThat(d.getInstances().size(), equalTo(24));
 
         // verify aka worked for the server image
-        assertThat(d.getInstances().get(0).getImage(), equalTo("ubuntu-small"));
+        assertThat(d.getInstances().get(0).getBase(), equalTo("ubuntu-small"));
     }
 }
