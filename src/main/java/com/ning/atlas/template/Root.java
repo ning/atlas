@@ -7,9 +7,9 @@ import java.util.Collection;
 public class Root
 {
     private final DeployTemplate deploymentRoot;
-    private final Collection<Space> spaces;
+    private final Collection<Environment> spaces;
 
-    public Root(DeployTemplate deploymentRoot, Collection<Space> spaces) {
+    public Root(DeployTemplate deploymentRoot, Collection<Environment> spaces) {
         this.deploymentRoot = deploymentRoot;
         this.spaces = spaces;
     }
@@ -19,7 +19,7 @@ public class Root
         return deploymentRoot;
     }
 
-    public Collection<Space> getSpaces()
+    public Collection<Environment> getSpaces()
     {
         return spaces;
     }

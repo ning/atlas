@@ -12,7 +12,7 @@ module Atlas
 
     def initialize name, path
       @name, @path = name, path
-      @children, @spaces, @aliases = [], [], {}
+      @children, @environments = [], []
       @template = open(path).read
     end
 
@@ -20,7 +20,7 @@ module Atlas
       eval @template, binding, @path, 1
       root = Atlas::SystemTemplate.new @name
       @children.each {|t, cnt| root.addChild(t, cnt)}
-      Atlas::Root.new root, @spaces
+      Atlas::Root.new root, @environments
     end
 
     def server name, args={}, &block
@@ -36,23 +36,19 @@ module Atlas
       @children << [st, args[:count] || 1]
     end
 
-    def aka args = {}
-      @aliases = @aliases.merge args
-    end
-
-    def space name, args={}, &block
-      @spaces << SpaceParser.new(name, args, block).__parse
+    def environment name, args={}, &block
+      @environments << EnvironmentParser.new(name, args, block).__parse
     end
   end
 
-  class SpaceParser
+  class EnvironmentParser
 
     def initialize name, args, block
       @name, @args, @block = name, args, block
     end
 
     def __parse
-      Atlas::Space.new @name
+      Atlas::Environment.new @name
     end
   end
 

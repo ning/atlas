@@ -1,10 +1,6 @@
-# aliases, can be defined here or in a site descriptor
-aka "galaxy" => "chef:galaxy-agent"
-aka "ubuntu-small" => "ami-a6f504cf"
 
-# example of a system template
 
-space "ec2" do
+environment "ec2" do
   # not sure how to use this concept yet, but I will figure it out :-)
 end
 

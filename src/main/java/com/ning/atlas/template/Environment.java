@@ -2,11 +2,11 @@ package com.ning.atlas.template;
 
 import com.google.common.base.Objects;
 
-public class Space
+public class Environment
 {
     private final String name;
 
-    public Space(String name) {
+    public Environment(String name) {
         this.name = name;
     }
 

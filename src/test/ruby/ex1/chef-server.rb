@@ -1,4 +1,4 @@
-aka "ubuntu-small" => "ami-a6f504cf"
+#aka "ubuntu-small" => "ami-a6f504cf"
 chef_server_boot = <<-EOB
 #!/bin/sh
 # set up a chef-server
