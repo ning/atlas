@@ -5,10 +5,11 @@ import com.google.common.base.Objects;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class DeployTemplate
 {
-    private final List<SizedChild> children = new ArrayList<SizedChild>();
+    private final List<SizedChild> children = new CopyOnWriteArrayList<SizedChild>();
     private final String name;
 
     public DeployTemplate(String name)

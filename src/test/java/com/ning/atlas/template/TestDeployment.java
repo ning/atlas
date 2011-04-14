@@ -1,10 +1,8 @@
 package com.ning.atlas.template;
 
-import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -33,7 +31,7 @@ public class TestDeployment
 
         env.addDeployVar("aclu-names", Arrays.<String>asList("00", "01"));
 
-        SystemManifest d = SystemManifest.build(env, root);
+        SystemAssignment d = SystemAssignment.build(env, root);
         assertFalse(d.getInstances().isEmpty());
     }
 
@@ -52,7 +50,7 @@ public class TestDeployment
         sys.addChild(appCore, 5); // 5 appcores
 
 
-        SystemManifest d = SystemManifest.build(env, sys);
+        SystemAssignment d = SystemAssignment.build(env, sys);
 
         assertEquals(5, d.getInstances().size());
     }
@@ -73,7 +71,7 @@ public class TestDeployment
 
         sys.addChild(appCore, 5); // 5 appcores
 
-        SystemManifest d = SystemManifest.build(env, sys);
+        SystemAssignment d = SystemAssignment.build(env, sys);
 
         assertEquals(3, d.getInstances().size());
     }
@@ -90,7 +88,7 @@ public class TestDeployment
         DeployTemplate aclu = root.addChild(new SystemTemplate("aclu"), 2);
         aclu.addChild(new AppCore(), 5); // 5 appcores
 
-        SystemManifest d = SystemManifest.build(env, root);
+        SystemAssignment d = SystemAssignment.build(env, root);
 
         assertEquals(10, d.getInstances().size());
 
@@ -110,7 +108,7 @@ public class TestDeployment
         DeployTemplate aclu = root.addChild(new SystemTemplate("aclu"), 2);
         aclu.addChild(new AppCore(), 5);
 
-        SystemManifest d = SystemManifest.build(env, root);
+        SystemAssignment d = SystemAssignment.build(env, root);
 
         assertEquals(25, d.getInstances().size());
     }
@@ -131,7 +129,7 @@ public class TestDeployment
         DeployTemplate aclu2 = aclu.addChild(new SystemTemplate("aclu2"), 2);
         aclu2.addChild(new AppCore(), 5);
 
-        SystemManifest d = SystemManifest.build(env, root);
+        SystemAssignment d = SystemAssignment.build(env, root);
 
         assertEquals(20, d.getInstances().size());
     }
@@ -152,7 +150,7 @@ public class TestDeployment
         DeployTemplate aclu2 = aclu.addChild(new SystemTemplate("aclu2"), 2);
         aclu2.addChild(new AppCore(), 5);
 
-        SystemManifest d = SystemManifest.build(env, root);
+        SystemAssignment d = SystemAssignment.build(env, root);
 
         assertEquals(30, d.getInstances().size());
     }
@@ -167,7 +165,7 @@ public class TestDeployment
 
         sys.addChild(named, 5);
 
-        SystemManifest d = SystemManifest.build(env, sys);
+        SystemAssignment d = SystemAssignment.build(env, sys);
 
         assertEquals(5, d.getInstances().size());
     }

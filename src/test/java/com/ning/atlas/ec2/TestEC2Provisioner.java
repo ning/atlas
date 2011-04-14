@@ -1,11 +1,10 @@
 package com.ning.atlas.ec2;
 
-import com.google.common.collect.Lists;
 import com.ning.atlas.SSHBootStrapper;
 import com.ning.atlas.Server;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.template.DeployTemplate;
-import com.ning.atlas.template.SystemManifest;
+import com.ning.atlas.template.SystemAssignment;
 import com.ning.atlas.template.EnvironmentConfig;
 import com.ning.atlas.template.JRubyTemplateParser;
 import com.ning.atlas.template.ServerTemplate;
@@ -21,7 +20,6 @@ import org.skife.config.ConfigurationObjectFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Properties;
 import java.util.Set;
 
@@ -57,7 +55,7 @@ public class TestEC2Provisioner
         cluster.addChild(server, 2);
         root.addChild(cluster, 1);
 
-        SystemManifest m = SystemManifest.build(new EnvironmentConfig(), root);
+        SystemAssignment m = SystemAssignment.build(new EnvironmentConfig(), root);
 
         Provisioner p = new EC2Provisioner(config);
 
@@ -81,7 +79,7 @@ public class TestEC2Provisioner
         server.setBase("ami-a6f504cf");
         root.addChild(server, 1);
 
-        SystemManifest m = SystemManifest.build(new EnvironmentConfig(), root);
+        SystemAssignment m = SystemAssignment.build(new EnvironmentConfig(), root);
 
         Provisioner p = new EC2Provisioner(config);
 
@@ -104,7 +102,7 @@ public class TestEC2Provisioner
         JRubyTemplateParser parser = new JRubyTemplateParser();
         DeployTemplate roots = parser.parse(new File("src/test/ruby/ex1/chef-server.rb")).getDeploymentRoot();
 
-        SystemManifest m = SystemManifest.build(new EnvironmentConfig(), roots);
+        SystemAssignment m = SystemAssignment.build(new EnvironmentConfig(), roots);
 
         SSHBootStrapper bs = new SSHBootStrapper(config.getPrivateKeyFile(), config.getSshUserName());
 
@@ -139,7 +137,7 @@ public class TestEC2Provisioner
         server.setBase("ami-a6f504cf");
         root.addChild(server, 1);
 
-        SystemManifest m = SystemManifest.build(new EnvironmentConfig(), root);
+        SystemAssignment m = SystemAssignment.build(new EnvironmentConfig(), root);
 
         Provisioner p = new EC2Provisioner(config);
 

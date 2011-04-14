@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
-public class SystemManifest
+public class SystemAssignment
 {
     private final List<ServerSpec> instances = new ArrayList<ServerSpec>();
 
@@ -19,10 +19,10 @@ public class SystemManifest
         this.instances.add(instance);
     }
 
-    public static SystemManifest build(final EnvironmentConfig env, final DeployTemplate manifest)
+    public static SystemAssignment build(final EnvironmentConfig env, final DeployTemplate manifest)
     {
 
-        final SystemManifest plan = new SystemManifest();
+        final SystemAssignment plan = new SystemAssignment();
 
 
         final DeployTemplate physical_tree = manifest.visit(manifest.shallowClone(), new Visitor<DeployTemplate>()
@@ -76,25 +76,25 @@ public class SystemManifest
         });
 
 
-        physical_tree.visit(plan, new BaseVisitor<SystemManifest>()
+        physical_tree.visit(plan, new BaseVisitor<SystemAssignment>()
         {
             private final Stack<String> names = new Stack<String>();
 
             @Override
-            public SystemManifest enterSystem(SystemTemplate node, int cardinality, SystemManifest baton)
+            public SystemAssignment enterSystem(SystemTemplate node, int cardinality, SystemAssignment baton)
             {
                 names.push(node.getName());
                 return super.enterSystem(node, cardinality, baton);
             }
 
             @Override
-            public SystemManifest leaveSystem(SystemTemplate node, int cardinality, SystemManifest baton)
+            public SystemAssignment leaveSystem(SystemTemplate node, int cardinality, SystemAssignment baton)
             {
                 names.pop();
                 return super.leaveSystem(node, cardinality, baton);
             }
 
-            public SystemManifest visitServer(ServerTemplate node, int cardinality, SystemManifest baton)
+            public SystemAssignment visitServer(ServerTemplate node, int cardinality, SystemAssignment baton)
             {
                 names.push(node.getName());
                 final String full_name = flatten(names);

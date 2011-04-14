@@ -16,7 +16,7 @@ public class TestJRubyTemplateParser
         JRubyTemplateParser p = new JRubyTemplateParser();
         DeployTemplate t = p.parse(new File("src/test/ruby/ex1/system-template.rb")).getDeploymentRoot();
         assertThat(t, notNullValue());
-        SystemManifest d = SystemManifest.build(new EnvironmentConfig(), t);
+        SystemAssignment d = SystemAssignment.build(new EnvironmentConfig(), t);
 
         assertThat(d.getInstances().size(), equalTo(24));
 
