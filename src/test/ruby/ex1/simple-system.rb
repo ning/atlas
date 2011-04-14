@@ -31,7 +31,7 @@ environment "xnb3" do
 
   base "java-core", :tag => "core"
   base "playground", :tag => "playground"
-#  base "front-door-core", :extends "java-core"
+  base "front-door-core", :extends => "java-core"
 end
 
 # the system definition goes at the top level
