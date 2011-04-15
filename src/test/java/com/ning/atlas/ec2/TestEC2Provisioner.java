@@ -4,9 +4,9 @@ import com.ning.atlas.SSHBootStrapper;
 import com.ning.atlas.Server;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.template.DeployTemplate;
+import com.ning.atlas.template.JRubySystemTemplateParser;
 import com.ning.atlas.template.SystemAssignment;
 import com.ning.atlas.template.EnvironmentConfig;
-import com.ning.atlas.template.JRubyTemplateParser;
 import com.ning.atlas.template.ServerTemplate;
 import com.ning.atlas.template.SystemTemplate;
 import org.hamcrest.BaseMatcher;
@@ -99,8 +99,8 @@ public class TestEC2Provisioner
     @Ignore
     public void bootstrapChefServer() throws InterruptedException, IOException
     {
-        JRubyTemplateParser parser = new JRubyTemplateParser();
-        DeployTemplate roots = parser.parse(new File("src/test/ruby/ex1/chef-server.rb")).getDeploymentRoot();
+        JRubySystemTemplateParser parser = new JRubySystemTemplateParser();
+        DeployTemplate roots = parser.parse(new File("src/test/ruby/ex1/chef-server.rb"));
 
         SystemAssignment m = SystemAssignment.build(new EnvironmentConfig(), roots);
 

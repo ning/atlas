@@ -34,15 +34,19 @@ environment "xnb3" do
   base "front-door-core", :extends => "java-core"
 end
 
-# the system definition goes at the top level
-server "gepo", :count => 2, :base => "centos-big"
 
-system "ning" do
-  server "resolver", :base => "front-door-core",
-                     :install => ["galaxy:wiffle/wombat/hoot"],
-                     :count => 2
 
-  system "aclu", :count=>2  do
-    server "appcore", :base => "java-core"
+system "root" do
+  # the system definition goes at the top level
+  server "gepo", :count => 2, :base => "centos-big"
+
+  system "ning" do
+    server "resolver", :base => "front-door-core",
+                       :install => ["galaxy:wiffle/wombat/hoot"],
+                       :count => 2
+
+    system "aclu", :count=>2  do
+      server "appcore", :base => "java-core"
+    end
   end
 end
