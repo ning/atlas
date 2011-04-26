@@ -19,6 +19,13 @@ public class ServerTemplate extends DeployTemplate
         super(name);
     }
 
+    public ServerTemplate(String name, String base, String bootstrap)
+    {
+        super(name);
+        this.base.set(base);
+        this.bootstrap.set(bootstrap);
+    }
+
     @Override
     public DeployTemplate addChild(DeployTemplate unit, int count)
     {

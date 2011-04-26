@@ -170,6 +170,16 @@ public class EC2Provisioner implements Provisioner
             return spec.getBootStrap();
         }
 
+        public String getName()
+        {
+            return spec.getName();
+        }
+
+        public String getBase()
+        {
+            return spec.getBase();
+        }
+
         public String getExternalIpAddress()
         {
             return instance.getPublicIpAddress();
