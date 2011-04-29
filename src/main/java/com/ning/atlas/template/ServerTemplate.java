@@ -1,8 +1,6 @@
 package com.ning.atlas.template;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
-import com.sun.xml.internal.bind.v2.runtime.RuntimeUtil;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -11,7 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ServerTemplate extends DeployTemplate
 {
     private final AtomicReference<String> base = new AtomicReference<String>();
-    private final AtomicReference<String> bootstrap = new AtomicReference<String>();
+    private final AtomicReference<String> init = new AtomicReference<String>();
     private final List<String> installations = new CopyOnWriteArrayList<String>();
 
     public ServerTemplate(String name)
@@ -23,7 +21,7 @@ public class ServerTemplate extends DeployTemplate
     {
         super(name);
         this.base.set(base);
-        this.bootstrap.set(bootstrap);
+        this.init.set(bootstrap);
     }
 
     @Override
@@ -38,7 +36,7 @@ public class ServerTemplate extends DeployTemplate
         ServerTemplate t = new ServerTemplate(getName());
         t.setBase(getBase());
         t.addInstallations(getInstallations());
-        t.setBootstrap(getBootstrap());
+        t.setInit(getInit());
         return t;
     }
 
@@ -75,14 +73,14 @@ public class ServerTemplate extends DeployTemplate
         this.installations.addAll(installations);
     }
 
-    public String getBootstrap()
+    public String getInit()
     {
-        return bootstrap.get();
+        return init.get();
     }
 
-    public void setBootstrap(String bootstrap)
+    public void setInit(String bootstrap)
     {
-        this.bootstrap.set(bootstrap);
+        this.init.set(bootstrap);
     }
 
     @Override

@@ -33,7 +33,6 @@ module Atlas
     end
   end
 
-
   class EnvironmentParser
 
     def initialize name, args, block

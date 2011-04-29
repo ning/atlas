@@ -26,8 +26,8 @@ public class ServerSpec
         return name;
     }
 
-    public String getBootStrap()
+    public String getInit()
     {
-        return template.getBootstrap();
+        return template.getInit();
     }
 }

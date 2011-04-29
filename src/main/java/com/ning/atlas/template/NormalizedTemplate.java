@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
-public class SystemAssignment
+public class NormalizedTemplate
 {
     private final List<ServerSpec> instances = new ArrayList<ServerSpec>();
 
@@ -19,12 +19,9 @@ public class SystemAssignment
         this.instances.add(instance);
     }
 
-    public static SystemAssignment build(final EnvironmentConfig env, final DeployTemplate manifest)
+    public static NormalizedTemplate build(final EnvironmentConfig env, final DeployTemplate manifest)
     {
-
-        final SystemAssignment plan = new SystemAssignment();
-
-
+        final NormalizedTemplate plan = new NormalizedTemplate();
         final DeployTemplate physical_tree = manifest.visit(manifest.shallowClone(), new Visitor<DeployTemplate>()
         {
             private final Stack<DeployTemplate> previousParents = new Stack<DeployTemplate>();
@@ -39,7 +36,6 @@ public class SystemAssignment
 
             public DeployTemplate leaveSystem(SystemTemplate node, int cardinality, DeployTemplate newChild)
             {
-
                 DeployTemplate previousParent = previousParents.pop();
                 if (previousParents.isEmpty()) {
                     // annoying hack to avoid double-representation of the root in the ptree
@@ -69,32 +65,30 @@ public class SystemAssignment
                     parent.addChild(node.shallowClone(), 1);
                 }
 
-
                 names.pop();
                 return parent;
             }
         });
 
-
-        physical_tree.visit(plan, new BaseVisitor<SystemAssignment>()
+        physical_tree.visit(plan, new BaseVisitor<NormalizedTemplate>()
         {
             private final Stack<String> names = new Stack<String>();
 
             @Override
-            public SystemAssignment enterSystem(SystemTemplate node, int cardinality, SystemAssignment baton)
+            public NormalizedTemplate enterSystem(SystemTemplate node, int cardinality, NormalizedTemplate baton)
             {
                 names.push(node.getName());
                 return super.enterSystem(node, cardinality, baton);
             }
 
             @Override
-            public SystemAssignment leaveSystem(SystemTemplate node, int cardinality, SystemAssignment baton)
+            public NormalizedTemplate leaveSystem(SystemTemplate node, int cardinality, NormalizedTemplate baton)
             {
                 names.pop();
                 return super.leaveSystem(node, cardinality, baton);
             }
 
-            public SystemAssignment visitServer(ServerTemplate node, int cardinality, SystemAssignment baton)
+            public NormalizedTemplate visitServer(ServerTemplate node, int cardinality, NormalizedTemplate baton)
             {
                 names.push(node.getName());
                 final String full_name = flatten(names);

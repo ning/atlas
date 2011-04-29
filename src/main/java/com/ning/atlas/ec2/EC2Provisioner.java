@@ -14,8 +14,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.ning.atlas.Server;
 import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.template.NormalizedTemplate;
 import com.ning.atlas.template.ServerSpec;
-import com.ning.atlas.template.SystemAssignment;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
@@ -39,7 +39,7 @@ public class EC2Provisioner implements Provisioner
         ec2 = new AmazonEC2AsyncClient(credentials);
     }
 
-    public Set<Server> provisionBareServers(SystemAssignment m) throws InterruptedException
+    public Set<Server> provisionBareServers(NormalizedTemplate m) throws InterruptedException
     {
         final Set<Callable<Boolean>> waiting = Sets.newLinkedHashSet();
         final Set<Server> servers = Sets.newLinkedHashSet();
@@ -167,7 +167,7 @@ public class EC2Provisioner implements Provisioner
 
         public String getBootStrap()
         {
-            return spec.getBootStrap();
+            return spec.getInit();
         }
 
         public String getName()

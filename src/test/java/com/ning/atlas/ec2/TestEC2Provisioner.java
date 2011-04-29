@@ -5,7 +5,7 @@ import com.ning.atlas.Server;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.template.DeployTemplate;
 import com.ning.atlas.template.JRubySystemTemplateParser;
-import com.ning.atlas.template.SystemAssignment;
+import com.ning.atlas.template.NormalizedTemplate;
 import com.ning.atlas.template.EnvironmentConfig;
 import com.ning.atlas.template.ServerTemplate;
 import com.ning.atlas.template.SystemTemplate;
@@ -55,7 +55,7 @@ public class TestEC2Provisioner
         cluster.addChild(server, 2);
         root.addChild(cluster, 1);
 
-        SystemAssignment m = SystemAssignment.build(new EnvironmentConfig(), root);
+        NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(), root);
 
         Provisioner p = new EC2Provisioner(config);
 
@@ -79,7 +79,7 @@ public class TestEC2Provisioner
         server.setBase("ami-a6f504cf");
         root.addChild(server, 1);
 
-        SystemAssignment m = SystemAssignment.build(new EnvironmentConfig(), root);
+        NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(), root);
 
         Provisioner p = new EC2Provisioner(config);
 
@@ -102,7 +102,7 @@ public class TestEC2Provisioner
         JRubySystemTemplateParser parser = new JRubySystemTemplateParser();
         DeployTemplate roots = parser.parse(new File("src/test/ruby/ex1/chef-server.rb"));
 
-        SystemAssignment m = SystemAssignment.build(new EnvironmentConfig(), roots);
+        NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(), roots);
 
         SSHBootStrapper bs = new SSHBootStrapper(config.getPrivateKeyFile(), config.getSshUserName());
 
@@ -133,11 +133,11 @@ public class TestEC2Provisioner
         SystemTemplate root = new SystemTemplate("root");
 
         ServerTemplate server = new ServerTemplate("server");
-        server.setBootstrap("#!/bin/sh\nexport WAFFLE='hello world'\necho $WAFFLE > /tmp/booted\n");
+        server.setInit("#!/bin/sh\nexport WAFFLE='hello world'\necho $WAFFLE > /tmp/booted\n");
         server.setBase("ami-a6f504cf");
         root.addChild(server, 1);
 
-        SystemAssignment m = SystemAssignment.build(new EnvironmentConfig(), root);
+        NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(), root);
 
         Provisioner p = new EC2Provisioner(config);
 

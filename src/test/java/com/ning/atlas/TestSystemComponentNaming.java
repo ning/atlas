@@ -3,8 +3,8 @@ package com.ning.atlas;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ning.atlas.template.EnvironmentConfig;
+import com.ning.atlas.template.NormalizedTemplate;
 import com.ning.atlas.template.ServerTemplate;
-import com.ning.atlas.template.SystemAssignment;
 import com.ning.atlas.template.SystemTemplate;
 import org.junit.Test;
 
@@ -25,7 +25,7 @@ public class TestSystemComponentNaming
         cat.addChild(new ServerTemplate("Moose", "waffles", ""), 1);
         root.addChild(cat, 1);
 
-        SystemAssignment sa =  SystemAssignment.build(new EnvironmentConfig(), root);
+        NormalizedTemplate sa =  NormalizedTemplate.build(new EnvironmentConfig(), root);
         Map<String, Collection<String>> servers = Maps.newHashMap();
         servers.put("waffles", Lists.newArrayList("10.0.0.1", "10.0.0.2"));
 

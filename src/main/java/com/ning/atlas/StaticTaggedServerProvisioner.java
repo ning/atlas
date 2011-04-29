@@ -6,8 +6,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.template.NormalizedTemplate;
 import com.ning.atlas.template.ServerSpec;
-import com.ning.atlas.template.SystemAssignment;
 
 import java.util.Collection;
 import java.util.Map;
@@ -24,7 +24,7 @@ public class StaticTaggedServerProvisioner implements Provisioner
         }
     }
 
-    public Set<Server> provisionBareServers(SystemAssignment m) throws InterruptedException
+    public Set<Server> provisionBareServers(NormalizedTemplate m) throws InterruptedException
     {
         Set<Server> rs = Sets.newLinkedHashSet();
         for (ServerSpec spec : m.getInstances()) {
@@ -80,7 +80,7 @@ public class StaticTaggedServerProvisioner implements Provisioner
 
         public String getBootStrap()
         {
-            return spec.getBootStrap();
+            return spec.getInit();
         }
 
         @Override

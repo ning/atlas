@@ -17,7 +17,7 @@ environment "ec2" do
   provisioner XN::EC2Provisioner, :security_group => "backend"
 
   base "java-core", :ami => "ami-12345",
-                    :bootstrap => ["chef-solo:role[java-core]"]
+                    :init => ["chef-solo:role[java-core]"]
 
   environment "front" do
     provisioner XN::EC2Provisioner, :security_group => "front-end"

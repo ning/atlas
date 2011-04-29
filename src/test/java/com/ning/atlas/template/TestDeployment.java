@@ -31,7 +31,7 @@ public class TestDeployment
 
         env.addDeployVar("aclu-names", Arrays.<String>asList("00", "01"));
 
-        SystemAssignment d = SystemAssignment.build(env, root);
+        NormalizedTemplate d = NormalizedTemplate.build(env, root);
         assertFalse(d.getInstances().isEmpty());
     }
 
@@ -50,7 +50,7 @@ public class TestDeployment
         sys.addChild(appCore, 5); // 5 appcores
 
 
-        SystemAssignment d = SystemAssignment.build(env, sys);
+        NormalizedTemplate d = NormalizedTemplate.build(env, sys);
 
         assertEquals(5, d.getInstances().size());
     }
@@ -71,7 +71,7 @@ public class TestDeployment
 
         sys.addChild(appCore, 5); // 5 appcores
 
-        SystemAssignment d = SystemAssignment.build(env, sys);
+        NormalizedTemplate d = NormalizedTemplate.build(env, sys);
 
         assertEquals(3, d.getInstances().size());
     }
@@ -88,7 +88,7 @@ public class TestDeployment
         DeployTemplate aclu = root.addChild(new SystemTemplate("aclu"), 2);
         aclu.addChild(new AppCore(), 5); // 5 appcores
 
-        SystemAssignment d = SystemAssignment.build(env, root);
+        NormalizedTemplate d = NormalizedTemplate.build(env, root);
 
         assertEquals(10, d.getInstances().size());
 
@@ -108,7 +108,7 @@ public class TestDeployment
         DeployTemplate aclu = root.addChild(new SystemTemplate("aclu"), 2);
         aclu.addChild(new AppCore(), 5);
 
-        SystemAssignment d = SystemAssignment.build(env, root);
+        NormalizedTemplate d = NormalizedTemplate.build(env, root);
 
         assertEquals(25, d.getInstances().size());
     }
@@ -129,7 +129,7 @@ public class TestDeployment
         DeployTemplate aclu2 = aclu.addChild(new SystemTemplate("aclu2"), 2);
         aclu2.addChild(new AppCore(), 5);
 
-        SystemAssignment d = SystemAssignment.build(env, root);
+        NormalizedTemplate d = NormalizedTemplate.build(env, root);
 
         assertEquals(20, d.getInstances().size());
     }
@@ -150,7 +150,7 @@ public class TestDeployment
         DeployTemplate aclu2 = aclu.addChild(new SystemTemplate("aclu2"), 2);
         aclu2.addChild(new AppCore(), 5);
 
-        SystemAssignment d = SystemAssignment.build(env, root);
+        NormalizedTemplate d = NormalizedTemplate.build(env, root);
 
         assertEquals(30, d.getInstances().size());
     }
@@ -165,7 +165,7 @@ public class TestDeployment
 
         sys.addChild(named, 5);
 
-        SystemAssignment d = SystemAssignment.build(env, sys);
+        NormalizedTemplate d = NormalizedTemplate.build(env, sys);
 
         assertEquals(5, d.getInstances().size());
     }
