@@ -1,8 +1,8 @@
 package com.ning.atlas.template;
 
 import com.google.common.base.Objects;
+import com.ning.atlas.tree.Tree;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -34,13 +34,13 @@ public abstract class DeployTemplate
     {
         switch (getUnitType()) {
             case Service:
-                return visitor.visitServer((ServerTemplate) this, cardinality, baton);
+                return visitor.visitServer((ConfigurableServerTemplate) this, cardinality, baton);
             case System:
-                T next = visitor.enterSystem((SystemTemplate) this, cardinality, baton);
+                T next = visitor.enterSystem((ConfigurableSystemTemplate) this, cardinality, baton);
                 for (SizedChild child : children) {
                     next = child.getTemplate().visit(next, child.getCardinality(), visitor);
                 }
-                return visitor.leaveSystem((SystemTemplate) this, cardinality, next);
+                return visitor.leaveSystem((ConfigurableSystemTemplate) this, cardinality, next);
             default:
                 throw new UnsupportedOperationException("unknown service type!");
         }

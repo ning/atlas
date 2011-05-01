@@ -3,12 +3,13 @@ package com.ning.atlas.ec2;
 import com.ning.atlas.SSHBootStrapper;
 import com.ning.atlas.Server;
 import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.template.ConfigurableServerTemplate;
+import com.ning.atlas.template.ConfigurableSystemTemplate;
 import com.ning.atlas.template.DeployTemplate;
+import com.ning.atlas.template.Environment;
 import com.ning.atlas.template.JRubySystemTemplateParser;
 import com.ning.atlas.template.NormalizedTemplate;
 import com.ning.atlas.template.EnvironmentConfig;
-import com.ning.atlas.template.ServerTemplate;
-import com.ning.atlas.template.SystemTemplate;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -32,6 +33,7 @@ import static org.junit.internal.matchers.StringContains.containsString;
 public class TestEC2Provisioner
 {
     private AWSConfig config;
+    private Environment env;
 
     @Before
     public void setUp() throws Exception
@@ -42,20 +44,21 @@ public class TestEC2Provisioner
         props.load(new FileInputStream(".awscreds"));
         ConfigurationObjectFactory f = new ConfigurationObjectFactory(props);
         config = f.build(AWSConfig.class);
+        this.env = new Environment("ec2");
     }
 
     @Test
     @Ignore
     public void testALot() throws Exception
     {
-        SystemTemplate root = new SystemTemplate("root");
-        SystemTemplate cluster = new SystemTemplate("cluster");
-        ServerTemplate server = new ServerTemplate("server");
+        ConfigurableSystemTemplate root = new ConfigurableSystemTemplate("root");
+        ConfigurableSystemTemplate cluster = new ConfigurableSystemTemplate("cluster");
+        ConfigurableServerTemplate server = new ConfigurableServerTemplate("server");
         server.setBase("ami-a6f504cf");
         cluster.addChild(server, 2);
         root.addChild(cluster, 1);
 
-        NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(), root);
+        NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(env), root);
 
         Provisioner p = new EC2Provisioner(config);
 
@@ -73,13 +76,13 @@ public class TestEC2Provisioner
     @Ignore
     public void testServersHaveInternalAddresses() throws Exception
     {
-        SystemTemplate root = new SystemTemplate("root");
+        ConfigurableSystemTemplate root = new ConfigurableSystemTemplate("root");
 
-        ServerTemplate server = new ServerTemplate("server");
+        ConfigurableServerTemplate server = new ConfigurableServerTemplate("server");
         server.setBase("ami-a6f504cf");
         root.addChild(server, 1);
 
-        NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(), root);
+        NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(env), root);
 
         Provisioner p = new EC2Provisioner(config);
 
@@ -102,7 +105,7 @@ public class TestEC2Provisioner
         JRubySystemTemplateParser parser = new JRubySystemTemplateParser();
         DeployTemplate roots = parser.parse(new File("src/test/ruby/ex1/chef-server.rb"));
 
-        NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(), roots);
+        NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(env), roots);
 
         SSHBootStrapper bs = new SSHBootStrapper(config.getPrivateKeyFile(), config.getSshUserName());
 
@@ -130,14 +133,14 @@ public class TestEC2Provisioner
     @Ignore
     public void testBootStrap() throws Exception
     {
-        SystemTemplate root = new SystemTemplate("root");
+        ConfigurableSystemTemplate root = new ConfigurableSystemTemplate("root");
 
-        ServerTemplate server = new ServerTemplate("server");
+        ConfigurableServerTemplate server = new ConfigurableServerTemplate("server");
         server.setInit("#!/bin/sh\nexport WAFFLE='hello world'\necho $WAFFLE > /tmp/booted\n");
         server.setBase("ami-a6f504cf");
         root.addChild(server, 1);
 
-        NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(), root);
+        NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(env), root);
 
         Provisioner p = new EC2Provisioner(config);
 

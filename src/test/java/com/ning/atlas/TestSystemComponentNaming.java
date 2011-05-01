@@ -2,10 +2,11 @@ package com.ning.atlas;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.ning.atlas.template.ConfigurableServerTemplate;
+import com.ning.atlas.template.ConfigurableSystemTemplate;
+import com.ning.atlas.template.Environment;
 import com.ning.atlas.template.EnvironmentConfig;
 import com.ning.atlas.template.NormalizedTemplate;
-import com.ning.atlas.template.ServerTemplate;
-import com.ning.atlas.template.SystemTemplate;
 import org.junit.Test;
 
 import java.util.Collection;
@@ -17,15 +18,15 @@ public class TestSystemComponentNaming
     @Test
     public void testExploratory() throws Exception
     {
-        SystemTemplate root = new SystemTemplate("animal");
-        SystemTemplate dog = new SystemTemplate("dog");
-        dog.addChild(new ServerTemplate("Bean", "waffles", ""), 1);
+        ConfigurableSystemTemplate root = new ConfigurableSystemTemplate("animal");
+        ConfigurableSystemTemplate dog = new ConfigurableSystemTemplate("dog");
+        dog.addChild(new ConfigurableServerTemplate("Bean", "waffles", ""), 1);
         root.addChild(dog, 1);
-        SystemTemplate cat = new SystemTemplate("cat");
-        cat.addChild(new ServerTemplate("Moose", "waffles", ""), 1);
+        ConfigurableSystemTemplate cat = new ConfigurableSystemTemplate("cat");
+        cat.addChild(new ConfigurableServerTemplate("Moose", "waffles", ""), 1);
         root.addChild(cat, 1);
 
-        NormalizedTemplate sa =  NormalizedTemplate.build(new EnvironmentConfig(), root);
+        NormalizedTemplate sa =  NormalizedTemplate.build(new EnvironmentConfig(new Environment("waffle")), root);
         Map<String, Collection<String>> servers = Maps.newHashMap();
         servers.put("waffles", Lists.newArrayList("10.0.0.1", "10.0.0.2"));
 

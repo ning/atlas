@@ -3,9 +3,9 @@ package com.ning.atlas.template;
 public class ServerSpec
 {
     private final String name;
-    private final ServerTemplate template;
+    private final ConfigurableServerTemplate template;
 
-    public ServerSpec(String name, ServerTemplate template)
+    public ServerSpec(String name, ConfigurableServerTemplate template)
     {
         this.name = name;
         this.template = template;

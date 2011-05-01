@@ -8,33 +8,66 @@ import java.util.Stack;
 public class NormalizedTemplate
 {
     private final List<ServerSpec> instances = new ArrayList<ServerSpec>();
+    private final DeployTemplate tree;
+
+    public NormalizedTemplate(DeployTemplate tree)
+    {
+        this.tree = tree;
+
+        tree.visit(this, new BaseVisitor<NormalizedTemplate>()
+        {
+            private final Stack<String> names = new Stack<String>();
+
+            @Override
+            public NormalizedTemplate enterSystem(ConfigurableSystemTemplate node, int cardinality, NormalizedTemplate baton)
+            {
+                names.push(node.getName());
+                return super.enterSystem(node, cardinality, baton);
+            }
+
+            @Override
+            public NormalizedTemplate leaveSystem(ConfigurableSystemTemplate node, int cardinality, NormalizedTemplate baton)
+            {
+                names.pop();
+                return super.leaveSystem(node, cardinality, baton);
+            }
+
+            public NormalizedTemplate visitServer(ConfigurableServerTemplate node, int cardinality, NormalizedTemplate baton)
+            {
+                names.push(node.getName());
+                final String full_name = flatten(names);
+                instances.add(new ServerSpec(full_name, node));
+                names.pop();
+                return baton;
+            }
+        });
+    }
+
+    public DeployTemplate getTree()
+    {
+        return tree;
+    }
 
     public List<ServerSpec> getInstances()
     {
         return Collections.unmodifiableList(instances);
     }
 
-    public void addInstance(ServerSpec instance)
+    public static NormalizedTemplate build(final EnvironmentConfig env, final DeployTemplate root)
     {
-        this.instances.add(instance);
-    }
-
-    public static NormalizedTemplate build(final EnvironmentConfig env, final DeployTemplate manifest)
-    {
-        final NormalizedTemplate plan = new NormalizedTemplate();
-        final DeployTemplate physical_tree = manifest.visit(manifest.shallowClone(), new Visitor<DeployTemplate>()
+        final DeployTemplate physical_tree = root.visit(root.shallowClone(), new Visitor<DeployTemplate>()
         {
             private final Stack<DeployTemplate> previousParents = new Stack<DeployTemplate>();
             private final Stack<String> names = new Stack<String>();
 
-            public DeployTemplate enterSystem(SystemTemplate node, int cardinality, DeployTemplate parent)
+            public DeployTemplate enterSystem(ConfigurableSystemTemplate node, int cardinality, DeployTemplate parent)
             {
                 names.push(node.getName());
                 previousParents.push(parent);
                 return node.shallowClone();
             }
 
-            public DeployTemplate leaveSystem(SystemTemplate node, int cardinality, DeployTemplate newChild)
+            public DeployTemplate leaveSystem(ConfigurableSystemTemplate node, int cardinality, DeployTemplate newChild)
             {
                 DeployTemplate previousParent = previousParents.pop();
                 if (previousParents.isEmpty()) {
@@ -50,7 +83,7 @@ public class NormalizedTemplate
                 return previousParent;
             }
 
-            public DeployTemplate visitServer(ServerTemplate node, int cardinality, DeployTemplate parent)
+            public DeployTemplate visitServer(ConfigurableServerTemplate node, int cardinality, DeployTemplate parent)
             {
                 names.push(node.getName());
 
@@ -70,36 +103,8 @@ public class NormalizedTemplate
             }
         });
 
-        physical_tree.visit(plan, new BaseVisitor<NormalizedTemplate>()
-        {
-            private final Stack<String> names = new Stack<String>();
 
-            @Override
-            public NormalizedTemplate enterSystem(SystemTemplate node, int cardinality, NormalizedTemplate baton)
-            {
-                names.push(node.getName());
-                return super.enterSystem(node, cardinality, baton);
-            }
-
-            @Override
-            public NormalizedTemplate leaveSystem(SystemTemplate node, int cardinality, NormalizedTemplate baton)
-            {
-                names.pop();
-                return super.leaveSystem(node, cardinality, baton);
-            }
-
-            public NormalizedTemplate visitServer(ServerTemplate node, int cardinality, NormalizedTemplate baton)
-            {
-                names.push(node.getName());
-                final String full_name = flatten(names);
-                baton.addInstance(new ServerSpec(full_name, node));
-                names.pop();
-                return baton;
-            }
-        });
-
-
-        return plan;
+        return new NormalizedTemplate(physical_tree);
     }
 
     private static String flatten(Stack<String> stack)

@@ -66,7 +66,7 @@ module Atlas
 
     def __parse
       eval @template, binding, @path, 1
-      root = Atlas::SystemTemplate.new @name
+      root = com.ning.atlas.template.ConfigurableSystemTemplate.new @name
       @children.each { |t, cnt| root.addChild(t, cnt) }
       root
     end
@@ -99,7 +99,7 @@ module Atlas
 
     def __parse
       instance_eval &@block
-      s = Atlas::SystemTemplate.new @name
+      s = com.ning.atlas.template.ConfigurableSystemTemplate.new @name
       @args.each do |k, v|
         s.send(k, v) if s.respond_to? "#{k}=".to_sym
       end
@@ -125,7 +125,7 @@ module Atlas
     end
 
     def __parse
-      s = Atlas::ServerTemplate.new @name
+      s = com.ning.atlas.template.ConfigurableServerTemplate.new @name
       @args.each do |k, v|
         setter = "#{k}=".to_sym
         s.send(setter, v) if s.respond_to? setter

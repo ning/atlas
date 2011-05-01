@@ -10,13 +10,17 @@ import static org.junit.Assert.assertFalse;
 
 public class TestDeployment
 {
+
+    private Environment environment = new Environment("env");
+
+
     @Test
     public void testSomethingUseful() throws Exception
     {
-        SystemTemplate root = new SystemTemplate("ning");
+        ConfigurableSystemTemplate root = new ConfigurableSystemTemplate("ning");
         root.addChild(new Resolver(), 5);
 
-        SystemTemplate aclu = new SystemTemplate("aclu<id>");
+        ConfigurableSystemTemplate aclu = new ConfigurableSystemTemplate("aclu<id>");
         aclu.addChild(new AppCore(), 1);
         aclu.addChild(new Memcache(), 1);
 
@@ -24,7 +28,7 @@ public class TestDeployment
 
         root.addChild(new JobCore(), 1);
 
-        EnvironmentConfig env = new EnvironmentConfig();
+        EnvironmentConfig env = new EnvironmentConfig(environment);
         env.addConfigVar("xn.db.url", "jdbc:kyoto:/tmp/foo.kch");
         env.addConfigVar("xn.db.user", "joe");
         env.addConfigVar("xn.db.password", "security-is-fun");
@@ -38,14 +42,14 @@ public class TestDeployment
     @Test
     public void testSimpleSystem() throws Exception
     {
-        EnvironmentConfig env = new EnvironmentConfig();
+        EnvironmentConfig env = new EnvironmentConfig(environment);
         env.addConfigVar("xn.db.url", "jdbc:kyoto:/tmp/foo.kch");
         env.addConfigVar("xn.db.user", "joe");
         env.addConfigVar("xn.db.password", "security-is-fun");
 
 
-        SystemTemplate sys = new SystemTemplate("test");
-        ServerTemplate appCore = new AppCore();
+        ConfigurableSystemTemplate sys = new ConfigurableSystemTemplate("test");
+        ConfigurableServerTemplate appCore = new AppCore();
 
         sys.addChild(appCore, 5); // 5 appcores
 
@@ -59,15 +63,15 @@ public class TestDeployment
     @Test
     public void testEnvOverrideOfCardinality() throws Exception
     {
-        EnvironmentConfig env = new EnvironmentConfig();
+        EnvironmentConfig env = new EnvironmentConfig(environment);
         env.addConfigVar("xn.db.url", "jdbc:kyoto:/tmp/foo.kch");
         env.addConfigVar("xn.db.user", "joe");
         env.addConfigVar("xn.db.password", "security-is-fun");
 
         env.overrideCardinality("/test/appcore", 3);  // 3 appcore sin this env
 
-        SystemTemplate sys = new SystemTemplate("test");
-        ServerTemplate appCore = new AppCore();
+        ConfigurableSystemTemplate sys = new ConfigurableSystemTemplate("test");
+        ConfigurableServerTemplate appCore = new AppCore();
 
         sys.addChild(appCore, 5); // 5 appcores
 
@@ -79,13 +83,13 @@ public class TestDeployment
     @Test
     public void testCardinalityOfSystems() throws Exception
     {
-        EnvironmentConfig env = new EnvironmentConfig();
+        EnvironmentConfig env = new EnvironmentConfig(environment);
         env.addConfigVar("xn.db.url", "jdbc:kyoto:/tmp/foo.kch");
         env.addConfigVar("xn.db.user", "joe");
         env.addConfigVar("xn.db.password", "security-is-fun");
 
-        DeployTemplate root = new SystemTemplate("test");
-        DeployTemplate aclu = root.addChild(new SystemTemplate("aclu"), 2);
+        DeployTemplate root = new ConfigurableSystemTemplate("test");
+        DeployTemplate aclu = root.addChild(new ConfigurableSystemTemplate("aclu"), 2);
         aclu.addChild(new AppCore(), 5); // 5 appcores
 
         NormalizedTemplate d = NormalizedTemplate.build(env, root);
@@ -97,15 +101,15 @@ public class TestDeployment
     @Test
     public void testEnvOverrideOfCardinalityOfSystems() throws Exception
     {
-        EnvironmentConfig env = new EnvironmentConfig();
+        EnvironmentConfig env = new EnvironmentConfig(environment);
         env.addConfigVar("xn.db.url", "jdbc:kyoto:/tmp/foo.kch");
         env.addConfigVar("xn.db.user", "joe");
         env.addConfigVar("xn.db.password", "security-is-fun");
 
         env.overrideCardinality("/test/aclu", 5);
 
-        DeployTemplate root = new SystemTemplate("test");
-        DeployTemplate aclu = root.addChild(new SystemTemplate("aclu"), 2);
+        DeployTemplate root = new ConfigurableSystemTemplate("test");
+        DeployTemplate aclu = root.addChild(new ConfigurableSystemTemplate("aclu"), 2);
         aclu.addChild(new AppCore(), 5);
 
         NormalizedTemplate d = NormalizedTemplate.build(env, root);
@@ -117,16 +121,16 @@ public class TestDeployment
     public void testNestedSystems() throws Exception
     {
 
-        EnvironmentConfig env = new EnvironmentConfig();
+        EnvironmentConfig env = new EnvironmentConfig(environment);
         env.addConfigVar("xn.db.url", "jdbc:kyoto:/tmp/foo.kch");
         env.addConfigVar("xn.db.user", "joe");
         env.addConfigVar("xn.db.password", "security-is-fun");
 
 //        env.overrideCardinality("/test/aclu", 5);
 
-        DeployTemplate root = new SystemTemplate("test");
-        DeployTemplate aclu = root.addChild(new SystemTemplate("aclu"), 2);
-        DeployTemplate aclu2 = aclu.addChild(new SystemTemplate("aclu2"), 2);
+        DeployTemplate root = new ConfigurableSystemTemplate("test");
+        DeployTemplate aclu = root.addChild(new ConfigurableSystemTemplate("aclu"), 2);
+        DeployTemplate aclu2 = aclu.addChild(new ConfigurableSystemTemplate("aclu2"), 2);
         aclu2.addChild(new AppCore(), 5);
 
         NormalizedTemplate d = NormalizedTemplate.build(env, root);
@@ -138,16 +142,16 @@ public class TestDeployment
     @Test
     public void testNestedSystemsWithEnvOverride() throws Exception
     {
-        EnvironmentConfig env = new EnvironmentConfig();
+        EnvironmentConfig env = new EnvironmentConfig(environment);
         env.addConfigVar("xn.db.url", "jdbc:kyoto:/tmp/foo.kch");
         env.addConfigVar("xn.db.user", "joe");
         env.addConfigVar("xn.db.password", "security-is-fun");
 
         env.overrideCardinality("/test/aclu/aclu2", 3);
 
-        DeployTemplate root = new SystemTemplate("test");
-        DeployTemplate aclu = root.addChild(new SystemTemplate("aclu"), 2);
-        DeployTemplate aclu2 = aclu.addChild(new SystemTemplate("aclu2"), 2);
+        DeployTemplate root = new ConfigurableSystemTemplate("test");
+        DeployTemplate aclu = root.addChild(new ConfigurableSystemTemplate("aclu"), 2);
+        DeployTemplate aclu2 = aclu.addChild(new ConfigurableSystemTemplate("aclu2"), 2);
         aclu2.addChild(new AppCore(), 5);
 
         NormalizedTemplate d = NormalizedTemplate.build(env, root);
@@ -159,9 +163,9 @@ public class TestDeployment
     @Test
     public void testNameExpansion() throws Exception
     {
-        EnvironmentConfig env = new EnvironmentConfig();
-        SystemTemplate sys = new SystemTemplate("test");
-        ServerTemplate named = new NamedCore();
+        EnvironmentConfig env = new EnvironmentConfig(environment);
+        ConfigurableSystemTemplate sys = new ConfigurableSystemTemplate("test");
+        ConfigurableServerTemplate named = new NamedCore();
 
         sys.addChild(named, 5);
 
@@ -174,7 +178,7 @@ public class TestDeployment
     /* support classes */
 
 
-    class NamedCore extends ServerTemplate
+    class NamedCore extends ConfigurableServerTemplate
     {
         NamedCore()
         {
@@ -182,7 +186,7 @@ public class TestDeployment
         }
     }
 
-    class AppCore extends ServerTemplate
+    class AppCore extends ConfigurableServerTemplate
     {
         public AppCore()
         {
@@ -190,7 +194,7 @@ public class TestDeployment
         }
     }
 
-    class Memcache extends ServerTemplate
+    class Memcache extends ConfigurableServerTemplate
     {
 
         public Memcache()
@@ -199,7 +203,7 @@ public class TestDeployment
         }
     }
 
-    class JobCore extends ServerTemplate
+    class JobCore extends ConfigurableServerTemplate
     {
 
         public JobCore()
@@ -208,7 +212,7 @@ public class TestDeployment
         }
     }
 
-    class Resolver extends ServerTemplate
+    class Resolver extends ConfigurableServerTemplate
     {
 
         public Resolver()

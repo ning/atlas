@@ -9,7 +9,7 @@ import java.nio.charset.Charset;
 
 public class JRubySystemTemplateParser
 {
-    public SystemTemplate parse(File template)
+    public ConfigurableSystemTemplate parse(File template)
     {
         ScriptingContainer container = new ScriptingContainer();
         try {
@@ -20,6 +20,6 @@ public class JRubySystemTemplateParser
             throw new IllegalStateException("cannot open atlas/parser.rb from classpath", e);
         }
 
-        return (SystemTemplate) container.runScriptlet("Atlas.parse_system('" + template.getAbsolutePath() + "')");
+        return (ConfigurableSystemTemplate) container.runScriptlet("Atlas.parse_system('" + template.getAbsolutePath() + "')");
     }
 }

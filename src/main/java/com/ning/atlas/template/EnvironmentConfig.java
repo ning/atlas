@@ -10,6 +10,12 @@ public class EnvironmentConfig
     private final Map<String, String> configVars = new LinkedHashMap<String, String>();
     private final Map<String, Object> deployVars = new LinkedHashMap<String, Object>();
     private final Map<String, Integer> cardinalityOverrides = new LinkedHashMap<String, Integer>();
+    private final Environment env;
+
+
+    public EnvironmentConfig(Environment env) {
+        this.env = env;
+    }
 
     public void addConfigVar(String key, String value)
     {
