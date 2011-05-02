@@ -6,7 +6,7 @@ import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.template.ConfigurableServerTemplate;
 import com.ning.atlas.template.ConfigurableSystemTemplate;
 import com.ning.atlas.template.DeployTemplate;
-import com.ning.atlas.template.Environment;
+import com.ning.atlas.template2.Environment;
 import com.ning.atlas.template.JRubySystemTemplateParser;
 import com.ning.atlas.template.NormalizedTemplate;
 import com.ning.atlas.template.EnvironmentConfig;

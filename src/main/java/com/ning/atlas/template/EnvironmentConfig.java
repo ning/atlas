@@ -1,5 +1,7 @@
 package com.ning.atlas.template;
 
+import com.ning.atlas.template2.Environment;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;

@@ -2,7 +2,6 @@ package com.ning.atlas.template2;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.ning.atlas.template.Environment;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ning.atlas.template.ConfigurableServerTemplate;
 import com.ning.atlas.template.ConfigurableSystemTemplate;
-import com.ning.atlas.template.Environment;
+import com.ning.atlas.template2.Environment;
 import com.ning.atlas.template.EnvironmentConfig;
 import com.ning.atlas.template.NormalizedTemplate;
 import org.junit.Test;

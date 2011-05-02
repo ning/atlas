@@ -1,9 +1,6 @@
 package com.ning.atlas.template2;
 
-import com.ning.atlas.template.Environment;
-import com.ning.atlas.tree.MagicVisitor;
 import com.ning.atlas.tree.Tree;
-import com.ning.atlas.tree.Trees;
 
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;

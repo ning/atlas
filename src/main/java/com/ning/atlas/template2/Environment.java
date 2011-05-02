@@ -1,4 +1,4 @@
-package com.ning.atlas.template;
+package com.ning.atlas.template2;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;

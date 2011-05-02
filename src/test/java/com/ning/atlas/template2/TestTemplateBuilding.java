@@ -4,7 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.ning.atlas.template.Environment;
 import com.ning.atlas.tree.Trees;
 import org.junit.Before;
 import org.junit.Test;

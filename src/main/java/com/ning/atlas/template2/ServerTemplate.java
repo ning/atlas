@@ -1,7 +1,5 @@
 package com.ning.atlas.template2;
 
-import com.ning.atlas.template.Environment;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
