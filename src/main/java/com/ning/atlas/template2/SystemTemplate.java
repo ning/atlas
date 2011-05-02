@@ -6,6 +6,7 @@ import com.ning.atlas.template.Environment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class SystemTemplate extends Template
 {
@@ -17,17 +18,19 @@ public class SystemTemplate extends Template
     }
 
     @Override
-    protected List<Template> normalize(Environment env)
+    protected List<Template> normalize(Environment env, Stack<String> names)
     {
+        names.push(getName());
         List<Template> rs = new ArrayList<Template>();
-        for (int i = 0; i < getCount(); i++) {
+        for (int i = 0; i < env.cardinalityFor(getCardinality(), names); i++) {
             SystemTemplate dup = new SystemTemplate(getName());
-            dup.setCount(1);
+            dup.setCardinality(1);
             for (Template child : children) {
-                dup.addChildren(child.normalize(env));
+                dup.addChildren(child.normalize(env ,names));
             }
             rs.add(dup);
         }
+        names.pop();
         return rs;
     }
 

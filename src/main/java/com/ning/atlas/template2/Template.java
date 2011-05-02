@@ -23,13 +23,17 @@ public abstract class Template implements Tree<Template>
         return name;
     }
 
-    public int getCount() {
+    public int getCardinality() {
         return this.cardinality.get();
     }
 
-    public void setCount(int count) {
+    public void setCardinality(int count) {
         this.cardinality.set(count);
     }
 
-    protected abstract Iterable<Template> normalize(Environment env);
+    public final Iterable<Template> normalize(Environment env) {
+        return normalize(env, new Stack<String>());
+    }
+
+    protected  abstract Iterable<Template> normalize(Environment env, Stack<String> names);
 }

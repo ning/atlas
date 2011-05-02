@@ -29,6 +29,8 @@ end
 environment "xnb3" do
   provisioner XN::ServerPool, :chef_server => "http://chef"
 
+  override "root.ning.resolver:count", 1
+
   base "java-core", :tag => "core"
   base "playground", :tag => "playground"
   base "front-door-core", :extends => "java-core"
@@ -38,12 +40,12 @@ end
 # this has a top level so that it can share file with env definitions
 system "root" do
   # the system definition goes at the top level
-  server "gepo", :count => 2, :base => "centos-big"
+  server "gepo", :cardinality => 2, :base => "centos-big"
 
   system "ning" do
     server "resolver", :base => "front-door-core",
                        :install => ["galaxy:wiffle/wombat/hoot"],
-                       :count => 2
+                       :cardinality => 2
 
     system "aclu", :count=>2  do
       server "appcore", :base => "java-core"
