@@ -5,12 +5,13 @@ import com.ning.atlas.tree.MagicVisitor;
 import com.ning.atlas.tree.Tree;
 import com.ning.atlas.tree.Trees;
 
+import java.util.Stack;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class Template implements Tree<Template>
 {
     private final String name;
-    private final AtomicInteger cardinality = new AtomicInteger(0);
+    private final AtomicInteger cardinality = new AtomicInteger(1);
 
     public Template(String name)
     {
@@ -30,24 +31,5 @@ public abstract class Template implements Tree<Template>
         this.cardinality.set(count);
     }
 
-    protected abstract Template duplicate();
-
-    public Template normalizeFor(Environment environment) {
-        return Trees.visit(this, this.duplicate(), new MagicVisitor<Template, Template>(new Object() {
-            public Template enter(SystemTemplate sys, Template parent) {
-                return sys.duplicate();
-            }
-
-            public Template exit(SystemTemplate sys, Template parent) {
-
-
-            }
-
-            public Template on(ServerTemplate serv, Template parent) {
-
-            }
-
-        }));
-    }
-
+    protected abstract Iterable<Template> normalize(Environment env);
 }
