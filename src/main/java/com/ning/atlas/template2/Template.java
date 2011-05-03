@@ -28,9 +28,9 @@ public abstract class Template implements Tree<Template>
         this.cardinality.set(count);
     }
 
-    public final Iterable<Template> normalize(Environment env) {
+    public final Iterable<BoundTemplate> normalize(Environment env) {
         return normalize(env, new Stack<String>());
     }
 
-    protected  abstract Iterable<Template> normalize(Environment env, Stack<String> names);
+    protected  abstract Iterable<BoundTemplate> normalize(Environment env, Stack<String> names);
 }

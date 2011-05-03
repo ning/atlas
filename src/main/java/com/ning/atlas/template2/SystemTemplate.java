@@ -17,16 +17,12 @@ public class SystemTemplate extends Template
     }
 
     @Override
-    protected List<Template> normalize(Environment env, Stack<String> names)
+    protected List<BoundTemplate> normalize(Environment env, Stack<String> names)
     {
         names.push(getName());
-        List<Template> rs = new ArrayList<Template>();
+        List<BoundTemplate> rs = new ArrayList<BoundTemplate>();
         for (int i = 0; i < env.cardinalityFor(getCardinality(), names); i++) {
-            SystemTemplate dup = new SystemTemplate(getName());
-            dup.setCardinality(1);
-            for (Template child : children) {
-                dup.addChildren(child.normalize(env ,names));
-            }
+            BoundSystemTemplate dup = new BoundSystemTemplate(this, env, names);
             rs.add(dup);
         }
         names.pop();

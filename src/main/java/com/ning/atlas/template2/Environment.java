@@ -22,10 +22,11 @@ import static com.google.common.collect.Multimaps.synchronizedMultimap;
 
 public class Environment
 {
-    private final String name;
     private final List<Base>                                  bases     = new CopyOnWriteArrayList<Base>();
     private final Multimap<String, Map.Entry<String, String>> overrides =
         synchronizedMultimap(ArrayListMultimap.<String, Map.Entry<String, String>>create());
+
+    private final String name;
 
     public Environment(String name)
     {
@@ -40,19 +41,15 @@ public class Environment
                       .toString();
     }
 
-    public Base translateBase(Base base)
+    public Base translateBase(Base base, Stack<String> names)
     {
+        String name = overrideFor(base.getName(), "base", names);
         for (Base candidate : bases) {
-            if (candidate.getName().equals(base.getName())) {
+            if (candidate.getName().equals(name)) {
                 return candidate;
             }
         }
         return base;
-    }
-
-    public List<String> translateInstallations(List<String> installations)
-    {
-        return installations;
     }
 
     public Base defineBase(Base base)
@@ -62,14 +59,15 @@ public class Environment
     }
 
 
-    public String overrideFor(Object base, String name, Stack<String> names) {
+    public String overrideFor(Object defaultValue, String name, Stack<String> names)
+    {
         String key = Joiner.on('.').join(names);
         for (Map.Entry<String, String> pair : overrides.get(key)) {
             if (name.equals(pair.getKey())) {
                 return pair.getValue();
             }
         }
-        return base.toString();
+        return defaultValue.toString();
     }
 
     public int cardinalityFor(int count, Stack<String> names)

@@ -38,21 +38,21 @@ public class TestTemplateBuilding
     @Test
     public void testCardinlaityNormalization() throws Exception
     {
-        List<Template> normalized_root = newArrayList(root.normalize(env));
+        List<BoundTemplate> normalized_root = newArrayList(root.normalize(env));
         assertThat(normalized_root.size(), equalTo(1));
 
-        List<Template> leaves = Trees.leaves(normalized_root.get(0));
-        List<Template> happy = Lists.newArrayList(Iterables.filter(leaves, new Predicate<Template>()
+        List<BoundTemplate> leaves = Trees.leaves(normalized_root.get(0));
+        List<BoundTemplate> happy = Lists.newArrayList(Iterables.filter(leaves, new Predicate<BoundTemplate>()
         {
-            public boolean apply(@Nullable Template input)
+            public boolean apply(@Nullable BoundTemplate input)
             {
                 return "happy".equals(input.getName());
             }
         }));
 
-        List<Template> sad = Lists.newArrayList(Iterables.filter(leaves, new Predicate<Template>()
+        List<BoundTemplate> sad = Lists.newArrayList(Iterables.filter(leaves, new Predicate<BoundTemplate>()
         {
-            public boolean apply(@Nullable Template input)
+            public boolean apply(@Nullable BoundTemplate input)
             {
                 return "sad".equals(input.getName());
             }
@@ -68,22 +68,22 @@ public class TestTemplateBuilding
         Base w = env.defineBase(new Base("waffle") {{ define("ami", "ami-1234"); }});
         Base p = env.defineBase(new Base("pancake") {{ define("ami", "ami-6789"); }});
 
-        final List<Template> normalized_root = newArrayList(root.normalize(env));
+        final List<BoundTemplate> normalized_root = newArrayList(root.normalize(env));
 
         Function<String, Base> lookup_base_for_first_NAME_in_normalized = new Function<String, Base>()
         {
             public Base apply(@Nullable final String input)
             {
-                Template happy = find(leaves(normalized_root.get(0)), new Predicate<Template>()
+                BoundTemplate happy = find(leaves(normalized_root.get(0)), new Predicate<BoundTemplate>()
                 {
-                    public boolean apply(@Nullable Template input2)
+                    public boolean apply(@Nullable BoundTemplate input2)
                     {
                         return input.equals(input2.getName());
                     }
                 });
 
-                assertThat(happy, instanceOf(ServerTemplate.class));
-                ServerTemplate ht = (ServerTemplate) happy;
+                assertThat(happy, instanceOf(BoundServerTemplate.class));
+                BoundServerTemplate ht = (BoundServerTemplate) happy;
                 return ht.getBase();
             }
         };
@@ -96,21 +96,21 @@ public class TestTemplateBuilding
     public void testServerCardinalityOverride() throws Exception
     {
         env.override("root.happy:cardinality", "5");
-        List<Template> normalized_root = newArrayList(root.normalize(env));
+        List<BoundTemplate> normalized_root = newArrayList(root.normalize(env));
         assertThat(normalized_root.size(), equalTo(1));
 
-        List<Template> leaves = Trees.leaves(normalized_root.get(0));
-        List<Template> happy = Lists.newArrayList(Iterables.filter(leaves, new Predicate<Template>()
+        List<BoundTemplate> leaves = Trees.leaves(normalized_root.get(0));
+        List<BoundTemplate> happy = Lists.newArrayList(Iterables.filter(leaves, new Predicate<BoundTemplate>()
         {
-            public boolean apply(@Nullable Template input)
+            public boolean apply(@Nullable BoundTemplate input)
             {
                 return "happy".equals(input.getName());
             }
         }));
 
-        List<Template> sad = Lists.newArrayList(Iterables.filter(leaves, new Predicate<Template>()
+        List<BoundTemplate> sad = Lists.newArrayList(Iterables.filter(leaves, new Predicate<BoundTemplate>()
         {
-            public boolean apply(@Nullable Template input)
+            public boolean apply(@Nullable BoundTemplate input)
             {
                 return "sad".equals(input.getName());
             }
@@ -124,7 +124,7 @@ public class TestTemplateBuilding
     public void testSystemCardinalityOverride() throws Exception
     {
         env.override("root:cardinality", "2");
-        List<Template> normalized_root = newArrayList(root.normalize(env));
+        List<BoundTemplate> normalized_root = newArrayList(root.normalize(env));
         assertThat(normalized_root.size(), equalTo(2));
     }
 }

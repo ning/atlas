@@ -18,16 +18,13 @@ public class ServerTemplate extends Template
     }
 
     @Override
-    protected final Iterable<Template> normalize(Environment env, Stack<String> names)
+    protected final Iterable<BoundTemplate> normalize(Environment env, Stack<String> names)
     {
         names.push(getName());
-        final List<Template> rs = new ArrayList<Template>();
+        final List<BoundTemplate> rs = new ArrayList<BoundTemplate>();
         for (int i = 0; i < env.cardinalityFor(getCardinality(), names); i++) {
-            final ServerTemplate dup = new ServerTemplate(getName());
-            dup.setCardinality(1); // normalized to cardinality 1
-            dup.setBase(env.translateBase(getBase()));
-            dup.addInstallations(env.translateInstallations(installations));
-            rs.add(dup);
+
+            rs.add(new BoundServerTemplate(this, env, names));
         }
         names.pop();
         return rs;
