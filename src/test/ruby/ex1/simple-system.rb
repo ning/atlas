@@ -57,7 +57,7 @@ system "root" do
                        :cardinality => 2,
                        :order => 20
 
-    system "aclu", :count=>2  do
+    system "aclu", :cardinality => 2  do
       server "appcore", :base => "java-core",
                         :order => 20
     end
