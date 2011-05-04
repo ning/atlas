@@ -42,8 +42,6 @@ end
 
 
 
-
-
 # this has a top level so that it can share file with env definitions
 system "root" do
   # the system definition goes at the top level
