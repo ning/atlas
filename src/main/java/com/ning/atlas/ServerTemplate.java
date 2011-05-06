@@ -8,7 +8,7 @@ import java.util.Stack;
 public class ServerTemplate extends Template
 {
     private List<String> installations = new ArrayList<String>();
-    private Base base;
+    private String base;
 
     public ServerTemplate(String name)
     {
@@ -40,19 +40,18 @@ public class ServerTemplate extends Template
 
     public void setBase(String base)
     {
-        this.setBase(new Base(base));
-    }
-
-    public void setBase(Base base)
-    {
         this.base = base;
     }
 
-    public Base getBase()
+    public String getBase()
     {
         return base;
     }
 
+    /**
+     * called by jruby template parser
+     */
+    @SuppressWarnings({"UnusedDeclaration"})
     public void setInstall(List<String> installs) {
         this.installations = new ArrayList<String>(installs);
     }

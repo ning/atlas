@@ -6,6 +6,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.ning.atlas.base.Maybe;
 
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,8 @@ import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Multimaps.synchronizedMultimap;
 
@@ -23,59 +26,90 @@ public class Environment
     private final Multimap<String, Map.Entry<String, String>> overrides =
         synchronizedMultimap(ArrayListMultimap.<String, Map.Entry<String, String>>create());
 
+    private final List<Environment> children = new CopyOnWriteArrayList<Environment>();
+
+    private final AtomicReference<Maybe<Provisioner>> provisioner =
+        new AtomicReference<Maybe<Provisioner>>(Maybe.<Provisioner>unknown());
+
+    private final AtomicReference<Maybe<Initializer>> initializer =
+        new AtomicReference<Maybe<Initializer>>(Maybe.<Initializer>unknown());
+
     private final String name;
-    private final AtomicReference<Provisioner> provisioner = new AtomicReference<Provisioner>();
-    private final AtomicReference<Initializer> initializer = new AtomicReference<Initializer>();
 
     public Environment(String name)
     {
         this.name = name;
     }
 
+    public Environment(String name, Provisioner provisioner, Initializer initializer)
+    {
+        this.name = name;
+        this.provisioner.set(Maybe.definitely(provisioner));
+        this.initializer.set(Maybe.definitely(initializer));
+    }
+
+
     @Override
     public String toString()
     {
         return Objects.toStringHelper(this)
                       .add("name", name)
+                      .add("provisioner", provisioner.get())
+                      .add("initializer", initializer.get())
+                      .add("children", children)
+                      .add("overrides", overrides)
+                      .add("bases", bases)
                       .toString();
+    }
+
+    public void addChild(Environment e)
+    {
+        this.children.add(e);
     }
 
     public void setProvisioner(Provisioner provisioner)
     {
-        this.provisioner.set(provisioner);
+        this.provisioner.set(Maybe.definitely(provisioner));
     }
 
     public Provisioner getProvisioner()
     {
-        return this.provisioner.get();
+        return provisioner.get().otherwise(new ErrorProvisioner());
     }
 
     public void setInitializer(Initializer initializer)
     {
-        this.initializer.set(initializer);
+        this.initializer.set(Maybe.definitely(initializer));
     }
 
     public Initializer getInitializer()
     {
-        return this.initializer.get();
+        return initializer.get().otherwise(new ErrorInitializer());
     }
 
 
-    public Base translateBase(Base base, Stack<String> names)
+    public Maybe<Base> findBase(final String base, final Stack<String> names)
     {
-        String name = overrideFor(base.getName(), "base", names);
+        String name = overrideFor(base, "base", names);
         for (Base candidate : bases) {
             if (candidate.getName().equals(name)) {
-                return candidate;
+                return Maybe.definitely(candidate);
             }
         }
-        return base;
+
+        for (Environment child : children) {
+            Maybe<Base> rs = child.findBase(base, names);
+            if (rs.isKnown()) {
+                return rs;
+            }
+        }
+
+        return Maybe.unknown();
     }
 
-    public Base defineBase(Base base)
+    public void addBase(Base base)
     {
         bases.add(base);
-        return base;
     }
 
 

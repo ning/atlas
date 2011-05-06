@@ -8,16 +8,16 @@ import java.util.Map;
 public class Base
 {
     private final String name;
-    public final Map<String, String> attributes = Maps.newConcurrentMap();
+    private final Map<String, String> attributes = Maps.newConcurrentMap();
 
     public Base(String name)
     {
         this.name = name;
     }
 
-    public void define(String key, String value)
-    {
-        attributes.put(key, value);
+    public Base(String name, Map<String, String> attributes) {
+        this(name);
+        this.attributes.putAll(attributes);
     }
 
     public Map<String, String> getAttributes()

@@ -4,12 +4,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.ning.atlas.Base;
-import com.ning.atlas.BoundServerTemplate;
-import com.ning.atlas.BoundTemplate;
-import com.ning.atlas.Environment;
-import com.ning.atlas.ServerTemplate;
-import com.ning.atlas.SystemTemplate;
 import com.ning.atlas.tree.Trees;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,6 +33,8 @@ public class TestTemplateBuilding
         root.addChildren(Arrays.asList(new ServerTemplate("happy") {{ setCardinality(3); setBase("waffle"); }},
                                        new ServerTemplate("sad") {{ setCardinality(2); setBase("pancake"); }}));
         env = new Environment("desktop");
+        env.addBase(new Base("waffle"));
+        env.addBase(new Base("pancake"));
     }
 
     @Test
@@ -71,8 +67,15 @@ public class TestTemplateBuilding
     @Test
     public void testConvertBase() throws Exception
     {
-        Base w = env.defineBase(new Base("waffle") {{ define("ami", "ami-1234"); }});
-        Base p = env.defineBase(new Base("pancake") {{ define("ami", "ami-6789"); }});
+        env = new Environment("desktop");
+
+        Base w = new Base("waffle");
+        w.getAttributes().put("ami", "ami-1234");
+        env.addBase(w);
+
+        Base p = new Base("pancake");
+        p.getAttributes().put("ami", "ami-6789");
+        env.addBase(p);
 
         final List<BoundTemplate> normalized_root = newArrayList(root.normalize(env));
 

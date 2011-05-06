@@ -2,6 +2,7 @@ package com.ning.atlas;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import com.ning.atlas.base.Maybe;
 
 import java.util.Collections;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.concurrent.Executor;
 
 public class BoundServerTemplate extends BoundTemplate
 {
-    private final Base base;
+    private final Base        base;
     private final Provisioner provisioner;
 
     public BoundServerTemplate(String name, Base base, Provisioner provisioner)
@@ -24,8 +25,18 @@ public class BoundServerTemplate extends BoundTemplate
     public BoundServerTemplate(ServerTemplate serverTemplate, Environment env, Stack<String> names)
     {
         this(serverTemplate.getName(),
-             env.translateBase(serverTemplate.getBase(), names),
+             extractBase(env.findBase(serverTemplate.getBase(), names), serverTemplate.getBase()),
              env.getProvisioner());
+    }
+
+    private static Base extractBase(Maybe<Base> base, String name)
+    {
+        if (base.isKnown()) {
+            return base.otherwise(new Base("WAFFLES"));
+        }
+        else {
+            throw new IllegalArgumentException("Unable to locate base '" + name + "' in environment");
+        }
     }
 
     public Base getBase()

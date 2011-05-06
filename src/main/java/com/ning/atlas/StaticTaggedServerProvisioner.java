@@ -6,18 +6,29 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class StaticTaggedServerProvisioner implements Provisioner
 {
     private final Multimap<String, String> availables = ArrayListMultimap.create();
 
+    public StaticTaggedServerProvisioner() {
+
+    }
+
     public StaticTaggedServerProvisioner(Map<String, ? extends Collection<String>> availables)
     {
-        for (Map.Entry<String, ? extends Collection<String>> entry : availables.entrySet()) {
+        this();
+        setServers(availables);
+    }
+
+    public void setServers(Map<String, ? extends Collection<String>> servers) {
+        for (Map.Entry<String, ? extends Collection<String>> entry : servers.entrySet()) {
             this.availables.putAll(entry.getKey(), entry.getValue());
         }
     }
+
 
     public void destroy(Collection<Server> servers)
     {

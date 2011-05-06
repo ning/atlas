@@ -26,30 +26,56 @@ module Atlas
     end
 
     def __parse
+      @root = com.ning.atlas.Environment.new @name
       eval @template, binding, @path, 1
-      root = Environment.new @name
-      @children.each {|t| root.addChild(t)}
-      root
+      @children.each {|t| @root.addChild(t)}
+      @root
+    end
+
+    def environment name, &block
+      @children << EnvironmentParser.new(name, @root, block).__parse
     end
   end
 
   class EnvironmentParser
 
-    def initialize name, args, block
-      @name, @args, @block = name, args, block
+    def initialize name, parent, block
+      @name, @parent, @block = name, parent, block
     end
 
     def __parse
-      com.ning.atlas.Environment.new @name
+      # attr = @args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v.to_s; a}
+      @env = com.ning.atlas.Environment.new @name, @parent.provisioner, @parent.initializer
+      instance_eval &@block
+      @env
+    end
+
+    def environment name, &block
+      @children << EnvironmentParser.new(name, @env, block).__parse
+    end
+
+    def base name, args={}
+      @env.addBase(com.ning.atlas.Base.new(name, args))
+    end
+
+    def provisioner clazz, args={}
+      p = clazz.new
+      args.each do |k, v|
+        sym = "#{k}=".to_sym
+        p.send(sym, v) if p. respond_to? sym
+      end
+      @env.provisioner = p
+    end
+
+    def initializer clazz, args={}
+      @env.initializer = clazz.new
     end
 
 
     def system *args
-
+      #no-op
     end
   end
-
-
 
 
   #

@@ -1,14 +1,13 @@
 package com.ning.atlas;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.ning.atlas.tree.Trees;
 import org.junit.Test;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.List;
 
+import static com.ning.atlas.base.MorePredicates.beanPropertyEquals;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.hasItem;
@@ -16,28 +15,31 @@ import static org.junit.matchers.JUnitMatchers.hasItem;
 public class TestJRubyTemplateParser
 {
     @Test
-    public void testFoo() throws Exception
+    public void testSimpleSystem() throws Exception
     {
-        JRubySystemTemplateParser p = new JRubySystemTemplateParser();
-        Template t = p.parse(new File("src/test/ruby/ex1/system-template.rb"));
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
         assertThat(t, notNullValue());
         List<Template> leaves = Trees.leaves(t);
         assertThat(leaves.size(), equalTo(3));
 
-        Template rslv_t = Iterables.find(leaves, new Predicate<Template>()
-        {
-            public boolean apply(@Nullable Template input)
-            {
-                return "resolver".equals(input.getName());
-            }
-        });
+        Template rslv_t = Iterables.find(leaves, beanPropertyEquals("name", "resolver"));
 
         assertThat(rslv_t, instanceOf(ServerTemplate.class));
         ServerTemplate rslv = (ServerTemplate) rslv_t;
 
         assertThat(rslv.getCardinality(), equalTo(8));
-        assertThat(rslv.getBase(), equalTo(new Base("ubuntu-small")));
+        assertThat(rslv.getBase(), equalTo("ubuntu-small"));
         assertThat(rslv.getInstallations(), hasItem("cast:load-balancer-9.3"));
+    }
+
+    @Test
+    public void testSimpleEnvironment() throws Exception
+    {
+
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Environment e = p.parseEnvironment(new File("src/test/ruby/ex1/simple-environment.rb"));
+
     }
 
 }
