@@ -21,7 +21,10 @@ public class TestEnvironment
 
         top.addChild(child);
 
-        Base base = top.findBase("child-base", new Stack<String>()).otherwise(new Base("WAFFLES"));
-        assertThat(base.getAttributes().get("ami"), equalTo("ami-9876"));
+        Base top_base = top.findBase("top-base", new Stack<String>()).otherwise(new Base("WAFFLES"));
+        assertThat(top_base.getAttributes().get("ami"), equalTo("ami-1234"));
+
+        Base child_base = top.findBase("child-base", new Stack<String>()).otherwise(new Base("WAFFLES"));
+        assertThat(child_base.getAttributes().get("ami"), equalTo("ami-9876"));
     }
 }
