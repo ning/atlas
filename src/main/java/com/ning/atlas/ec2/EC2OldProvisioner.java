@@ -12,10 +12,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.ning.atlas.OldProvisioner;
 import com.ning.atlas.Server;
-import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.template.NormalizedTemplate;
 import com.ning.atlas.template.ServerSpec;
+import com.ning.atlas.template2.Base;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
@@ -27,12 +28,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-public class EC2Provisioner implements Provisioner
+public class EC2OldProvisioner implements OldProvisioner
 {
     private final AWSConfig            config;
     private final AmazonEC2AsyncClient ec2;
 
-    public EC2Provisioner(AWSConfig config)
+    public EC2OldProvisioner(AWSConfig config)
     {
         this.config = config;
         BasicAWSCredentials credentials = new BasicAWSCredentials(config.getAccessKey(), config.getSecretKey());
@@ -94,7 +95,7 @@ public class EC2Provisioner implements Provisioner
     public void bootStrapServers(Set<Server> servers) throws Exception
     {
         for (Server server : servers) {
-            String bootstrap = server.getBootStrap();
+            String bootstrap = "server.getBootStrap()";
             if (!Strings.isNullOrEmpty(bootstrap)) {
                 executeRemote(server, bootstrap);
             }
@@ -175,9 +176,9 @@ public class EC2Provisioner implements Provisioner
             return spec.getName();
         }
 
-        public String getBase()
+        public Base getBase()
         {
-            return spec.getBase();
+            return new Base(spec.getBase());
         }
 
         public String getExternalIpAddress()

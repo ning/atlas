@@ -1,15 +1,16 @@
-package com.ning.atlas.template;
+package com.ning.atlas;
 
 import com.google.common.io.Resources;
+import com.ning.atlas.template2.Environment;
 import org.jruby.embed.ScriptingContainer;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-public class JRubySystemTemplateParser
+public class JRubyEnvironmentParser
 {
-    public ConfigurableSystemTemplate parse(File template)
+    public Environment parse(File template)
     {
         ScriptingContainer container = new ScriptingContainer();
         try {
@@ -20,6 +21,7 @@ public class JRubySystemTemplateParser
             throw new IllegalStateException("cannot open atlas/parser.rb from classpath", e);
         }
 
-        return (ConfigurableSystemTemplate) container.runScriptlet("Atlas.parse_system('" + template.getAbsolutePath() + "')");
+        return (Environment) container.runScriptlet("Atlas.parse_env('" + template.getAbsolutePath() + "')");
     }
+
 }

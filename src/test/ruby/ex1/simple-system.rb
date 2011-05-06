@@ -1,6 +1,6 @@
 
 module XN
-  C2Provisioner = com.ning.atlas.ec2.EC2Provisioner
+  C2Provisioner = com.ning.atlas.ec2.EC2OldProvisioner
   ChefBoot = com.ning.atlas.chef.UbuntuChefSoloInitializer
   ServerPool = com.ning.atlas.ChefTaggedServerPoolProvisioner
   NoOp = com.ning.atlas.NoOpInitializer

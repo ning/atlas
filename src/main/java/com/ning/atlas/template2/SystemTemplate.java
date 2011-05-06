@@ -34,7 +34,7 @@ public class SystemTemplate extends Template
         Iterables.addAll(children, normalize);
     }
 
-    public List<? extends Template> getChildren()
+    public List<Template> getChildren()
     {
         return children;
     }

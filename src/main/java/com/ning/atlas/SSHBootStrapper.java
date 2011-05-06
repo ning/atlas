@@ -38,7 +38,7 @@ public class SSHBootStrapper implements BootStrapper
         boolean success = false;
         while (!success) {
             try {
-                executeRemote(s, s.getBootStrap());
+                executeRemote(s, "s.getBootStrap()");
                 success = true;
             }
             catch (ConnectException e) {

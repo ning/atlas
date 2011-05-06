@@ -4,29 +4,28 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.ning.atlas.template2.Base;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Multimaps.synchronizedMultimap;
 
 public class Environment
 {
-    private final List<Base>                                  bases     = new CopyOnWriteArrayList<Base>();
+    private final List<Base> bases = new CopyOnWriteArrayList<Base>();
+
     private final Multimap<String, Map.Entry<String, String>> overrides =
         synchronizedMultimap(ArrayListMultimap.<String, Map.Entry<String, String>>create());
 
     private final String name;
+    private final AtomicReference<Provisioner> provisioner = new AtomicReference<Provisioner>();
+    private final AtomicReference<Initializer> initializer = new AtomicReference<Initializer>();
 
     public Environment(String name)
     {
@@ -40,6 +39,27 @@ public class Environment
                       .add("name", name)
                       .toString();
     }
+
+    public void setProvisioner(Provisioner provisioner)
+    {
+        this.provisioner.set(provisioner);
+    }
+
+    public Provisioner getProvisioner()
+    {
+        return this.provisioner.get();
+    }
+
+    public void setInitializer(Initializer initializer)
+    {
+        this.initializer.set(initializer);
+    }
+
+    public Initializer getInitializer()
+    {
+        return this.initializer.get();
+    }
+
 
     public Base translateBase(Base base, Stack<String> names)
     {

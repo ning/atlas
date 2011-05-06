@@ -1,13 +1,13 @@
 package com.ning.atlas.ec2;
 
+import com.ning.atlas.JRubySystemTemplateParser;
+import com.ning.atlas.OldProvisioner;
 import com.ning.atlas.SSHBootStrapper;
 import com.ning.atlas.Server;
-import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.template.ConfigurableServerTemplate;
 import com.ning.atlas.template.ConfigurableSystemTemplate;
 import com.ning.atlas.template.DeployTemplate;
 import com.ning.atlas.template2.Environment;
-import com.ning.atlas.template.JRubySystemTemplateParser;
 import com.ning.atlas.template.NormalizedTemplate;
 import com.ning.atlas.template.EnvironmentConfig;
 import org.hamcrest.BaseMatcher;
@@ -60,7 +60,7 @@ public class TestEC2Provisioner
 
         NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(env), root);
 
-        Provisioner p = new EC2Provisioner(config);
+        OldProvisioner p = new EC2OldProvisioner(config);
 
         Set<Server> servers = p.provisionBareServers(m);
 
@@ -84,7 +84,7 @@ public class TestEC2Provisioner
 
         NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(env), root);
 
-        Provisioner p = new EC2Provisioner(config);
+        OldProvisioner p = new EC2OldProvisioner(config);
 
         Set<Server> servers = p.provisionBareServers(m);
 
@@ -109,7 +109,7 @@ public class TestEC2Provisioner
 
         SSHBootStrapper bs = new SSHBootStrapper(config.getPrivateKeyFile(), config.getSshUserName());
 
-        Provisioner p = new EC2Provisioner(config);
+        OldProvisioner p = new EC2OldProvisioner(config);
         Set<Server> s = p.provisionBareServers(m);
         try {
             Server chef_server = s.iterator().next();
@@ -142,7 +142,7 @@ public class TestEC2Provisioner
 
         NormalizedTemplate m = NormalizedTemplate.build(new EnvironmentConfig(env), root);
 
-        Provisioner p = new EC2Provisioner(config);
+        OldProvisioner p = new EC2OldProvisioner(config);
 
         Set<Server> servers = p.provisionBareServers(m);
         Server s = servers.iterator().next();

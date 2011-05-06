@@ -1,5 +1,6 @@
 package com.ning.atlas.template;
 
+import com.ning.atlas.JRubySystemTemplateParser;
 import com.ning.atlas.template2.Environment;
 import org.junit.Test;
 

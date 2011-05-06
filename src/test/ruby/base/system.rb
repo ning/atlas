@@ -4,7 +4,7 @@ aka "galaxy" => "chef:galaxy-agent"
 space "ec2" do
   # what do do/use when running in ec2
 
-  provisioner com.ning.atlas.ec2.EC2Provisioner, {
+  provisioner com.ning.atlas.ec2.EC2OldProvisioner, {
     :credential_file => "~/.awscreds"
   }
 
