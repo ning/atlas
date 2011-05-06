@@ -3,7 +3,7 @@ require 'open-uri'
 
 module Atlas
 
-  include_package "com.ning.atlas.template"
+  include_package "com.ning.atlas"
 
   def self.parse_system path, name="__ROOT__"
     RootSystemParser.new(name, path).__parse
@@ -66,13 +66,13 @@ module Atlas
 
     def __parse
       eval @template, binding, @path, 1
-      root = com.ning.atlas.template.ConfigurableSystemTemplate.new @name
-      @children.each { |t, cnt| root.addChild(t, cnt) }
+      root = com.ning.atlas.SystemTemplate.new @name
+      @children.each { |t| root.addChild(t) }
       root
     end
 
     def server name, args={}, &block
-      @children << [ServerParser.new(name, args, block).__parse, args[:count] || 1]
+      @children << ServerParser.new(name, args, block).__parse
     end
 
     def system name, args={}, &block
@@ -81,7 +81,7 @@ module Atlas
            else
              SystemParser.new(name, args, block).__parse
            end
-      @children << [st, args[:count] || 1]
+      @children << st
     end
 
 
@@ -99,23 +99,24 @@ module Atlas
 
     def __parse
       instance_eval &@block
-      s = com.ning.atlas.template.ConfigurableSystemTemplate.new @name
+      s = com.ning.atlas.SystemTemplate.new @name
       @args.each do |k, v|
-        s.send(k, v) if s.respond_to? "#{k}=".to_sym
+        sym = "#{k}=".to_sym
+        s.send(sym, v) if s.respond_to? sym
       end
-      @children.each { |child, cnt| s.addChild(child, cnt) }
+      @children.each { | child | s.addChild(child) }
       s
     end
 
     def system name, args={}, &block
       if args[:external]
       else
-        @children << [SystemParser.new(name, args, block).__parse, (args[:count] || 1)]
+        @children << SystemParser.new(name, args, block).__parse
       end
     end
 
     def server name, args={}, &block
-      @children << [ServerParser.new(name, args, block).__parse, (args[:count] || 1)]
+      @children << ServerParser.new(name, args, block).__parse
     end
   end
 
@@ -125,7 +126,7 @@ module Atlas
     end
 
     def __parse
-      s = com.ning.atlas.template.ConfigurableServerTemplate.new @name
+      s = com.ning.atlas.ServerTemplate.new @name
       @args.each do |k, v|
         setter = "#{k}=".to_sym
         s.send(setter, v) if s.respond_to? setter

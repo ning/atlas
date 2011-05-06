@@ -6,24 +6,24 @@ end
 
 
 # nasty interpolation to say 'next to this file' :-(
-system "galaxy", :external => "file:///#{File.expand_path(File.dirname(__FILE__))}/galaxy-template.rb"
+#system "galaxy", :external => "file:///#{File.expand_path(File.dirname(__FILE__))}/galaxy-template.rb"
 
-system "chef", :external => "file:///#{File.expand_path(File.dirname(__FILE__))}/chef-server.rb"
+#system "chef", :external => "file:///#{File.expand_path(File.dirname(__FILE__))}/chef-server.rb"
 
 
 system "ning" do
   server "resolver", :base => "ubuntu-small",
-                     :install => ["galaxy", "galaxy:load-balancer-9.3"],
-                     :count => 8
+                     :install => ["cast:load-balancer-9.3"],
+                     :cardinality => 8
 
-  system "aclu", :count=> 2 do
+  system "aclu", :cardinality => 2 do
     server "appcore", :base => "ubuntu-small",
                       :count => 5,
-                      :install => ["galaxy", "galaxy:app-server-2.4.37"]
+                      :install => ["cast:app-server-2.4.37"]
 
     server "content", :base => "ubuntu-small",
-                      :count => 2,
-                      :install => ["galaxy", "galaxy:content-service-1.0.6"]
+                      :cardinality => 2,
+                      :install => ["cast:content-service-1.0.6"]
   end
 end
 

@@ -1,31 +1,43 @@
 package com.ning.atlas;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.ning.atlas.tree.Trees;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
+import static org.junit.matchers.JUnitMatchers.hasItem;
 
 public class TestJRubyTemplateParser
 {
-//    @Test
-//    public void testFoo() throws Exception
-//    {
-//        JRubySystemTemplateParser p = new JRubySystemTemplateParser();
-//        DeployTemplate t = p.parse(new File("src/test/ruby/ex1/system-template.rb"));
-//        assertThat(t, notNullValue());
-//        NormalizedTemplate d = NormalizedTemplate.build(new EnvironmentConfig(new Environment("test")), t);
-//
-//        assertThat(d.getInstances().size(), equalTo(24));
-//
-//        verify aka worked for the server image
-//        assertThat(d.getInstances().get(0).getBase(), equalTo("ubuntu-small"));
-//    }
+    @Test
+    public void testFoo() throws Exception
+    {
+        JRubySystemTemplateParser p = new JRubySystemTemplateParser();
+        Template t = p.parse(new File("src/test/ruby/ex1/system-template.rb"));
+        assertThat(t, notNullValue());
+        List<Template> leaves = Trees.leaves(t);
+        assertThat(leaves.size(), equalTo(3));
 
-        @Test
-        public void testwaffles() throws Exception
+        Template rslv_t = Iterables.find(leaves, new Predicate<Template>()
         {
-            assertThat(1 + 1, equalTo(2));
-        }
+            public boolean apply(@Nullable Template input)
+            {
+                return "resolver".equals(input.getName());
+            }
+        });
+
+        assertThat(rslv_t, instanceOf(ServerTemplate.class));
+        ServerTemplate rslv = (ServerTemplate) rslv_t;
+
+        assertThat(rslv.getCardinality(), equalTo(8));
+        assertThat(rslv.getBase(), equalTo(new Base("ubuntu-small")));
+        assertThat(rslv.getInstallations(), hasItem("cast:load-balancer-9.3"));
+    }
 
 }
