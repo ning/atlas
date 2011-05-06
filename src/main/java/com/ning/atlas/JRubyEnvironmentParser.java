@@ -1,7 +1,6 @@
 package com.ning.atlas;
 
 import com.google.common.io.Resources;
-import com.ning.atlas.template2.Environment;
 import org.jruby.embed.ScriptingContainer;
 
 import java.io.File;

@@ -1,4 +1,4 @@
-package com.ning.atlas.template2;
+package com.ning.atlas;
 
 import java.util.ArrayList;
 import java.util.Collections;

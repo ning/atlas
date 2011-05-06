@@ -1,24 +1,18 @@
-package com.ning.atlas.template2;
+package com.ning.atlas;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
-import com.ning.atlas.Server;
-import com.ning.atlas.template.NormalizedTemplate;
-import com.ning.atlas.template.ServerSpec;
-import com.ning.atlas.template2.Provisioner;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
-public class StaticTaggedServerOldProvisioner implements Provisioner
+public class StaticTaggedServerProvisioner implements Provisioner
 {
     private final Multimap<String, String> availables = ArrayListMultimap.create();
 
-    public StaticTaggedServerOldProvisioner(Map<String, ? extends Collection<String>> availables)
+    public StaticTaggedServerProvisioner(Map<String, ? extends Collection<String>> availables)
     {
         for (Map.Entry<String, ? extends Collection<String>> entry : availables.entrySet()) {
             this.availables.putAll(entry.getKey(), entry.getValue());

@@ -1,11 +1,10 @@
-package com.ning.atlas.template2;
+package com.ning.atlas;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.ning.atlas.tree.Tree;
 
 import java.util.List;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 
 public abstract class BoundTemplate implements Tree<BoundTemplate>
 {

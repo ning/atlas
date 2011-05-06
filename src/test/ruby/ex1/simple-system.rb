@@ -1,6 +1,6 @@
 
 module XN
-  C2Provisioner = com.ning.atlas.ec2.EC2OldProvisioner
+  C2Provisioner = com.ning.atlas.cruft.EC2OldProvisioner
   ChefBoot = com.ning.atlas.chef.UbuntuChefSoloInitializer
   ServerPool = com.ning.atlas.ChefTaggedServerPoolProvisioner
   NoOp = com.ning.atlas.NoOpInitializer
@@ -8,7 +8,7 @@ end
 
 
 
-environment "ec2" do
+environment "cruft" do
   initializer XN::ChefBoot, :ssh_user => "ubuntu",
                             :ssh_key_file => "http://keys/wafflehut.pem"
 

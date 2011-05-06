@@ -1,3 +1,5 @@
+package com.ning.atlas;
+
 import com.google.common.util.concurrent.ListenableFutureTask;
 import org.junit.Test;
 

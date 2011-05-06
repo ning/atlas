@@ -1,10 +1,7 @@
-package com.ning.atlas.template2;
-
-import com.ning.atlas.Server;
+package com.ning.atlas;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 public class ProvisionedServerTemplate extends ProvisionedTemplate
 {

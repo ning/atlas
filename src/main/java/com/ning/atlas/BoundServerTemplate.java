@@ -1,8 +1,7 @@
-package com.ning.atlas.template2;
+package com.ning.atlas;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
-import com.ning.atlas.Server;
 
 import java.util.Collections;
 import java.util.List;

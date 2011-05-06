@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.nio.charset.Charset;
 
-public class SSHBootStrapper implements BootStrapper
+public class SSHBootStrapper  // implements BootStrapper
 {
     private final static Logger logger = LoggerFactory.getLogger(SSHBootStrapper.class);
 

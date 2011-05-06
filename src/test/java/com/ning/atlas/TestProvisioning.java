@@ -1,6 +1,14 @@
-package com.ning.atlas.template2;
+package com.ning.atlas;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.ning.atlas.Base;
+import com.ning.atlas.BoundServerTemplate;
+import com.ning.atlas.BoundSystemTemplate;
+import com.ning.atlas.BoundTemplate;
+import com.ning.atlas.ProvisionedServerTemplate;
+import com.ning.atlas.ProvisionedTemplate;
+import com.ning.atlas.Provisioner;
+import com.ning.atlas.StaticTaggedServerProvisioner;
 import com.ning.atlas.tree.Trees;
 import org.junit.Test;
 
@@ -21,7 +29,7 @@ public class TestProvisioning
     public void testWaffles() throws Exception
     {
 
-        Provisioner p = new StaticTaggedServerOldProvisioner(new HashMap<String, Collection<String>>()
+        Provisioner p = new StaticTaggedServerProvisioner(new HashMap<String, Collection<String>>()
         {{ put("concrete", Arrays.asList("10.0.0.1")); }});
 
         BoundServerTemplate child = new BoundServerTemplate("child", new Base("concrete"), p);

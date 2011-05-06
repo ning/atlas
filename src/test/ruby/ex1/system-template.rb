@@ -1,6 +1,6 @@
 
 
-environment "ec2" do
+environment "cruft" do
   # not sure how to use this concept yet, but I will figure it out :-)
 end
 

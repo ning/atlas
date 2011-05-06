@@ -1,4 +1,4 @@
-package com.ning.atlas.template2;
+package com.ning.atlas;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;

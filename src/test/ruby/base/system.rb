@@ -1,15 +1,15 @@
 # global aliases
 aka "galaxy" => "chef:galaxy-agent"
 
-space "ec2" do
-  # what do do/use when running in ec2
+space "cruft" do
+  # what do do/use when running in cruft
 
-  provisioner com.ning.atlas.ec2.EC2OldProvisioner, {
+  provisioner com.ning.atlas.cruft.EC2OldProvisioner, {
     :credential_file => "~/.awscreds"
   }
 
   bootstrapper com.ning.atlas.bootstrap.SSHBootStrapper, {
-    :key_file => "~/.ec2/brianm-ning.pem",g
+    :key_file => "~/.cruft/brianm-ning.pem",g
     :ssh_user => "ubuntu",
     :bastion_host => "mrpiffles@bastion.example.com"
   }

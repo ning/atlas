@@ -1,6 +1,4 @@
-package com.ning.atlas.template2;
-
-import com.ning.atlas.Server;
+package com.ning.atlas;
 
 public interface Provisioner
 {

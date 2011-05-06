@@ -40,7 +40,7 @@ module Atlas
     end
 
     def __parse
-      com.ning.atlas.template2.Environment.new @name
+      com.ning.atlas.Environment.new @name
     end
 
 

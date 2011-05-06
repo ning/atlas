@@ -1,9 +1,15 @@
-package com.ning.atlas.template2;
+package com.ning.atlas;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.ning.atlas.Base;
+import com.ning.atlas.BoundServerTemplate;
+import com.ning.atlas.BoundTemplate;
+import com.ning.atlas.Environment;
+import com.ning.atlas.ServerTemplate;
+import com.ning.atlas.SystemTemplate;
 import com.ning.atlas.tree.Trees;
 import org.junit.Before;
 import org.junit.Test;
