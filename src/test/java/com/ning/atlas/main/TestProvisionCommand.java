@@ -34,7 +34,6 @@ public class TestProvisionCommand
         System.setOut(out);
 
         String json = new String(buf.toByteArray());
-        System.out.println(json);
 
         Thing skife = new ObjectMapper().readValue(json, Thing.class);
         assertThat(skife.name, equalTo("skife"));
