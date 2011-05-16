@@ -14,17 +14,17 @@ public class TestEnvironment
     public void testFoo() throws Exception
     {
         Environment top = new Environment("top");
-        top.addBase(new Base("top-base", new HashMap<String, String>(){{put("ami", "ami-1234");}}));
+        top.addBase(new Base("top-base", top, new HashMap<String, String>(){{put("ami", "ami-1234");}}));
 
         Environment child = new Environment("child", top.getProvisioner(), top.getInitializer());
-        child.addBase(new Base("child-base", new HashMap<String, String>(){{put("ami", "ami-9876");}}));
+        child.addBase(new Base("child-base", child, new HashMap<String, String>(){{put("ami", "ami-9876");}}));
 
         top.addChild(child);
 
-        Base top_base = top.findBase("top-base", new Stack<String>()).otherwise(new Base("WAFFLES"));
+        Base top_base = top.findBase("top-base", new Stack<String>()).getValue();
         assertThat(top_base.getAttributes().get("ami"), equalTo("ami-1234"));
 
-        Base child_base = top.findBase("child-base", new Stack<String>()).otherwise(new Base("WAFFLES"));
+        Base child_base = top.findBase("child-base", new Stack<String>()).getValue();
         assertThat(child_base.getAttributes().get("ami"), equalTo("ami-9876"));
     }
 }

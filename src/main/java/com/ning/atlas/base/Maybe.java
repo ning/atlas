@@ -61,6 +61,12 @@ public abstract class Maybe<T> implements Iterable<T>
             }
 
             @Override
+            public T getValue()
+            {
+                throw new IllegalStateException("No value known!");
+            }
+
+            @Override
             public String toString()
             {
                 return "unknown";
@@ -85,6 +91,8 @@ public abstract class Maybe<T> implements Iterable<T>
     {
         return new DefiniteValue<T>(theValue);
     }
+
+    public abstract T getValue();
 
     private static class DefiniteValue<T> extends Maybe<T>
     {
@@ -128,6 +136,12 @@ public abstract class Maybe<T> implements Iterable<T>
         public Maybe<Boolean> query(Predicate<? super T> mapping)
         {
             return definitely(mapping.apply(theValue));
+        }
+
+        @Override
+        public T getValue()
+        {
+            return theValue;
         }
 
         @Override

@@ -1,6 +1,7 @@
 package com.ning.atlas;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Iterables;
 import com.ning.atlas.tree.Tree;
 
 import java.util.Stack;
@@ -31,9 +32,10 @@ public abstract class Template implements Tree<Template>
         this.cardinality.set(count);
     }
 
-    public final Iterable<BoundTemplate> normalize(Environment env)
+    public final BoundTemplate normalize(Environment env)
     {
-        return normalize(env, new Stack<String>());
+        Iterable<BoundTemplate> itty =  normalize(env, new Stack<String>());
+        return Iterables.getOnlyElement(itty);
     }
 
     protected abstract Iterable<BoundTemplate> normalize(Environment env, Stack<String> names);

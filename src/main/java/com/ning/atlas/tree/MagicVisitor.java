@@ -28,6 +28,7 @@ public class MagicVisitor<TreeType extends Tree<TreeType>, BatonType> implements
         if (dispatch == null) {
             dispatch = new Dispatcher();
             for (Method method : this.target.getClass().getDeclaredMethods()) {
+                method.setAccessible(true);
                 List<Class<?>> pts = Arrays.asList(method.getParameterTypes());
                 if (pts.size() == 2 && method.getReturnType().equals(pts.get(1))) {
                     if ("enter".equals(method.getName())) {

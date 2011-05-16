@@ -12,31 +12,29 @@ import java.util.concurrent.Executor;
 
 public class BoundServerTemplate extends BoundTemplate
 {
-    private final Base        base;
-    private final Provisioner provisioner;
+    private final Base base;
 
-    public BoundServerTemplate(String name, Base base, Provisioner provisioner)
+    public BoundServerTemplate(String name, Base base)
     {
         super(name);
         this.base = base;
-        this.provisioner = provisioner;
     }
 
     public BoundServerTemplate(ServerTemplate serverTemplate, Environment env, Stack<String> names)
     {
-        this(serverTemplate.getName(),
-             extractBase(env.findBase(serverTemplate.getBase(), names), serverTemplate.getBase()),
-             env.getProvisioner());
+        this(serverTemplate.getName(), extractBase(serverTemplate, env, names));
     }
 
-    private static Base extractBase(Maybe<Base> base, String name)
+    private static Base extractBase(ServerTemplate serverTemplate, Environment env, Stack<String> names)
     {
-        if (base.isKnown()) {
-            return base.otherwise(new Base("WAFFLES"));
+        Maybe<Base> mb = env.findBase(serverTemplate.getBase(), names);
+        if (mb.isKnown()) {
+            return mb.getValue();
         }
         else {
-            throw new IllegalArgumentException("Unable to locate base '" + name + "' in environment");
+            throw new IllegalStateException("No base named '" + serverTemplate.getBase() + "' found!");
         }
+
     }
 
     public Base getBase()
@@ -58,7 +56,7 @@ public class BoundServerTemplate extends BoundTemplate
             {
                 public ProvisionedServerTemplate call() throws Exception
                 {
-                    Server server = provisioner.provision(base);
+                    Server server = base.getProvisioner().provision(base);
                     return new ProvisionedServerTemplate(BoundServerTemplate.this, server);
                 }
             });

@@ -39,9 +39,10 @@ public class StaticTaggedServerProvisioner implements Provisioner
 
     public Server provision(Base base)
     {
-        String host = Iterables.getFirst(this.availables.get(base.getName()), "!!@@##");
+        String tag = base.getAttributes().get("tag");
+        String host = Iterables.getFirst(this.availables.get(tag), "!!@@##");
         if (host.equals("!!@@##")) {
-            throw new IllegalStateException("unable to allocate a needed base='" + base + "'");
+            throw new IllegalStateException("unable to allocate a needed host for tag '" + tag + "'");
         }
         this.availables.remove(base, host);
         return new MyServer(host, base);

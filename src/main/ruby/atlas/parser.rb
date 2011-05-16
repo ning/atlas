@@ -44,7 +44,6 @@ module Atlas
     end
 
     def __parse
-      # attr = @args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v.to_s; a}
       @env = com.ning.atlas.Environment.new @name, @parent.provisioner, @parent.initializer
       instance_eval &@block
       @env
@@ -55,7 +54,8 @@ module Atlas
     end
 
     def base name, args={}
-      @env.addBase(com.ning.atlas.Base.new(name, args))
+      attr = args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v.to_s; a}
+      @env.addBase(com.ning.atlas.Base.new(name, @env, attr))
     end
 
     def provisioner clazz, args={}

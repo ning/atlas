@@ -28,11 +28,9 @@ public class Environment
 
     private final List<Environment> children = new CopyOnWriteArrayList<Environment>();
 
-    private final AtomicReference<Maybe<Provisioner>> provisioner =
-        new AtomicReference<Maybe<Provisioner>>(Maybe.<Provisioner>unknown());
+    private final AtomicReference<Provisioner> provisioner = new AtomicReference<Provisioner>(new ErrorProvisioner());
 
-    private final AtomicReference<Maybe<Initializer>> initializer =
-        new AtomicReference<Maybe<Initializer>>(Maybe.<Initializer>unknown());
+    private final AtomicReference<Initializer> initializer = new AtomicReference<Initializer>(new ErrorInitializer());
 
     private final String name;
 
@@ -44,8 +42,8 @@ public class Environment
     public Environment(String name, Provisioner provisioner, Initializer initializer)
     {
         this.name = name;
-        this.provisioner.set(Maybe.definitely(provisioner));
-        this.initializer.set(Maybe.definitely(initializer));
+        this.provisioner.set(provisioner);
+        this.initializer.set(initializer);
     }
 
 
@@ -69,22 +67,22 @@ public class Environment
 
     public void setProvisioner(Provisioner provisioner)
     {
-        this.provisioner.set(Maybe.definitely(provisioner));
+        this.provisioner.set(provisioner);
     }
 
     public Provisioner getProvisioner()
     {
-        return provisioner.get().otherwise(new ErrorProvisioner());
+        return provisioner.get();
     }
 
     public void setInitializer(Initializer initializer)
     {
-        this.initializer.set(Maybe.definitely(initializer));
+        this.initializer.set(initializer);
     }
 
     public Initializer getInitializer()
     {
-        return initializer.get().otherwise(new ErrorInitializer());
+        return initializer.get();
     }
 
 

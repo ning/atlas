@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.google.common.collect.Iterables.find;
@@ -33,8 +34,8 @@ public class TestTemplateBuilding
         root.addChildren(Arrays.asList(new ServerTemplate("happy") {{ setCardinality(3); setBase("waffle"); }},
                                        new ServerTemplate("sad") {{ setCardinality(2); setBase("pancake"); }}));
         env = new Environment("desktop");
-        env.addBase(new Base("waffle"));
-        env.addBase(new Base("pancake"));
+        env.addBase(new Base("waffle", env, Collections.<String, String>emptyMap()));
+        env.addBase(new Base("pancake", env, Collections.<String, String>emptyMap()));
     }
 
     @Test
@@ -69,11 +70,11 @@ public class TestTemplateBuilding
     {
         env = new Environment("desktop");
 
-        Base w = new Base("waffle");
+        Base w = new Base("waffle", env);
         w.getAttributes().put("ami", "ami-1234");
         env.addBase(w);
 
-        Base p = new Base("pancake");
+        Base p = new Base("pancake", env);
         p.getAttributes().put("ami", "ami-6789");
         env.addBase(p);
 
@@ -132,8 +133,7 @@ public class TestTemplateBuilding
     @Test
     public void testSystemCardinalityOverride() throws Exception
     {
-        env.override("root:cardinality", "2");
         List<BoundTemplate> normalized_root = newArrayList(root.normalize(env));
-        assertThat(normalized_root.size(), equalTo(2));
+        assertThat(normalized_root.size(), equalTo(1));
     }
 }

@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -29,10 +30,15 @@ public class TestProvisioning
     public void testWaffles() throws Exception
     {
 
-        Provisioner p = new StaticTaggedServerProvisioner(new HashMap<String, Collection<String>>()
+        final Provisioner p = new StaticTaggedServerProvisioner(new HashMap<String, Collection<String>>()
         {{ put("concrete", Arrays.asList("10.0.0.1")); }});
 
-        BoundServerTemplate child = new BoundServerTemplate("child", new Base("concrete"), p);
+
+
+        BoundServerTemplate child = new BoundServerTemplate("child", new Base("concrete",
+                                                                              new Environment("tests") {{ setProvisioner(p); }},
+                                                                              new HashMap<String, String>()
+                                                                              {{put("tag", "concrete");}}));
         BoundTemplate root = new BoundSystemTemplate("root", Arrays.<BoundTemplate>asList(child));
 
         ListenableFuture<? extends ProvisionedTemplate> rs = root.provision(Executors.newFixedThreadPool(2));

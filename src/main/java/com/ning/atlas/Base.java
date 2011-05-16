@@ -3,21 +3,26 @@ package com.ning.atlas;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
+import java.util.Collections;
 import java.util.Map;
 
 public class Base
 {
     private final String name;
     private final Map<String, String> attributes = Maps.newConcurrentMap();
+    private final Provisioner provisioner;
 
-    public Base(String name)
+
+    public Base(String name, Environment env, Map<String, String> attributes)
     {
         this.name = name;
+        this.provisioner = env.getProvisioner();
+        this.attributes.putAll(attributes);
     }
 
-    public Base(String name, Map<String, String> attributes) {
-        this(name);
-        this.attributes.putAll(attributes);
+    public Base(String name, Environment env)
+    {
+        this(name, env, Collections.<String, String>emptyMap());
     }
 
     public Map<String, String> getAttributes()
@@ -57,5 +62,15 @@ public class Base
                       .add("name", getName())
                       .add("attributes", attributes)
                       .toString();
+    }
+
+    public Provisioner getProvisioner()
+    {
+        return provisioner;
+    }
+
+    public static Base missingBase(String baseName)
+    {
+        throw new IllegalStateException("No base '" + baseName + "' defined!");
     }
 }
