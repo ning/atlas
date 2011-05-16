@@ -1,14 +1,16 @@
 
 environment "test" do
-  provisioner com.ning.atlas.StaticTaggedServerProvisioner, :servers => { "java" => ["10.0.0.1", "10.0.0.2"],
-                                                                          "php" => ["10.0.1.1", "10.0.1.2"] }
-
   initializer com.ning.atlas.NoOpInitializer
+  provisioner com.ning.atlas.StaticTaggedServerProvisioner,:servers => {
+    "java" => ["10.0.0.1", "10.0.0.2"],
+    "php" => ["10.0.1.1", "10.0.1.2"]
+  }
 
-  base "concrete", :tag => "java", :init => "chef-solo:role[core]"
+  base "concrete", :tag => "java"
 end
 
-system "skife" do
 
+
+system "skife" do
   server "blog", :base => "concrete"
 end
