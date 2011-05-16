@@ -45,6 +45,7 @@
             <artifactId>aws-java-sdk</artifactId>
             <version>1.1.7.1</version>
             <exclusions>
+                <!-- amazon left this version open ended, and we don't want that -->
                 <exclusion>
                     <groupId>javax.mail</groupId>
                     <artifactId>mail</artifactId>
