@@ -46,7 +46,7 @@ public class ProvisionCommand implements Runnable
             throw new RuntimeException(e);
         }
         finally {
-            ex.shutdown();
+            ex.shutdownNow();
         }
     }
 }

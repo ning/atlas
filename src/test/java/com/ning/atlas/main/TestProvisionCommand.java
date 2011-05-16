@@ -2,6 +2,8 @@ package com.ning.atlas.main;
 
 import org.junit.Test;
 
+import static junit.framework.Assert.assertEquals;
+
 public class TestProvisionCommand
 {
     @Test
@@ -12,5 +14,6 @@ public class TestProvisionCommand
                                            "provision");
 
         opts.getCommand().create(opts).run();
+        assertEquals(2, 2);
     }
 }
