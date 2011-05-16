@@ -28,7 +28,7 @@ public class TestStaticTaggedServerProvisioner
         ProvisionedTemplate pt = bt.provision(MoreExecutors.sameThreadExecutor()).get();
 
         List<ProvisionedTemplate> leaves = Trees.leaves(pt);
-        assertThat(leaves.size(), equalTo(1));
+        assertThat(leaves.size(), equalTo(4));
 
         assertThat(leaves.get(0), instanceOf(ProvisionedServerTemplate.class));
         ProvisionedServerTemplate pst = (ProvisionedServerTemplate) leaves.get(0);

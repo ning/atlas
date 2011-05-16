@@ -29,14 +29,6 @@ public class StaticTaggedServerProvisioner implements Provisioner
         }
     }
 
-
-    public void destroy(Collection<Server> servers)
-    {
-        for (Server server : servers) {
-            availables.put(server.getBase().getName(), server.getExternalIpAddress());
-        }
-    }
-
     public Server provision(Base base)
     {
         String tag = base.getAttributes().get("tag");
@@ -44,7 +36,7 @@ public class StaticTaggedServerProvisioner implements Provisioner
         if (host.equals("!!@@##")) {
             throw new IllegalStateException("unable to allocate a needed host for tag '" + tag + "'");
         }
-        this.availables.remove(base, host);
+        this.availables.remove(tag, host);
         return new MyServer(host, base);
 
     }
@@ -53,7 +45,6 @@ public class StaticTaggedServerProvisioner implements Provisioner
     {
         private final String host;
         private final Base base;
-
 
         public MyServer(String host, Base base)
         {

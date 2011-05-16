@@ -7,10 +7,15 @@ environment "test" do
   }
 
   base "concrete", :tag => "java"
+  base "macadam", :tag => "php"
 end
 
 
 
 system "skife" do
   server "blog", :base => "concrete"
+  system "data" do
+    server "memcached", :base => "macadam", :cardinality => 2
+    server "db", :base => "concrete"
+  end
 end
