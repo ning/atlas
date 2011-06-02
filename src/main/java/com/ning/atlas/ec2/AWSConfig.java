@@ -1,4 +1,4 @@
-package com.ning.atlas.cruft;
+package com.ning.atlas.ec2;
 
 import org.skife.config.Config;
 

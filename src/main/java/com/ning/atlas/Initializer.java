@@ -1,6 +1,8 @@
 package com.ning.atlas;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 public interface Initializer
 {
-    void initialize(Server server);
+    ListenableFuture<Server> initialize(Server server);
 }

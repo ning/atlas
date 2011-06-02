@@ -13,7 +13,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.ning.atlas.Base;
 import com.ning.atlas.Provisioner;
 import com.ning.atlas.Server;
-import com.ning.atlas.cruft.AWSConfig;
 
 import static java.util.Arrays.asList;
 

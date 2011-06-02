@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class Base
@@ -36,6 +37,16 @@ public class Base
         return name;
     }
 
+    public Provisioner getProvisioner()
+    {
+        return provisioner;
+    }
+
+    public Initializer getInitalizer()
+    {
+        return initalizer;
+    }
+
     @Override
     public boolean equals(Object o)
     {
@@ -63,20 +74,5 @@ public class Base
                       .add("name", getName())
                       .add("attributes", attributes)
                       .toString();
-    }
-
-    public Provisioner getProvisioner()
-    {
-        return provisioner;
-    }
-
-    public static Base missingBase(String baseName)
-    {
-        throw new IllegalStateException("No base '" + baseName + "' defined!");
-    }
-
-    public Initializer getInitalizer()
-    {
-        return initalizer;
     }
 }

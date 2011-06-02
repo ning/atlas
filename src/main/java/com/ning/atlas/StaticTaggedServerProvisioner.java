@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.AbstractListenableFuture;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
@@ -15,7 +16,8 @@ public class StaticTaggedServerProvisioner implements Provisioner
 {
     private final Multimap<String, String> availables = ArrayListMultimap.create();
 
-    public StaticTaggedServerProvisioner() {
+    public StaticTaggedServerProvisioner()
+    {
 
     }
 
@@ -25,7 +27,8 @@ public class StaticTaggedServerProvisioner implements Provisioner
         setServers(availables);
     }
 
-    public void setServers(Map<String, ? extends Collection<String>> servers) {
+    public void setServers(Map<String, ? extends Collection<String>> servers)
+    {
         for (Map.Entry<String, ? extends Collection<String>> entry : servers.entrySet()) {
             this.availables.putAll(entry.getKey(), entry.getValue());
         }
@@ -46,7 +49,7 @@ public class StaticTaggedServerProvisioner implements Provisioner
     private static class MyServer implements Server
     {
         private final String host;
-        private final Base base;
+        private final Base   base;
 
         public MyServer(String host, Base base)
         {
@@ -64,8 +67,8 @@ public class StaticTaggedServerProvisioner implements Provisioner
         @Override
         public ListenableFuture<? extends Server> initialize()
         {
-            base.getInitalizer().initialize(this);
-            return Futures.immediateFuture(this);
+
+            return base.getInitalizer().initialize(this);
         }
 
         public String getExternalIpAddress()
@@ -82,10 +85,10 @@ public class StaticTaggedServerProvisioner implements Provisioner
         public String toString()
         {
             return Objects.toStringHelper(this)
-                .add("externalIpAddress", getExternalIpAddress())
-                .add("internalIpAddress", getInternalIpAddress())
-                .add("base", getBase())
-                .toString();
+                          .add("externalIpAddress", getExternalIpAddress())
+                          .add("internalIpAddress", getInternalIpAddress())
+                          .add("base", getBase())
+                          .toString();
         }
     }
 }

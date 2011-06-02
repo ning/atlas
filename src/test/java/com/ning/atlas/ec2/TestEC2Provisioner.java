@@ -1,13 +1,10 @@
 package com.ning.atlas.ec2;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.ning.atlas.Base;
 import com.ning.atlas.Environment;
 import com.ning.atlas.Server;
-import com.ning.atlas.cruft.AWSConfig;
 import org.hamcrest.BaseMatcher;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.Before;
