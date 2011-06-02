@@ -7,9 +7,11 @@ import com.ning.atlas.Environment;
 import com.ning.atlas.Server;
 import com.ning.atlas.cruft.AWSConfig;
 import org.hamcrest.BaseMatcher;
+import org.hamcrest.CoreMatchers;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
 
@@ -39,12 +41,14 @@ public class TestEC2Provisioner
     }
 
     @Test
+    @Ignore("it is expensive to run test every time")
     public void testFoo() throws Exception
     {
         Server s = ec2.provision(new Base("test-base", new Environment("test-env"), ImmutableMap.of("ami", "ami-a6f504cf")));
         assertThat(s, notNullValue());
         try {
-            System.out.println(s.getExternalIpAddress());
+            assertThat(s.getExternalIpAddress(), notNullValue());
+            assertThat(s.getInternalIpAddress(), notNullValue());
         }
         finally {
             ec2.destroy(s);
