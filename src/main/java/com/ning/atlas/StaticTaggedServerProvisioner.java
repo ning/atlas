@@ -4,6 +4,8 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.Collection;
 import java.util.List;
@@ -57,6 +59,13 @@ public class StaticTaggedServerProvisioner implements Provisioner
         public Base getBase()
         {
             return base;
+        }
+
+        @Override
+        public ListenableFuture<? extends Server> initialize()
+        {
+            base.getInitalizer().initialize(this);
+            return Futures.immediateFuture(this);
         }
 
         public String getExternalIpAddress()

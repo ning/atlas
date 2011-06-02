@@ -11,12 +11,13 @@ public class Base
     private final String name;
     private final Map<String, String> attributes = Maps.newConcurrentMap();
     private final Provisioner provisioner;
-
+    private final Initializer initalizer;
 
     public Base(String name, Environment env, Map<String, String> attributes)
     {
         this.name = name;
         this.provisioner = env.getProvisioner();
+        this.initalizer= env.getInitializer();
         this.attributes.putAll(attributes);
     }
 
@@ -72,5 +73,10 @@ public class Base
     public static Base missingBase(String baseName)
     {
         throw new IllegalStateException("No base '" + baseName + "' defined!");
+    }
+
+    public Initializer getInitalizer()
+    {
+        return initalizer;
     }
 }

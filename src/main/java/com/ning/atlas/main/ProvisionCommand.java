@@ -39,7 +39,6 @@ public class ProvisionCommand implements Runnable
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-
             mapper.writeValue(System.out, t);
         }
         catch (Exception e) {

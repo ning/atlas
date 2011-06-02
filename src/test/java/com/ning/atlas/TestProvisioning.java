@@ -27,9 +27,8 @@ import static org.junit.Assert.assertThat;
 public class TestProvisioning
 {
     @Test
-    public void testWaffles() throws Exception
+    public void testStaticTaggedProvisioning() throws Exception
     {
-
         final Provisioner p = new StaticTaggedServerProvisioner(new HashMap<String, Collection<String>>()
         {{ put("concrete", Arrays.asList("10.0.0.1")); }});
 
@@ -49,6 +48,6 @@ public class TestProvisioning
         assertThat(leaves.get(0), instanceOf(ProvisionedServerTemplate.class));
 
         ProvisionedServerTemplate pst = (ProvisionedServerTemplate) leaves.get(0);
-        assertThat(pst.getServer().getExternalIpAddress(), equalTo("10.0.0.1"));
+        assertThat(pst.getExternalIP(), equalTo("10.0.0.1"));
     }
 }
