@@ -65,10 +65,10 @@ public class StaticTaggedServerProvisioner implements Provisioner
         }
 
         @Override
-        public ListenableFuture<? extends Server> initialize()
+        public Server initialize()
         {
 
-            return base.getInitalizer().initialize(this);
+            throw new UnsupportedOperationException("Not Yet Implemented!");
         }
 
         public String getExternalIpAddress()

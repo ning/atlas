@@ -17,6 +17,14 @@ public enum Command
             {
                 return new ProvisionCommand(mo);
             }
+        },
+    initialize
+        {
+            @Override
+            public Runnable create(MainOptions mo)
+            {
+                return new InitializeCommand(mo);
+            }
         };
 
     public abstract Runnable create(MainOptions mo);

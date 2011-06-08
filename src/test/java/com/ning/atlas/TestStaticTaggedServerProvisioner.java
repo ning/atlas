@@ -3,6 +3,7 @@ package com.ning.atlas;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.tree.Trees;
 import org.hamcrest.CoreMatchers;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -18,6 +19,7 @@ public class TestStaticTaggedServerProvisioner
     private static JRubyTemplateParser parser = new JRubyTemplateParser();
 
     @Test
+    @Ignore
     public void testFoo() throws Exception
     {
         Environment e = parser.parseEnvironment(new File("src/test/ruby/ex1/static-tagged.rb"));

@@ -1,11 +1,16 @@
 package com.ning.atlas;
 
-import com.google.common.util.concurrent.ListenableFuture;
+import java.util.Map;
 
 public class ErrorInitializer implements Initializer
 {
+
+    public ErrorInitializer(Map<String, String> attributes) {
+
+    }
+
     @Override
-    public ListenableFuture<Server> initialize(Server server)
+    public Server initialize(Server server, String arg)
     {
         throw new UnsupportedOperationException("Not Yet Implemented!");
     }

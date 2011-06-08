@@ -14,10 +14,4 @@ public abstract class AWSConfig
 
     @Config("aws.key-name")
     public abstract String getKeyPairId();
-
-    @Config("aws.ssh-user")
-    public abstract String getSshUserName();
-
-    @Config("aws.private-key-fle")
-    public abstract File getPrivateKeyFile();
 }

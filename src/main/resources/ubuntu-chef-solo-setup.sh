@@ -25,15 +25,3 @@ sudo /etc/init.d/chef-client stop
 
 # will hold all the roles, recipes, etc for chef-solo
 sudo mkdir -p /var/chef-solo
-
-echo 'file_cache_path "/var/chef-solo"' >> /tmp/solo.rb
-echo 'cookbook_path "/var/chef-solo/cookbooks"' >> /tmp/solo.rb
-echo 'role_path "/var/chef-solo/roles"' >> /tmp/solo.rb
-echo 'recipe_url "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz"' >> /tmp/solo.rb
-echo 'json_attribs "/etc/chef/node.json"' >> /tmp/solo.rb
-sudo mv /tmp/solo.rb /etc/chef/
-
-echo '{ "run_list": ["role[java-core]"] }' >> /tmp/node.json
-sudo mv /tmp/node.json /etc/chef/
-
-sudo chef-solo

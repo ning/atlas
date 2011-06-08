@@ -9,20 +9,19 @@ end
 
 
 environment "cruft" do
-  initializer XN::ChefBoot, :ssh_user => "ubuntu",
-                            :ssh_key_file => "http://keys/wafflehut.pem"
-
   provisioner XN::EC2Provisioner, :security_group => "backend"
 
-  base "java-core", :ami => "ami-12345",
-                    :init => ["chef-solo:role[java-core]"]
+  initializer "chef-solo", com.ning.atlas.chef.UbuntuChefSoloInitializer, {
+    :ssh_user => "ubuntu",
+    :ssh_key_file => "#{ENV['HOME']}/.ec2/brianm-ning.pem",
+    :recipe_url => "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz"
+  }
 
-  base "big-server", :ami => "ami-9999",
-                     :init => ["chef-solo:role[utility]"]
-  environment "front" do
-    provisioner XN::EC2Provisioner, :security_group => "front-end"
-    base "front-door-core", :extends => "java-core"
-  end
+  base "java-core", {
+    :ami => "ami-12345",
+    :init => ['chef-solo:{ "run_list": ["role[java-core]"] }']
+  }
+
 end
 
 

@@ -1,24 +1,33 @@
 package com.ning.atlas;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.ning.atlas.ec2.EC2Provisioner;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 
 public class Base
 {
     private final String name;
     private final Map<String, String> attributes = Maps.newConcurrentMap();
-    private final Provisioner provisioner;
-    private final Initializer initalizer;
+    private final Provisioner              provisioner;
+    private final Map<String, Initializer> initalizers;
+    private final List<String> inits = new CopyOnWriteArrayList<String>();
 
     public Base(String name, Environment env, Map<String, String> attributes)
     {
         this.name = name;
         this.provisioner = env.getProvisioner();
-        this.initalizer= env.getInitializer();
+        this.initalizers = env.getInitializers();
         this.attributes.putAll(attributes);
     }
 
@@ -40,11 +49,6 @@ public class Base
     public Provisioner getProvisioner()
     {
         return provisioner;
-    }
-
-    public Initializer getInitalizer()
-    {
-        return initalizer;
     }
 
     @Override
@@ -74,5 +78,28 @@ public class Base
                       .add("name", getName())
                       .add("attributes", attributes)
                       .toString();
+    }
+
+    public void addInit(String initializer)
+    {
+        inits.add(initializer);
+    }
+
+    public Server initialize(Server server)
+    {
+        Server next = server;
+        for (String init : inits) {
+            int idx = init.indexOf(':');
+            String prefix = init.substring(0, idx);
+            String arg = init.substring(idx + 1, init.length());
+            Initializer i = initalizers.get(prefix);
+            next = i.initialize(server, arg);
+        }
+        return next;
+    }
+
+    public List<String> getInits()
+    {
+        return inits;
     }
 }

@@ -1,5 +1,7 @@
 package com.ning.atlas;
 
+import com.google.common.collect.Lists;
+
 import java.util.List;
 
 public class InitializedSystemTemplate extends InitializedTemplate
@@ -9,11 +11,11 @@ public class InitializedSystemTemplate extends InitializedTemplate
     public InitializedSystemTemplate(String name, List<? extends InitializedTemplate> children)
     {
         super(name);
-        this.children = children;
+        this.children = Lists.newArrayList(children);
     }
 
     @Override
-    public Iterable<? extends InitializedTemplate> getChildren()
+    public List<? extends InitializedTemplate> getChildren()
     {
         return children;
     }

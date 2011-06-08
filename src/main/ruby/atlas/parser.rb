@@ -44,7 +44,7 @@ module Atlas
     end
 
     def __parse
-      @env = com.ning.atlas.Environment.new @name, @parent.provisioner, @parent.initializer
+      @env = com.ning.atlas.Environment.new @name, @parent.provisioner, @parent.initializers
       instance_eval &@block
       @env
     end
@@ -55,20 +55,28 @@ module Atlas
 
     def base name, args={}
       attr = args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v.to_s; a}
-      @env.addBase(com.ning.atlas.Base.new(name, @env, attr))
+      base = com.ning.atlas.Base.new(name, @env, attr)
+
+      if args[:init]
+        args[:init].each {|v| base.addInit(v)}
+      end
+
+      @env.addBase(base)
     end
 
     def provisioner clazz, args={}
-      p = clazz.new
-      args.each do |k, v|
-        sym = "#{k}=".to_sym
-        p.send(sym, v) if p. respond_to? sym
-      end
+      attr = args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v.to_s; a}
+      p = clazz.new(attr)
+#      args.each do |k, v|
+#        sym = "#{k}=".to_sym
+#        p.send(sym, v) if p. respond_to? sym
+#      end
       @env.provisioner = p
     end
 
-    def initializer clazz, args={}
-      @env.initializer = clazz.new
+    def initializer name, clazz, args={}
+      attr = args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v.to_s; a}
+      @env.addInitializer(name, clazz.new(attr))
     end
 
 

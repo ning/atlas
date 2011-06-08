@@ -33,7 +33,7 @@ public class ProvisionedSystemTemplate extends ProvisionedTemplate
         final List<InitializedTemplate> init_children = new CopyOnWriteArrayList<InitializedTemplate>();
         final SettableFuture<InitializedTemplate> rs = SettableFuture.create();
         for (ProvisionedTemplate template : getChildren()) {
-            final ListenableFuture<InitializedTemplate> child = template.initialize();
+            final ListenableFuture<? extends InitializedTemplate> child = template.initialize();
             child.addListener(new Runnable()
                               {
                                   @Override

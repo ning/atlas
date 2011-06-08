@@ -9,7 +9,7 @@ space "cruft" do
   }
 
   bootstrapper com.ning.atlas.bootstrap.SSHBootStrapper, {
-    :key_file => "~/.cruft/brianm-ning.pem",g
+    :key_file => "http://waffles/hello.pem",
     :ssh_user => "ubuntu",
     :bastion_host => "mrpiffles@bastion.example.com"
   }

@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Properties;
 
+import static com.ning.atlas.testing.FileMatchers.exists;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
@@ -51,22 +52,4 @@ public class TestEC2Provisioner
             ec2.destroy(s);
         }
     }
-
-    public static Matcher<File> exists()
-    {
-        return new BaseMatcher<File>()
-        {
-            public boolean matches(Object item)
-            {
-                File f = (File) item;
-                return f.exists();
-            }
-
-            public void describeTo(Description description)
-            {
-                description.appendText("the expected file does not exist");
-            }
-        };
-    }
-
 }

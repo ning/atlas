@@ -1,13 +1,18 @@
 package com.ning.atlas;
 
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
+import java.io.StringWriter;
+import java.util.Map;
 
 public class NoOpInitializer implements Initializer
 {
+
+    public NoOpInitializer(Map<String, String> a) {
+
+    }
+
     @Override
-    public ListenableFuture<Server> initialize(Server server)
+    public Server initialize(Server server, String arg)
     {
-        return Futures.immediateFuture(server);
+        return server;
     }
 }

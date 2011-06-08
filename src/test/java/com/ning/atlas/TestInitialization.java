@@ -33,10 +33,10 @@ public class TestInitialization
             }
 
             @Override
-            public ListenableFuture<? extends Server> initialize()
+            public Server initialize()
             {
                 initialized.set(true);
-                return Futures.immediateFuture(this);
+                return this;
             }
         }));
 
@@ -45,6 +45,5 @@ public class TestInitialization
         assertThat(initialized.get(), equalTo(true));
 
         initialized_root.getChildren();
-
     }
 }

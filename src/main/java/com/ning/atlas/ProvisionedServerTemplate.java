@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
@@ -38,27 +39,10 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
     }
 
     @Override
-    public ListenableFuture<InitializedTemplate> initialize()
+    public ListenableFuture<? extends InitializedTemplate> initialize()
     {
-        final ListenableFuture<? extends Server> initialized_server = server.initialize();
-        final SettableFuture<InitializedTemplate> rs = SettableFuture.create();
-        initialized_server.addListener(new Runnable() {
-                                           @Override
-                                           public void run()
-                                           {
-                                               try {
-                                                   final Server s = initialized_server.get();
-                                                   rs.set(new InitializedServerTemplate(getName(), s));
-                                               }
-                                               catch (InterruptedException e) {
-                                                   rs.setException(e);
-                                               }
-                                               catch (ExecutionException e) {
-                                                   rs.setException(e.getCause());
-                                               }
-                                           }
-                                       }, MoreExecutors.sameThreadExecutor());
-        return rs;
+        Server initialized_server = server.initialize();
+        return Futures.immediateFuture(new InitializedServerTemplate(getName(), initialized_server));
     }
 
     public String getExternalIP() {

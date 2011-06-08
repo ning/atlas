@@ -10,7 +10,9 @@ import com.ning.atlas.base.Maybe;
 
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.Stack;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -30,7 +32,7 @@ public class Environment
 
     private final AtomicReference<Provisioner> provisioner = new AtomicReference<Provisioner>(new ErrorProvisioner());
 
-    private final AtomicReference<Initializer> initializer = new AtomicReference<Initializer>(new ErrorInitializer());
+    private final Map<String, Initializer> initializers = Maps.newConcurrentMap();
 
     private final String name;
 
@@ -39,11 +41,16 @@ public class Environment
         this.name = name;
     }
 
-    public Environment(String name, Provisioner provisioner, Initializer initializer)
+    public Environment(String name, Provisioner provisioner)
     {
         this.name = name;
         this.provisioner.set(provisioner);
-        this.initializer.set(initializer);
+    }
+
+    public Environment(String name, Provisioner provisioner, Map<String, Initializer> initializers)
+    {
+        this(name, provisioner);
+        this.initializers.putAll(initializers);
     }
 
 
@@ -53,7 +60,7 @@ public class Environment
         return Objects.toStringHelper(this)
                       .add("name", name)
                       .add("provisioner", provisioner.get())
-                      .add("initializer", initializer.get())
+                      .add("initializers", initializers)
                       .add("children", children)
                       .add("overrides", overrides)
                       .add("bases", bases)
@@ -75,16 +82,9 @@ public class Environment
         return provisioner.get();
     }
 
-    public void setInitializer(Initializer initializer)
-    {
-        this.initializer.set(initializer);
+    public void addInitializer(String name, Initializer init) {
+        initializers.put(name, init);
     }
-
-    public Initializer getInitializer()
-    {
-        return initializer.get();
-    }
-
 
     public Maybe<Base> findBase(final String base, final Stack<String> names)
     {
@@ -132,5 +132,10 @@ public class Environment
         List<String> parts = newArrayList(Splitter.on(':').split(key));
         String new_key = parts.get(0);
         this.overrides.put(new_key, Maps.immutableEntry(parts.get(1), value));
+    }
+
+    public Map<String,Initializer> getInitializers()
+    {
+        return initializers;
     }
 }

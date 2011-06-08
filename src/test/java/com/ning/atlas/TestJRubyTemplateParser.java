@@ -1,13 +1,17 @@
 package com.ning.atlas;
 
 import com.google.common.collect.Iterables;
+import com.ning.atlas.base.Maybe;
 import com.ning.atlas.tree.Trees;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import java.io.File;
 import java.util.List;
+import java.util.Stack;
 
 import static com.ning.atlas.base.MorePredicates.beanPropertyEquals;
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.hasItem;
@@ -36,10 +40,13 @@ public class TestJRubyTemplateParser
     @Test
     public void testSimpleEnvironment() throws Exception
     {
-
         JRubyTemplateParser p = new JRubyTemplateParser();
         Environment e = p.parseEnvironment(new File("src/test/ruby/ex1/simple-environment.rb"));
 
+        Maybe<Base> cs = e.findBase("concrete", new Stack<String>());
+        assertThat(cs.getValue(), notNullValue());
+        Base b = cs.getValue();
+        assertThat(b.getInits(), equalTo(asList("chef-solo:{ \"run_list\": \"role[java-core]\" }")));
     }
 
 }
