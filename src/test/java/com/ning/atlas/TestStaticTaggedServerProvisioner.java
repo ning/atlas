@@ -19,7 +19,6 @@ public class TestStaticTaggedServerProvisioner
     private static JRubyTemplateParser parser = new JRubyTemplateParser();
 
     @Test
-    @Ignore
     public void testFoo() throws Exception
     {
         Environment e = parser.parseEnvironment(new File("src/test/ruby/ex1/static-tagged.rb"));

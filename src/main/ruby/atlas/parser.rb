@@ -66,17 +66,24 @@ module Atlas
 
     def provisioner clazz, args={}
       attr = args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v.to_s; a}
-      p = clazz.new(attr)
-#      args.each do |k, v|
-#        sym = "#{k}=".to_sym
-#        p.send(sym, v) if p. respond_to? sym
-#      end
+      p =  com.ning.atlas.JrubyHelper.create(clazz, attr)
+      args.each do |k, v|
+        sym = "#{k}=".to_sym
+        p.send(sym, v) if p.respond_to? sym
+      end
       @env.provisioner = p
     end
 
     def initializer name, clazz, args={}
       attr = args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v.to_s; a}
-      @env.addInitializer(name, clazz.new(attr))
+      init =  com.ning.atlas.JrubyHelper.create(clazz, attr)
+
+      args.each do |k, v|
+        sym = "#{k}=".to_sym
+        init.send(sym, v) if init.respond_to? sym
+      end
+
+      @env.addInitializer(name, init)
     end
 
 

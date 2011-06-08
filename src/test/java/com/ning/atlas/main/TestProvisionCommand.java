@@ -21,7 +21,6 @@ import static org.junit.Assert.assertThat;
 public class TestProvisionCommand
 {
     @Test
-    @Ignore
     public void testFoo() throws Exception
     {
         MainOptions opts = new MainOptions("-e", "src/test/ruby/ex1/static-tagged.rb",
