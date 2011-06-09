@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.ning.atlas.tree.Tree;
 
 import java.util.List;
+import java.util.concurrent.Executor;
 
 public abstract class ProvisionedTemplate implements Tree<ProvisionedTemplate>
 {
@@ -20,5 +21,5 @@ public abstract class ProvisionedTemplate implements Tree<ProvisionedTemplate>
     }
 
     public abstract List<? extends ProvisionedTemplate> getChildren();
-    public abstract ListenableFuture<? extends InitializedTemplate> initialize();
+    public abstract ListenableFuture<? extends InitializedTemplate> initialize(Executor ex);
 }

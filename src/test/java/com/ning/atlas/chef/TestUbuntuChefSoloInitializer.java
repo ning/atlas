@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static com.ning.atlas.testing.FileMatchers.exists;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -100,8 +102,9 @@ public class TestUbuntuChefSoloInitializer
 
 
         BoundTemplate bt = st.normalize(env);
-        ProvisionedTemplate pt = bt.provision(MoreExecutors.sameThreadExecutor()).get();
-        InitializedTemplate it = pt.initialize().get();
+        ExecutorService ex = Executors.newCachedThreadPool();
+        ProvisionedTemplate pt = bt.provision(ex).get();
+        InitializedTemplate it = pt.initialize(ex).get();
         assertThat(it, instanceOf(InitializedServerTemplate.class));
         InitializedServerTemplate ist = (InitializedServerTemplate) it;
 
@@ -111,7 +114,7 @@ public class TestUbuntuChefSoloInitializer
                           s.getExternalIpAddress());
         String out = ssh.exec("java -version");
         assertThat(out, containsString("Java(TM) SE Runtime Environment"));
-
+        ex.shutdown();
         ec2.destroy(s);
     }
 }

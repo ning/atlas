@@ -2,10 +2,13 @@ package com.ning.atlas;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListenableFutureTask;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executor;
 
 public class ProvisionedServerTemplate extends ProvisionedTemplate
 {
@@ -16,7 +19,8 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
     private final Server server;
 
 
-    public ProvisionedServerTemplate(String name, Server server) {
+    public ProvisionedServerTemplate(String name, Server server)
+    {
         super(name);
         this.server = server;
         this.externalIpAddress = server.getExternalIpAddress();
@@ -35,17 +39,29 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
     }
 
     @Override
-    public ListenableFuture<? extends InitializedTemplate> initialize()
+    public ListenableFuture<? extends InitializedTemplate> initialize(Executor ex)
     {
-        Server initialized_server = server.initialize();
-        return Futures.immediateFuture(new InitializedServerTemplate(getName(), initialized_server));
+        ListenableFutureTask<InitializedServerTemplate> f =
+            new ListenableFutureTask<InitializedServerTemplate>(new Callable<InitializedServerTemplate>()
+            {
+                @Override
+                public InitializedServerTemplate call() throws Exception
+                {
+                    return new InitializedServerTemplate(getName(), server.initialize());
+                }
+            });
+
+        ex.execute(f);
+        return f;
     }
 
-    public String getExternalIP() {
+    public String getExternalIP()
+    {
         return externalIpAddress;
     }
 
-    public String getInternalIP() {
+    public String getInternalIP()
+    {
         return internalIpAddress;
     }
 }

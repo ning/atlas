@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProvisionedSystemTemplate extends ProvisionedTemplate
@@ -26,13 +27,13 @@ public class ProvisionedSystemTemplate extends ProvisionedTemplate
     }
 
     @Override
-    public ListenableFuture<InitializedTemplate> initialize()
+    public ListenableFuture<InitializedTemplate> initialize(Executor ex)
     {
         final AtomicInteger remaining = new AtomicInteger(getChildren().size());
         final List<InitializedTemplate> init_children = new CopyOnWriteArrayList<InitializedTemplate>();
         final SettableFuture<InitializedTemplate> rs = SettableFuture.create();
         for (ProvisionedTemplate template : getChildren()) {
-            final ListenableFuture<? extends InitializedTemplate> child = template.initialize();
+            final ListenableFuture<? extends InitializedTemplate> child = template.initialize(ex);
             child.addListener(new Runnable()
                               {
                                   @Override
@@ -54,7 +55,7 @@ public class ProvisionedSystemTemplate extends ProvisionedTemplate
                                           System.exit(1);
                                       }
                                   }
-                              }, MoreExecutors.sameThreadExecutor());
+                              }, ex);
         }
         return rs;
     }

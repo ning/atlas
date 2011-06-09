@@ -39,7 +39,7 @@ public class InitializeCommand implements Runnable
                 pt = pt.getChildren().get(0);
             }
 
-            InitializedTemplate it = pt.initialize().get();
+            InitializedTemplate it = pt.initialize(ex).get();
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);

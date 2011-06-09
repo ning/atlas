@@ -2,6 +2,7 @@ package com.ning.atlas;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -41,7 +42,7 @@ public class TestInitialization
         }));
 
         ProvisionedSystemTemplate root = new ProvisionedSystemTemplate("root", children);
-        InitializedTemplate initialized_root = root.initialize().get();
+        InitializedTemplate initialized_root = root.initialize(MoreExecutors.sameThreadExecutor()).get();
         assertThat(initialized.get(), equalTo(true));
 
         initialized_root.getChildren();
