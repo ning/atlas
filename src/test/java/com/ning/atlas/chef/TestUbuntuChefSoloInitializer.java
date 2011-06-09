@@ -50,7 +50,7 @@ public class TestUbuntuChefSoloInitializer
     }
 
     @Test
-//    @Ignore("it is expensive to run test every time")
+    @Ignore("it is expensive to run test every time")
     public void testExplicitSpinUp() throws Exception
     {
         Environment env = new Environment("ec2");
@@ -79,7 +79,7 @@ public class TestUbuntuChefSoloInitializer
     }
 
     @Test
-//    @Ignore("it is expensive to run test every time")
+    @Ignore("it is expensive to run test every time")
     public void testWithEC2Provisioner() throws Exception
     {
         Environment env = new Environment("ec2");

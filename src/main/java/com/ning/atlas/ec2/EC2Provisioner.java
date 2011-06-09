@@ -10,19 +10,13 @@ import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.ning.atlas.Base;
 import com.ning.atlas.Provisioner;
 import com.ning.atlas.Server;
-import org.apache.commons.logging.impl.SimpleLog;
-import org.skife.config.ConfigurationObjectFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.tools.ToolProvider;
-
 import java.util.Map;
-import java.util.Properties;
 
 import static java.util.Arrays.asList;
 

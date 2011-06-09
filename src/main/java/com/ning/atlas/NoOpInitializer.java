@@ -1,6 +1,5 @@
 package com.ning.atlas;
 
-import java.io.StringWriter;
 import java.util.Map;
 
 public class NoOpInitializer implements Initializer

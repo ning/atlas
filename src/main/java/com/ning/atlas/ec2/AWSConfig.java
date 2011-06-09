@@ -2,8 +2,6 @@ package com.ning.atlas.ec2;
 
 import org.skife.config.Config;
 
-import java.io.File;
-
 public abstract class AWSConfig
 {
     @Config("aws.access-key")

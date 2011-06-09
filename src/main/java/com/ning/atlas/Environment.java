@@ -10,14 +10,10 @@ import com.ning.atlas.base.Maybe;
 
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.Stack;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Iterables.filter;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Multimaps.synchronizedMultimap;
 

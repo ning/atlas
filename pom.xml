@@ -20,24 +20,28 @@
             <groupId>org.antlr</groupId>
             <artifactId>stringtemplate</artifactId>
             <version>3.2</version>
+            <!-- BSD -->
         </dependency>
 
         <dependency>
             <groupId>net.sf.jopt-simple</groupId>
             <artifactId>jopt-simple</artifactId>
             <version>3.2</version>
+            <!-- MIT -->
         </dependency>
 
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
             <version>1.8.0</version>
+            <!-- ASL 2.0 -->
         </dependency>
 
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
             <version>1.3.9</version>
+            <!-- -->
         </dependency>
 
         <dependency>

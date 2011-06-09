@@ -4,8 +4,6 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 
-import java.util.Collections;
-
 import static java.util.Arrays.asList;
 
 public class MainOptions
