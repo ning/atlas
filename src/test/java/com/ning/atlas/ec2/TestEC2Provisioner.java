@@ -4,9 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.ning.atlas.Base;
 import com.ning.atlas.Environment;
 import com.ning.atlas.Server;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -16,7 +13,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Properties;
 
-import static com.ning.atlas.testing.FileMatchers.exists;
+import static com.ning.atlas.testing.AtlasMatchers.exists;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;

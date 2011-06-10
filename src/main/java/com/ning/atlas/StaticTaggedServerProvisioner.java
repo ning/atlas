@@ -4,13 +4,14 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 import java.util.Collection;
 import java.util.Map;
 
 public class StaticTaggedServerProvisioner implements Provisioner
 {
-    private final Multimap<String, String> availables = ArrayListMultimap.create();
+    private final Multimap<String, String> availables = Multimaps.synchronizedListMultimap(ArrayListMultimap.<String, String>create());
 
     public StaticTaggedServerProvisioner()
     {
@@ -30,12 +31,12 @@ public class StaticTaggedServerProvisioner implements Provisioner
         }
     }
 
-    public Server provision(Base base)
+    public synchronized Server provision(Base base) throws UnableToProvisionServerException
     {
         String tag = base.getAttributes().get("tag");
         String host = Iterables.getFirst(this.availables.get(tag), "!!@@##");
         if (host.equals("!!@@##")) {
-            throw new IllegalStateException("unable to allocate a needed host for tag '" + tag + "'");
+            throw new UnableToProvisionServerException("No server matching tag '" + tag + "' available");
         }
         this.availables.remove(tag, host);
         return new MyServer(host, base);

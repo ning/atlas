@@ -1,9 +1,7 @@
 package com.ning.atlas.chef;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.Base;
-import com.ning.atlas.BoundServerTemplate;
 import com.ning.atlas.BoundTemplate;
 import com.ning.atlas.Environment;
 import com.ning.atlas.InitializedServerTemplate;
@@ -27,7 +25,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.ning.atlas.testing.FileMatchers.exists;
+import static com.ning.atlas.testing.AtlasMatchers.exists;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
@@ -56,10 +54,10 @@ public class TestUbuntuChefSoloInitializer
     public void testExplicitSpinUp() throws Exception
     {
         Environment env = new Environment("ec2");
-        Map<String, String> attributes = ImmutableMap.of("ssh_user", "ubuntu",
-                                                         "ssh_key_file", new File(props.getProperty("aws.private-key-fle"))
-            .getAbsolutePath(),
-                                                         "recipe_url", "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz");
+        Map<String, String> attributes =
+            ImmutableMap.of("ssh_user", "ubuntu",
+                            "ssh_key_file", new File(props.getProperty("aws.private-key-fle")).getAbsolutePath(),
+                            "recipe_url", "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz");
 
         Initializer initializer = new UbuntuChefSoloInitializer(attributes);
 
@@ -94,10 +92,10 @@ public class TestUbuntuChefSoloInitializer
         java_core.addInit("chef-solo:{\"run_list\":[\"role[java-core]\"]}");
         env.addBase(java_core);
 
-        Map<String, String> attributes = ImmutableMap.of("ssh_user", "ubuntu",
-                                                         "ssh_key_file", new File(props.getProperty("aws.private-key-fle"))
-            .getAbsolutePath(),
-                                                         "recipe_url", "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz");
+        Map<String, String> attributes =
+            ImmutableMap.of("ssh_user", "ubuntu",
+                            "ssh_key_file", new File(props.getProperty("aws.private-key-fle")).getAbsolutePath(),
+                            "recipe_url", "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz");
         env.addInitializer("chef-solo", new UbuntuChefSoloInitializer(attributes));
 
 

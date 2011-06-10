@@ -49,15 +49,20 @@ public class BoundServerTemplate extends BoundTemplate
     }
 
     @Override
-    public ListenableFuture<ProvisionedServerTemplate> provision(Executor e)
+    public ListenableFuture<ProvisionedTemplate> provision(Executor e)
     {
-        final ListenableFutureTask<ProvisionedServerTemplate> f =
-            new ListenableFutureTask<ProvisionedServerTemplate>(new Callable<ProvisionedServerTemplate>()
+        final ListenableFutureTask<ProvisionedTemplate> f =
+            new ListenableFutureTask<ProvisionedTemplate>(new Callable<ProvisionedTemplate>()
             {
-                public ProvisionedServerTemplate call() throws Exception
+                public ProvisionedTemplate call() throws Exception
                 {
-                    Server server = base.getProvisioner().provision(base);
-                    return new ProvisionedServerTemplate(BoundServerTemplate.this, server);
+                    try {
+                        Server server = base.getProvisioner().provision(base);
+                        return new ProvisionedServerTemplate(BoundServerTemplate.this, server);
+                    }
+                    catch (UnableToProvisionServerException e) {
+                        return new ProvisionedErrorTemplate(getName(), e.getMessage());
+                    }
                 }
             });
         e.execute(f);
