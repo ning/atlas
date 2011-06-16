@@ -39,7 +39,7 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
     }
 
     @Override
-    public ListenableFuture<? extends InitializedTemplate> initialize(Executor ex)
+    public ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, final ProvisionedTemplate root)
     {
         ListenableFutureTask<InitializedServerTemplate> f =
             new ListenableFutureTask<InitializedServerTemplate>(new Callable<InitializedServerTemplate>()
@@ -47,7 +47,7 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
                 @Override
                 public InitializedServerTemplate call() throws Exception
                 {
-                    return new InitializedServerTemplate(getName(), server.initialize());
+                    return new InitializedServerTemplate(getName(), server.initialize(root));
                 }
             });
 

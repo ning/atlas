@@ -11,6 +11,7 @@ import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.collect.Lists;
 import com.ning.atlas.Base;
+import com.ning.atlas.ProvisionedTemplate;
 import com.ning.atlas.Provisioner;
 import com.ning.atlas.Server;
 import org.slf4j.Logger;
@@ -116,9 +117,9 @@ public class EC2Provisioner implements Provisioner
         }
 
         @Override
-        public Server initialize()
+        public Server initialize(ProvisionedTemplate root)
         {
-            return base.initialize(this);
+            return base.initialize(this, root);
         }
     }
 }

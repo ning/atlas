@@ -62,7 +62,7 @@ public class StaticTaggedServerProvisioner implements Provisioner
         }
 
         @Override
-        public Server initialize()
+        public Server initialize(ProvisionedTemplate root)
         {
 
             throw new UnsupportedOperationException("Not Yet Implemented!");

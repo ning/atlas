@@ -1,12 +1,15 @@
 package com.ning.atlas.chef;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.ning.atlas.Base;
 import com.ning.atlas.BoundTemplate;
 import com.ning.atlas.Environment;
 import com.ning.atlas.InitializedServerTemplate;
 import com.ning.atlas.InitializedTemplate;
 import com.ning.atlas.Initializer;
+import com.ning.atlas.ProvisionedServerTemplate;
+import com.ning.atlas.ProvisionedSystemTemplate;
 import com.ning.atlas.ProvisionedTemplate;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
@@ -64,7 +67,8 @@ public class TestUbuntuChefSoloInitializer
         Server s = ec2.provision(new Base("ubuntu", env, ImmutableMap.<String, String>of("ami", "ami-e2af508b")));
 
         try {
-            Server init_server = initializer.initialize(s, "{ \"run_list\": [ \"role[java-core]\" ] }");
+            Server init_server = initializer.initialize(s, "{ \"run_list\": [ \"role[java-core]\" ] }",
+                                                        new ProvisionedSystemTemplate("root", Lists.<ProvisionedTemplate>newArrayList()));
 
 
             SSH ssh = new SSH(new File(props.getProperty("aws.private-key-fle")),
@@ -102,7 +106,7 @@ public class TestUbuntuChefSoloInitializer
         BoundTemplate bt = st.normalize(env);
         ExecutorService ex = Executors.newCachedThreadPool();
         ProvisionedTemplate pt = bt.provision(ex).get();
-        InitializedTemplate it = pt.initialize(ex).get();
+        InitializedTemplate it = pt.initialize(ex, pt).get();
         assertThat(it, instanceOf(InitializedServerTemplate.class));
         InitializedServerTemplate ist = (InitializedServerTemplate) it;
 

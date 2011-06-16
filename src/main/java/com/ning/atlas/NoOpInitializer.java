@@ -10,7 +10,7 @@ public class NoOpInitializer implements Initializer
     }
 
     @Override
-    public Server initialize(Server server, String arg)
+    public Server initialize(Server server, String arg, ProvisionedTemplate root)
     {
         return server;
     }

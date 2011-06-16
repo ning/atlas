@@ -1,31 +1,20 @@
 package com.ning.atlas;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.ning.atlas.Base;
-import com.ning.atlas.BoundServerTemplate;
-import com.ning.atlas.BoundSystemTemplate;
-import com.ning.atlas.BoundTemplate;
-import com.ning.atlas.ProvisionedServerTemplate;
-import com.ning.atlas.ProvisionedTemplate;
-import com.ning.atlas.Provisioner;
-import com.ning.atlas.StaticTaggedServerProvisioner;
 import com.ning.atlas.tree.Trees;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.ning.atlas.testing.AtlasMatchers.containsInstanceOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 public class TestProvisioning

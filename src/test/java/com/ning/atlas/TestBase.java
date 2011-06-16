@@ -22,7 +22,7 @@ public class TestBase
         env.addInitializer("waffle", new Initializer()
         {
             @Override
-            public Server initialize(Server server, String arg)
+            public Server initialize(Server server, String arg, ProvisionedTemplate root)
             {
                 inits.add("waffle+" + arg);
                 return server;
@@ -32,7 +32,7 @@ public class TestBase
         env.addInitializer("pancake", new Initializer()
         {
             @Override
-            public Server initialize(Server server, String arg)
+            public Server initialize(Server server, String arg, ProvisionedTemplate root)
             {
                 inits.add("pancake+" + arg);
                 return server;
@@ -58,11 +58,11 @@ public class TestBase
             }
 
             @Override
-            public Server initialize()
+            public Server initialize(ProvisionedTemplate root)
             {
                 return this;
             }
-        });
+        }, new ProvisionedSystemTemplate("root", Lists.<ProvisionedTemplate>newArrayList()));
 
         assertThat(inits, equalTo(asList("waffle+hut", "pancake+house")));
 

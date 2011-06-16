@@ -3,6 +3,7 @@ package com.ning.atlas.chef;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.ning.atlas.Initializer;
+import com.ning.atlas.ProvisionedTemplate;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
 import org.antlr.stringtemplate.StringTemplate;
@@ -58,7 +59,7 @@ public class UbuntuChefSoloInitializer implements Initializer
     }
 
     @Override
-    public Server initialize(final Server server, final String arg)
+    public Server initialize(final Server server, final String arg, ProvisionedTemplate root)
     {
         try {
             initServer(server, arg);

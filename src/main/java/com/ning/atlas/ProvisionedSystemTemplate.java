@@ -27,13 +27,13 @@ public class ProvisionedSystemTemplate extends ProvisionedTemplate
     }
 
     @Override
-    public ListenableFuture<InitializedTemplate> initialize(Executor ex)
+    public ListenableFuture<InitializedTemplate> initialize(Executor ex, ProvisionedTemplate root)
     {
         final AtomicInteger remaining = new AtomicInteger(getChildren().size());
         final List<InitializedTemplate> init_children = new CopyOnWriteArrayList<InitializedTemplate>();
         final SettableFuture<InitializedTemplate> rs = SettableFuture.create();
         for (ProvisionedTemplate template : getChildren()) {
-            final ListenableFuture<? extends InitializedTemplate> child = template.initialize(ex);
+            final ListenableFuture<? extends InitializedTemplate> child = template.initialize(ex, root);
             child.addListener(new Runnable()
                               {
                                   @Override

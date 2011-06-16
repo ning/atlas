@@ -10,7 +10,7 @@ public class ErrorInitializer implements Initializer
     }
 
     @Override
-    public Server initialize(Server server, String arg)
+    public Server initialize(Server server, String arg, ProvisionedTemplate root)
     {
         throw new UnsupportedOperationException("Not Yet Implemented!");
     }

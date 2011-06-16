@@ -78,7 +78,7 @@ public class Base
         inits.add(initializer);
     }
 
-    public Server initialize(Server server)
+    public Server initialize(Server server, ProvisionedTemplate root)
     {
         Server next = server;
         for (String init : inits) {
@@ -86,7 +86,7 @@ public class Base
             String prefix = init.substring(0, idx);
             String arg = init.substring(idx + 1, init.length());
             Initializer i = initalizers.get(prefix);
-            next = i.initialize(server, arg);
+            next = i.initialize(server, arg, root);
         }
         return next;
     }

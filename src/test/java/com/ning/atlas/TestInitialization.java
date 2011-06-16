@@ -34,7 +34,7 @@ public class TestInitialization
             }
 
             @Override
-            public Server initialize()
+            public Server initialize(ProvisionedTemplate root)
             {
                 initialized.set(true);
                 return this;
@@ -42,7 +42,7 @@ public class TestInitialization
         }));
 
         ProvisionedSystemTemplate root = new ProvisionedSystemTemplate("root", children);
-        InitializedTemplate initialized_root = root.initialize(MoreExecutors.sameThreadExecutor()).get();
+        InitializedTemplate initialized_root = root.initialize(MoreExecutors.sameThreadExecutor(), root).get();
         assertThat(initialized.get(), equalTo(true));
 
         initialized_root.getChildren();
