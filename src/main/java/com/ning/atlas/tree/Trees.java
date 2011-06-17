@@ -1,7 +1,10 @@
 package com.ning.atlas.tree;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+import com.ning.atlas.Template;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Trees
@@ -12,6 +15,22 @@ public class Trees
     {
         return new Director<TreeType, BatonType>(tree, visitor).apply(baton);
     }
+
+    public static <TreeType extends Tree<TreeType>> List<TreeType> find(TreeType tree, final Predicate<TreeType> test)
+    {
+        return visit(tree, new ArrayList<TreeType>(), new BaseVisitor<TreeType, List<TreeType>>()
+        {
+            @Override
+            public List<TreeType> on(TreeType node, List<TreeType> baton)
+            {
+                if (test.apply(node)) {
+                    baton.add(node);
+                }
+                return baton;
+            }
+        });
+    }
+
 
     public static <TreeType extends Tree<TreeType>> List<TreeType> leaves(TreeType root)
     {

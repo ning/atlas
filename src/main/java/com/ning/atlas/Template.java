@@ -15,9 +15,9 @@ public abstract class Template implements Tree<Template>
     private final String type;
     private final List<String> cardinality = new CopyOnWriteArrayList<String>(new String[] {"0"});
 
-    public Template(String name)
+    public Template(String type)
     {
-        this.type = name;
+        this.type = type;
     }
 
     public String getType()
@@ -57,7 +57,7 @@ public abstract class Template implements Tree<Template>
     public String toString()
     {
         return Objects.toStringHelper(this)
-                      .add("name", type)
+                      .add("type", type)
                       .add("cardinality", cardinality)
                       .add("children", getChildren())
                       .toString();

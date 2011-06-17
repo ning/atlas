@@ -131,7 +131,6 @@ public class TestUbuntuChefSoloInitializer
         UbuntuChefSoloInitializer i= new UbuntuChefSoloInitializer(attributes);
 
         String json = i.createNodeJsonFor("role[java-core], recipe[emacs]");
-
         assertThat(mapper.readValue(json, UbuntuChefSoloInitializer.Node.class),
                    equalTo(new UbuntuChefSoloInitializer.Node("role[java-core]", "recipe[emacs]")));
     }

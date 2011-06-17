@@ -2,6 +2,7 @@ package com.ning.atlas;
 
 import com.google.common.collect.Iterables;
 import com.ning.atlas.base.Maybe;
+import com.ning.atlas.base.MorePredicates;
 import com.ning.atlas.tree.Trees;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
@@ -35,6 +36,20 @@ public class TestJRubyTemplateParser
         assertThat(rslv.getCardinality(), equalTo(asList("0", "1", "2", "3", "4", "5", "6", "7")));
         assertThat(rslv.getBase(), equalTo("ubuntu-small"));
         assertThat(rslv.getInstallations(), hasItem("cast:load-balancer-9.3"));
+    }
+
+    @Test
+    public void testCardinalityAsArray() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
+        assertThat(t, notNullValue());
+
+        List<Template> rs = Trees.find(t, MorePredicates.<Template>beanPropertyEquals("type", "aclu"));
+        assertThat(rs.size(), equalTo(1));
+        assertThat(rs.get(0), instanceOf(SystemTemplate.class));
+        SystemTemplate aclu = (SystemTemplate) rs.get(0);
+        assertThat(aclu.getCardinality(), equalTo(asList("aclu0", "aclu1")));
     }
 
     @Test
