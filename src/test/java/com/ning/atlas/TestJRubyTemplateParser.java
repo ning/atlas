@@ -27,12 +27,12 @@ public class TestJRubyTemplateParser
         List<Template> leaves = Trees.leaves(t);
         assertThat(leaves.size(), equalTo(3));
 
-        Template rslv_t = Iterables.find(leaves, beanPropertyEquals("name", "resolver"));
+        Template rslv_t = Iterables.find(leaves, beanPropertyEquals("type", "resolver"));
 
         assertThat(rslv_t, instanceOf(ServerTemplate.class));
         ServerTemplate rslv = (ServerTemplate) rslv_t;
 
-        assertThat(rslv.getCardinality(), equalTo(8));
+        assertThat(rslv.getCardinality(), equalTo(asList("0", "1", "2", "3", "4", "5", "6", "7")));
         assertThat(rslv.getBase(), equalTo("ubuntu-small"));
         assertThat(rslv.getInstallations(), hasItem("cast:load-balancer-9.3"));
     }

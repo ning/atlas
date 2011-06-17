@@ -37,7 +37,7 @@ public class TestProvisionCommand
         String json = new String(buf.toByteArray());
 
         Thing skife = new ObjectMapper().readValue(json, Thing.class);
-        assertThat(skife.name, equalTo("skife"));
+        assertThat(skife.type, equalTo("skife"));
         assertThat(skife.children.size(), equalTo(2));
 
 
@@ -45,7 +45,7 @@ public class TestProvisionCommand
         assertThat(blog.internal_ip, equalTo("10.0.0.1"));
 
         Thing data = skife.children.get(1);
-        assertThat(data.name, equalTo("data"));
+        assertThat(data.type, equalTo("data"));
         assertThat(data.children.size(), equalTo(3));
 
 
@@ -54,11 +54,11 @@ public class TestProvisionCommand
             @Override
             public boolean apply(@Nullable Thing input)
             {
-                return input.name.equals("memcached");
+                return input.type.equals("memcached");
             }
         });
 
-        assertThat(m1.name, equalTo("memcached"));
+        assertThat(m1.type, equalTo("memcached"));
         assertThat(m1.internal_ip, equalTo("10.0.1.1"));
 
         Thing m2 = Iterables.find(data.children, new Predicate<Thing>()
@@ -66,10 +66,10 @@ public class TestProvisionCommand
             @Override
             public boolean apply(@Nullable Thing input)
             {
-                return input.name.equals("memcached") && input != m1;
+                return input.type.equals("memcached") && input != m1;
             }
         });
-        assertThat(m2.name, equalTo("memcached"));
+        assertThat(m2.type, equalTo("memcached"));
         assertThat(m2.internal_ip, equalTo("10.0.1.2"));
 
         Thing db = Iterables.find(data.children, new Predicate<Thing>()
@@ -77,10 +77,10 @@ public class TestProvisionCommand
             @Override
             public boolean apply(@Nullable Thing input)
             {
-                return input.name.equals("db");
+                return input.type.equals("db");
             }
         });
-        assertThat(db.name, equalTo("db"));
+        assertThat(db.type, equalTo("db"));
         assertThat(db.internal_ip, equalTo("10.0.0.2"));
 
     }
@@ -88,6 +88,7 @@ public class TestProvisionCommand
 
     public static class Thing
     {
+        public String      type;
         public String      name;
         public List<Thing> children;
         public String      internal_ip;
@@ -98,6 +99,7 @@ public class TestProvisionCommand
         {
             return "Thing{" +
                    "name='" + name + '\'' +
+                   ", type=" + type +
                    ", children=" + children +
                    ", internal_ip='" + internal_ip + '\'' +
                    ", external_ip='" + external_ip + '\'' +

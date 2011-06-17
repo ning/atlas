@@ -19,7 +19,7 @@ public class TestInitialization
     public void testInitialize() throws Exception
     {
         final AtomicBoolean initialized = new AtomicBoolean(false);
-        List<? extends ProvisionedTemplate> children = asList(new ProvisionedServerTemplate("server", new Server()
+        List<? extends ProvisionedTemplate> children = asList(new ProvisionedServerTemplate("server", "0", new Server()
         {
             @Override
             public String getExternalIpAddress()
@@ -41,7 +41,7 @@ public class TestInitialization
             }
         }));
 
-        ProvisionedSystemTemplate root = new ProvisionedSystemTemplate("root", children);
+        ProvisionedSystemTemplate root = new ProvisionedSystemTemplate("root", "0", children);
         InitializedTemplate initialized_root = root.initialize(MoreExecutors.sameThreadExecutor(), root).get();
         assertThat(initialized.get(), equalTo(true));
 

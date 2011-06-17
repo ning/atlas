@@ -62,7 +62,7 @@ public class TestBase
             {
                 return this;
             }
-        }, new ProvisionedSystemTemplate("root", Lists.<ProvisionedTemplate>newArrayList()));
+        }, new ProvisionedSystemTemplate("root", "0", Lists.<ProvisionedTemplate>newArrayList()));
 
         assertThat(inits, equalTo(asList("waffle+hut", "pancake+house")));
 

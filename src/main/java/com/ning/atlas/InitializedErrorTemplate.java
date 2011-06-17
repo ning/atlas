@@ -9,9 +9,9 @@ public class InitializedErrorTemplate extends InitializedTemplate
 {
     private final String message;
 
-    public InitializedErrorTemplate(String name, String message)
+    public InitializedErrorTemplate(String type, String name, String message)
     {
-        super(name);
+        super(type, name);
         this.message = message;
     }
 

@@ -8,16 +8,23 @@ import java.util.concurrent.Executor;
 
 public abstract class ProvisionedTemplate implements Tree<ProvisionedTemplate>
 {
+    private final String type;
     private final String name;
 
-    public ProvisionedTemplate(String name)
+    public ProvisionedTemplate(String type, String name)
     {
+        this.type = type;
         this.name = name;
     }
 
     public String getName()
     {
         return name;
+    }
+
+    public String getType()
+    {
+        return type;
     }
 
     public abstract List<? extends ProvisionedTemplate> getChildren();

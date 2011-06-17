@@ -1,6 +1,5 @@
 package com.ning.atlas;
 
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import org.codehaus.jackson.annotate.JsonIgnore;
@@ -20,9 +19,9 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
     private final Server server;
 
 
-    public ProvisionedServerTemplate(String name, Server server)
+    public ProvisionedServerTemplate(String type, String name, Server server)
     {
-        super(name);
+        super(type, name);
         this.server = server;
         this.externalIpAddress = server.getExternalIpAddress();
         this.internalIpAddress = server.getInternalIpAddress();
@@ -30,7 +29,7 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
 
     public ProvisionedServerTemplate(BoundServerTemplate boundServerTemplate, Server server)
     {
-        this(boundServerTemplate.getName(), server);
+        this(boundServerTemplate.getType(), boundServerTemplate.getName(), server);
     }
 
     @JsonIgnore
@@ -48,7 +47,7 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
                 @Override
                 public InitializedServerTemplate call() throws Exception
                 {
-                    return new InitializedServerTemplate(getName(), server.initialize(root));
+                    return new InitializedServerTemplate(getType(), getType(), server.initialize(root));
                 }
             });
 

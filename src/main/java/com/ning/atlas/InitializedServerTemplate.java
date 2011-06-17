@@ -11,9 +11,9 @@ public class InitializedServerTemplate extends InitializedTemplate
     @JsonIgnore
     private final Server server;
 
-    public InitializedServerTemplate(String name, Server server)
+    public InitializedServerTemplate(String type, String name, Server server)
     {
-        super(name);
+        super(type, name);
         this.server = server;
     }
 

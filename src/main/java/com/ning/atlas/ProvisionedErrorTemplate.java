@@ -12,9 +12,9 @@ public class ProvisionedErrorTemplate extends ProvisionedTemplate
 {
     private final String message;
 
-    public ProvisionedErrorTemplate(String name, String message)
+    public ProvisionedErrorTemplate(String type, String name, String message)
     {
-        super(name);
+        super(type, name);
         this.message = message;
     }
 
@@ -27,7 +27,7 @@ public class ProvisionedErrorTemplate extends ProvisionedTemplate
     @Override
     public ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, ProvisionedTemplate root)
     {
-        return Futures.immediateFuture(new InitializedErrorTemplate(getName(),
+        return Futures.immediateFuture(new InitializedErrorTemplate(getType(), getType(),
                                                                     "Unable to initialize server because " +
                                                                     "of previous provisioning error, '" +
                                                                     message + "'"));

@@ -2,34 +2,47 @@ package com.ning.atlas;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.ning.atlas.tree.Tree;
 
+import java.util.List;
 import java.util.Stack;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class Template implements Tree<Template>
 {
-    private final String name;
-    private final AtomicInteger cardinality = new AtomicInteger(1);
+    private final String type;
+    private final List<String> cardinality = new CopyOnWriteArrayList<String>(new String[] {"0"});
 
     public Template(String name)
     {
-        this.name = name;
+        this.type = name;
     }
 
-    public String getName()
+    public String getType()
     {
-        return name;
+        return type;
     }
 
-    public int getCardinality()
+    public List<String> getCardinality()
     {
-        return this.cardinality.get();
+        return this.cardinality;
     }
 
     public void setCardinality(int count)
     {
-        this.cardinality.set(count);
+        List<String> names = Lists.newArrayListWithExpectedSize(count);
+        for (int i = 0; i < count; i++) {
+            names.add(String.valueOf(i));
+        }
+        setCardinality(names);
+    }
+
+    public void setCardinality(List<String> names)
+    {
+        this.cardinality.clear();
+        this.cardinality.addAll(names);
     }
 
     public final BoundTemplate normalize(Environment env)
@@ -44,8 +57,8 @@ public abstract class Template implements Tree<Template>
     public String toString()
     {
         return Objects.toStringHelper(this)
-                      .add("name", name)
-                      .add("cardinality", cardinality.get())
+                      .add("name", type)
+                      .add("cardinality", cardinality)
                       .add("children", getChildren())
                       .toString();
     }

@@ -8,16 +8,23 @@ import java.util.concurrent.Executor;
 
 public abstract class BoundTemplate implements Tree<BoundTemplate>
 {
+    private final String type;
     private final String name;
 
-    protected BoundTemplate(String name)
+    protected BoundTemplate(String type, String name)
     {
+        this.type = type;
         this.name = name;
     }
 
     public String getName()
     {
         return name;
+    }
+
+    public String getType()
+    {
+        return type;
     }
 
     public abstract List<BoundTemplate> getChildren();

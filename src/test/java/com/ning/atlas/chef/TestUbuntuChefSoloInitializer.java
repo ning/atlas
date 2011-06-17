@@ -75,7 +75,7 @@ public class TestUbuntuChefSoloInitializer
 
         try {
             Server init_server = initializer.initialize(s, "{ \"run_list\": [ \"role[java-core]\" ] }",
-                                                        new ProvisionedSystemTemplate("root", Lists.<ProvisionedTemplate>newArrayList()));
+                                                        new ProvisionedSystemTemplate("root", "0", Lists.<ProvisionedTemplate>newArrayList()));
 
 
             SSH ssh = new SSH(new File(props.getProperty("aws.private-key-fle")),
@@ -220,12 +220,12 @@ public class TestUbuntuChefSoloInitializer
     @Test
     public void testAtlasSystemMapParsing() throws Exception
     {
-        ProvisionedServerTemplate console = new ProvisionedServerTemplate("galaxy-console", new MyServer("10.0.0.1"));
-        ProvisionedServerTemplate repo = new ProvisionedServerTemplate("galaxy-repo", new MyServer("10.0.0.2"));
-        ProvisionedSystemTemplate root = new ProvisionedSystemTemplate("ning", asList(console, repo));
+        ProvisionedServerTemplate console = new ProvisionedServerTemplate("galaxy-console", "0", new MyServer("10.0.0.1"));
+        ProvisionedServerTemplate repo = new ProvisionedServerTemplate("galaxy-repo", "0", new MyServer("10.0.0.2"));
+        ProvisionedSystemTemplate root = new ProvisionedSystemTemplate("ning", "0", asList(console, repo));
 
         String json = new ObjectMapper().writeValueAsString(root);
-        System.out.println(json );
+
 
     }
 

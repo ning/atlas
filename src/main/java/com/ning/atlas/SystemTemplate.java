@@ -19,10 +19,11 @@ public class SystemTemplate extends Template
     @Override
     protected List<BoundTemplate> normalize(Environment env, Stack<String> names)
     {
-        names.push(getName());
+        names.push(getType());
         List<BoundTemplate> rs = new ArrayList<BoundTemplate>();
-        for (int i = 0; i < env.cardinalityFor(getCardinality(), names); i++) {
-            BoundSystemTemplate dup = new BoundSystemTemplate(this, env, names);
+        List<String> node_names = getCardinality();
+        for (String node_name : node_names) {
+            BoundSystemTemplate dup = new BoundSystemTemplate(this, node_name, env, names);
             rs.add(dup);
         }
         names.pop();

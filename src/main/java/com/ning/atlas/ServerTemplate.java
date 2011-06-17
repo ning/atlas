@@ -18,11 +18,11 @@ public class ServerTemplate extends Template
     @Override
     protected final Iterable<BoundTemplate> normalize(Environment env, Stack<String> names)
     {
-        names.push(getName());
+        names.push(getType());
         final List<BoundTemplate> rs = new ArrayList<BoundTemplate>();
-        for (int i = 0; i < env.cardinalityFor(getCardinality(), names); i++) {
-
-            rs.add(new BoundServerTemplate(this, env, names));
+        List<String> node_names = getCardinality();
+        for (String node_name : node_names) {
+            rs.add(new BoundServerTemplate(this, node_name, env, names));
         }
         names.pop();
         return rs;
@@ -52,7 +52,8 @@ public class ServerTemplate extends Template
      * called by jruby template parser
      */
     @SuppressWarnings({"UnusedDeclaration"})
-    public void setInstall(List<String> installs) {
+    public void setInstall(List<String> installs)
+    {
         this.installations = new ArrayList<String>(installs);
     }
 }

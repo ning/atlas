@@ -32,7 +32,7 @@ public class ProvisionCommand implements Runnable
         ExecutorService ex = Executors.newCachedThreadPool();
         try {
             ProvisionedTemplate t = bound.provision(ex).get();
-            if (t.getName().equals("__ROOT__") && t.getChildren().size() == 1) {
+            if (t.getType().equals("__ROOT__") && t.getChildren().size() == 1) {
                 // lop off the fake root
                 t = t.getChildren().get(0);
             }

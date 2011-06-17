@@ -24,9 +24,9 @@ public class BoundSystemTemplate extends BoundTemplate
     /**
      * All other ctors MUST delegate to thi one, it is canonical
      */
-    public BoundSystemTemplate(String name, Iterable<? extends BoundTemplate> children)
+    public BoundSystemTemplate(String type, String name, Iterable<? extends BoundTemplate> children)
     {
-        super(name);
+        super(type, name);
         this.children = Lists.newArrayList();
         addAll(this.children, children);
     }
@@ -34,9 +34,9 @@ public class BoundSystemTemplate extends BoundTemplate
     /**
      * ctor exists for use during dev, ideally should be removed and use the main ctor
      */
-    public BoundSystemTemplate(SystemTemplate systemTemplate, final Environment env, final Stack<String> names)
+    public BoundSystemTemplate(SystemTemplate systemTemplate, String name, final Environment env, final Stack<String> names)
     {
-        this(systemTemplate.getName(), concat(transform(systemTemplate.getChildren(),
+        this(systemTemplate.getType(), name, concat(transform(systemTemplate.getChildren(),
                                                         new Function<Template, Iterable<BoundTemplate>>()
                                                         {
                                                             public Iterable<BoundTemplate> apply(Template input)
@@ -70,7 +70,7 @@ public class BoundSystemTemplate extends BoundTemplate
                         ProvisionedTemplate pt =  cf.get();
                         p_children.add(pt);
                         if (remaining.decrementAndGet() == 0) {
-                            f.set(new ProvisionedSystemTemplate(getName(), p_children));
+                            f.set(new ProvisionedSystemTemplate(getType(), getName(), p_children));
                         }
                     }
                     catch (InterruptedException e) {

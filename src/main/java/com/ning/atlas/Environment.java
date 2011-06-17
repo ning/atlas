@@ -118,11 +118,6 @@ public class Environment
         return defaultValue.toString();
     }
 
-    public int cardinalityFor(int count, Stack<String> names)
-    {
-        return Integer.parseInt(overrideFor(count, "cardinality", names));
-    }
-
     public void override(String key, String value)
     {
         List<String> parts = newArrayList(Splitter.on(':').split(key));

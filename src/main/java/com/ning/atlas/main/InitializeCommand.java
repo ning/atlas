@@ -34,7 +34,7 @@ public class InitializeCommand implements Runnable
         ExecutorService ex = Executors.newCachedThreadPool();
         try {
             ProvisionedTemplate pt = bound.provision(ex).get();
-            if (pt.getName().equals("__ROOT__") && pt.getChildren().size() == 1) {
+            if (pt.getType().equals("__ROOT__") && pt.getChildren().size() == 1) {
                 // lop off the fake root
                 pt = pt.getChildren().get(0);
             }
