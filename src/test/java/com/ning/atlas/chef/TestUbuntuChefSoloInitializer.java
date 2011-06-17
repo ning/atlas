@@ -16,6 +16,7 @@ import com.ning.atlas.Server;
 import com.ning.atlas.ServerTemplate;
 import com.ning.atlas.ec2.AWSConfig;
 import com.ning.atlas.ec2.EC2Provisioner;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -29,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.ning.atlas.testing.AtlasMatchers.exists;
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
@@ -118,5 +120,97 @@ public class TestUbuntuChefSoloInitializer
         assertThat(out, containsString("Java(TM) SE Runtime Environment"));
         ex.shutdown();
         ec2.destroy(s);
+    }
+
+    @Test
+    @Ignore
+    public void testSystemMapMakesItUp() throws Exception
+    {
+
+        Environment env = new Environment("ec2");
+        env.setProvisioner(ec2);
+
+        ServerTemplate st = new ServerTemplate("server");
+        st.setBase("java-core");
+
+        Base java_core = new Base("java-core", env, ImmutableMap.<String, String>of("ami", "ami-e2af508b"));
+        java_core.addInit("chef-solo:{\"run_list\":[\"role[java-core]\"]}");
+        env.addBase(java_core);
+
+        Map<String, String> attributes =
+            ImmutableMap.of("ssh_user", "ubuntu",
+                            "ssh_key_file", new File(props.getProperty("aws.private-key-fle")).getAbsolutePath(),
+                            "recipe_url", "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz");
+        env.addInitializer("chef-solo", new UbuntuChefSoloInitializer(attributes));
+
+
+        BoundTemplate bt = st.normalize(env);
+        ExecutorService ex = Executors.newCachedThreadPool();
+        ProvisionedTemplate pt = bt.provision(ex).get();
+        InitializedTemplate it = pt.initialize(ex, pt).get();
+        assertThat(it, instanceOf(InitializedServerTemplate.class));
+        InitializedServerTemplate ist = (InitializedServerTemplate) it;
+
+        Server s = ist.getServer();
+        SSH ssh = new SSH(new File(props.getProperty("aws.private-key-fle")),
+                          "ubuntu",
+                          s.getExternalIpAddress());
+        String out = ssh.exec("cat /etc/atlas/system_map.json");
+
+        assertThat(out, containsString("\"name\" : \"server\""));
+        assertThat(out, containsString("externalIP"));
+        assertThat(out, containsString("internalIP"));
+
+        ex.shutdown();
+        ec2.destroy(s);
+    }
+
+    @Test
+    public void testAtlasSystemMapParsing() throws Exception
+    {
+        ProvisionedServerTemplate console = new ProvisionedServerTemplate("galaxy-console", new MyServer("10.0.0.1"));
+        ProvisionedServerTemplate repo = new ProvisionedServerTemplate("galaxy-repo", new MyServer("10.0.0.2"));
+        ProvisionedSystemTemplate root = new ProvisionedSystemTemplate("ning", asList(console, repo));
+
+        String json = new ObjectMapper().writeValueAsString(root);
+        System.out.println(json );
+
+    }
+
+    public static class MyServer implements Server
+    {
+
+        private final String externalIP;
+        private final String internalIP;
+
+        public MyServer(String ip)
+        {
+            this(ip, ip);
+        }
+
+
+        public MyServer(String externalIP, String internalIP)
+        {
+            this.externalIP = externalIP;
+            this.internalIP = internalIP;
+        }
+
+        @Override
+        public String getExternalIpAddress()
+        {
+            return externalIP;
+        }
+
+        @Override
+        public String getInternalIpAddress()
+        {
+            return internalIP;
+        }
+
+        @Override
+        public Server initialize(ProvisionedTemplate root)
+        {
+            return this;
+        }
     }
 }

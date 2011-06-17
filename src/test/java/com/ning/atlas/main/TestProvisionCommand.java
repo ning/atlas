@@ -42,7 +42,7 @@ public class TestProvisionCommand
 
 
         Thing blog = skife.children.get(0);
-        assertThat(blog.internalIP, equalTo("10.0.0.1"));
+        assertThat(blog.internal_ip, equalTo("10.0.0.1"));
 
         Thing data = skife.children.get(1);
         assertThat(data.name, equalTo("data"));
@@ -59,7 +59,7 @@ public class TestProvisionCommand
         });
 
         assertThat(m1.name, equalTo("memcached"));
-        assertThat(m1.internalIP, equalTo("10.0.1.1"));
+        assertThat(m1.internal_ip, equalTo("10.0.1.1"));
 
         Thing m2 = Iterables.find(data.children, new Predicate<Thing>()
         {
@@ -70,7 +70,7 @@ public class TestProvisionCommand
             }
         });
         assertThat(m2.name, equalTo("memcached"));
-        assertThat(m2.internalIP, equalTo("10.0.1.2"));
+        assertThat(m2.internal_ip, equalTo("10.0.1.2"));
 
         Thing db = Iterables.find(data.children, new Predicate<Thing>()
         {
@@ -81,7 +81,7 @@ public class TestProvisionCommand
             }
         });
         assertThat(db.name, equalTo("db"));
-        assertThat(db.internalIP, equalTo("10.0.0.2"));
+        assertThat(db.internal_ip, equalTo("10.0.0.2"));
 
     }
 
@@ -90,8 +90,8 @@ public class TestProvisionCommand
     {
         public String      name;
         public List<Thing> children;
-        public String      internalIP;
-        public String      externalIP;
+        public String      internal_ip;
+        public String      external_ip;
 
         @Override
         public String toString()
@@ -99,8 +99,8 @@ public class TestProvisionCommand
             return "Thing{" +
                    "name='" + name + '\'' +
                    ", children=" + children +
-                   ", internalIP='" + internalIP + '\'' +
-                   ", externalIP='" + externalIP + '\'' +
+                   ", internal_ip='" + internal_ip + '\'' +
+                   ", external_ip='" + external_ip + '\'' +
                    '}';
         }
     }

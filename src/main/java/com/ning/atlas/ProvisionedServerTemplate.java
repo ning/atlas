@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Collections;
 import java.util.List;
@@ -55,11 +56,13 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
         return f;
     }
 
+    @JsonProperty("external_ip")
     public String getExternalIP()
     {
         return externalIpAddress;
     }
 
+    @JsonProperty("internal_ip")
     public String getInternalIP()
     {
         return internalIpAddress;

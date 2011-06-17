@@ -7,6 +7,8 @@ import com.ning.atlas.ProvisionedTemplate;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
 import org.antlr.stringtemplate.StringTemplate;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,12 +22,18 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class UbuntuChefSoloInitializer implements Initializer
 {
+    private final static ObjectMapper mapper = new ObjectMapper();
+
+    static {
+        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+    }
+
     private final static Logger logger = LoggerFactory.getLogger(UbuntuChefSoloInitializer.class);
 
-    private final String          sshUser;
-    private final String          sshKeyFile;
-    private final File            chefSoloInitFile;
-    private final File            soloRbFile;
+    private final String sshUser;
+    private final String sshKeyFile;
+    private final File   chefSoloInitFile;
+    private final File   soloRbFile;
 
     public UbuntuChefSoloInitializer(Map<String, String> attributes)
     {
@@ -61,8 +69,13 @@ public class UbuntuChefSoloInitializer implements Initializer
     @Override
     public Server initialize(final Server server, final String arg, ProvisionedTemplate root)
     {
+
         try {
-            initServer(server, arg);
+            String sys_map = mapper.writeValueAsString(root);
+            File sys_map_file = File.createTempFile("system", "map");
+            Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
+            initServer(server, arg, sys_map_file);
+            sys_map_file.delete();
         }
         catch (IOException e) {
             throw new RuntimeException(e);
@@ -71,7 +84,7 @@ public class UbuntuChefSoloInitializer implements Initializer
     }
 
 
-    private void initServer(Server server, String nodeJson) throws IOException
+    private void initServer(Server server, String nodeJson, File sysMapFile) throws IOException
     {
         SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalIpAddress());
         try {
@@ -90,6 +103,11 @@ public class UbuntuChefSoloInitializer implements Initializer
 
             ssh.scpUpload(soloRbFile, "/tmp/solo.rb");
             ssh.exec("sudo mv /tmp/solo.rb /etc/chef/solo.rb");
+
+            ssh.exec("sudo mkdir /etc/atlas");
+
+            ssh.scpUpload(sysMapFile, "/tmp/system_map.json");
+            ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
 
             logger.debug("about to execute initial chef-solo");
             ssh.exec("sudo chef-solo");
