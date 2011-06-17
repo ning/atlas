@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
+import sun.tools.jstat.Literal;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +32,7 @@ import java.util.concurrent.Executors;
 
 import static com.ning.atlas.testing.AtlasMatchers.exists;
 import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
@@ -38,6 +40,9 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 
 public class TestUbuntuChefSoloInitializer
 {
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+
     private AWSConfig      config;
     private EC2Provisioner ec2;
     private Properties     props;
@@ -82,6 +87,53 @@ public class TestUbuntuChefSoloInitializer
         finally {
             ec2.destroy(s);
         }
+    }
+
+    @Test
+    public void testInitializationVariations() throws Exception
+    {
+        Map<String, String> attributes =
+            ImmutableMap.of("ssh_user", "ubuntu",
+                            "ssh_key_file", new File(props.getProperty("aws.private-key-fle")).getAbsolutePath(),
+                            "recipe_url", "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz");
+
+        UbuntuChefSoloInitializer i= new UbuntuChefSoloInitializer(attributes);
+
+        String json = i.createNodeJsonFor("{ \"run_list\": [ \"role[java-core]\" ] }");
+        assertThat(mapper.readValue(json, UbuntuChefSoloInitializer.Node.class),
+                   equalTo(new UbuntuChefSoloInitializer.Node("role[java-core]")));
+    }
+
+    @Test
+    public void testInitializationVariations2() throws Exception
+    {
+        Map<String, String> attributes =
+            ImmutableMap.of("ssh_user", "ubuntu",
+                            "ssh_key_file", new File(props.getProperty("aws.private-key-fle")).getAbsolutePath(),
+                            "recipe_url", "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz");
+
+        UbuntuChefSoloInitializer i= new UbuntuChefSoloInitializer(attributes);
+
+        String json = i.createNodeJsonFor("role[java-core]");
+
+        assertThat(mapper.readValue(json, UbuntuChefSoloInitializer.Node.class),
+                   equalTo(new UbuntuChefSoloInitializer.Node("role[java-core]")));
+    }
+
+    @Test
+    public void testInitializationVariations3() throws Exception
+    {
+        Map<String, String> attributes =
+            ImmutableMap.of("ssh_user", "ubuntu",
+                            "ssh_key_file", new File(props.getProperty("aws.private-key-fle")).getAbsolutePath(),
+                            "recipe_url", "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz");
+
+        UbuntuChefSoloInitializer i= new UbuntuChefSoloInitializer(attributes);
+
+        String json = i.createNodeJsonFor("role[java-core], recipe[emacs]");
+
+        assertThat(mapper.readValue(json, UbuntuChefSoloInitializer.Node.class),
+                   equalTo(new UbuntuChefSoloInitializer.Node("role[java-core]", "recipe[emacs]")));
     }
 
     @Test

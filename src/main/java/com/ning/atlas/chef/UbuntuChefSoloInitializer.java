@@ -1,5 +1,8 @@
 package com.ning.atlas.chef;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.ning.atlas.Initializer;
@@ -11,14 +14,20 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.net.idn.StringPrep;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Arrays.asList;
 
 public class UbuntuChefSoloInitializer implements Initializer
 {
@@ -74,7 +83,7 @@ public class UbuntuChefSoloInitializer implements Initializer
             String sys_map = mapper.writeValueAsString(root);
             File sys_map_file = File.createTempFile("system", "map");
             Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
-            initServer(server, arg, sys_map_file);
+            initServer(server, createNodeJsonFor(arg), sys_map_file);
             sys_map_file.delete();
         }
         catch (IOException e) {
@@ -114,6 +123,55 @@ public class UbuntuChefSoloInitializer implements Initializer
         }
         finally {
             ssh.close();
+        }
+    }
+
+//    private final ObjectMapper mapper = new ObjectMapper();
+
+    public String createNodeJsonFor(String literal)
+    {
+        if (literal.contains("run_list")) {
+            return literal;
+        }
+        else {
+            Node node = new Node();
+            Iterable<String> split = Splitter.on(Pattern.compile(",\\s*")).split(literal);
+            Iterables.addAll(node.run_list, split);
+            try {
+                return mapper.writeValueAsString(node);
+            }
+            catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+    }
+
+    static final class Node
+    {
+        public List<String> run_list = Lists.newArrayList();
+
+        public Node(String... elems) {
+            run_list.addAll(asList(elems));
+        }
+
+        public Node() {
+            this(new String[] {});
+        }
+
+        @Override
+        public boolean equals(Object o)
+        {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Node node = (Node) o;
+            return !(run_list != null ? !run_list.equals(node.run_list) : node.run_list != null);
+
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return run_list != null ? run_list.hashCode() : 0;
         }
     }
 }
