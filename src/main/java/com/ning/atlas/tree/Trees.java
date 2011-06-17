@@ -31,7 +31,6 @@ public class Trees
         });
     }
 
-
     public static <TreeType extends Tree<TreeType>> List<TreeType> leaves(TreeType root)
     {
         return visit(root, Lists.<TreeType>newArrayList(), new BaseVisitor<TreeType, List<TreeType>>() {
