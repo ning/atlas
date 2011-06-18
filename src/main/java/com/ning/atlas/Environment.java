@@ -78,7 +78,8 @@ public class Environment
         return provisioner.get();
     }
 
-    public void addInitializer(String name, Initializer init) {
+    public void addInitializer(String name, Initializer init)
+    {
         initializers.put(name, init);
     }
 
@@ -125,7 +126,7 @@ public class Environment
         this.overrides.put(new_key, Maps.immutableEntry(parts.get(1), value));
     }
 
-    public Map<String,Initializer> getInitializers()
+    public Map<String, Initializer> getInitializers()
     {
         return initializers;
     }

@@ -14,9 +14,9 @@ public class ProvisionedSystemTemplate extends ProvisionedTemplate
 {
     private List<? extends ProvisionedTemplate> children;
 
-    public ProvisionedSystemTemplate(String type, String name, List<? extends ProvisionedTemplate> children)
+    public ProvisionedSystemTemplate(String type, String name, My my, List<? extends ProvisionedTemplate> children)
     {
-        super(type, name);
+        super(type, name, my);
         this.children = new ArrayList<ProvisionedTemplate>(children);
     }
 
@@ -42,7 +42,10 @@ public class ProvisionedSystemTemplate extends ProvisionedTemplate
                                           final InitializedTemplate ct = child.get();
                                           init_children.add(ct);
                                           if (remaining.decrementAndGet() == 0) {
-                                              rs.set(new InitializedSystemTemplate(getType(), getType(), init_children));
+                                              rs.set(new InitializedSystemTemplate(getType(),
+                                                                                   getType(),
+                                                                                   getMy(),
+                                                                                   init_children));
                                           }
                                       }
                                       catch (InterruptedException e) {

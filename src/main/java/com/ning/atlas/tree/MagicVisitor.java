@@ -13,7 +13,7 @@ public class MagicVisitor<TreeType extends Tree<TreeType>, BatonType> implements
 {
     private static final ConcurrentMap<Class, Dispatcher> DISPATCH_CACHE = new ConcurrentHashMap<Class, Dispatcher>();
 
-    private final Object target;
+    private final Object     target;
     private final Dispatcher dispatcher;
 
     public MagicVisitor()
@@ -114,12 +114,12 @@ public class MagicVisitor<TreeType extends Tree<TreeType>, BatonType> implements
     private static class Dispatcher
     {
         private final Map<Class, Method> entersWithBaton = new HashMap<Class, Method>();
-        private final Map<Class, Method> exitsWithBaton = new HashMap<Class, Method>();
-        private final Map<Class, Method> onsWithBaton = new HashMap<Class, Method>();
+        private final Map<Class, Method> exitsWithBaton  = new HashMap<Class, Method>();
+        private final Map<Class, Method> onsWithBaton    = new HashMap<Class, Method>();
 
         private final Map<Class, Method> entersNoBaton = new HashMap<Class, Method>();
-        private final Map<Class, Method> exitsNoBaton = new HashMap<Class, Method>();
-        private final Map<Class, Method> onsNoBaton = new HashMap<Class, Method>();
+        private final Map<Class, Method> exitsNoBaton  = new HashMap<Class, Method>();
+        private final Map<Class, Method> onsNoBaton    = new HashMap<Class, Method>();
 
 
     }

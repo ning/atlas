@@ -6,14 +6,15 @@ import com.google.common.collect.Lists;
 import com.ning.atlas.tree.Tree;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class Template implements Tree<Template>
 {
     private final String type;
-    private final List<String> cardinality = new CopyOnWriteArrayList<String>(new String[] {"0"});
+    private final List<String> cardinality = new CopyOnWriteArrayList<String>(new String[]{"0"});
+    private My my = new My();
 
     public Template(String type)
     {
@@ -47,7 +48,7 @@ public abstract class Template implements Tree<Template>
 
     public final BoundTemplate normalize(Environment env)
     {
-        Iterable<BoundTemplate> itty =  normalize(env, new Stack<String>());
+        Iterable<BoundTemplate> itty = normalize(env, new Stack<String>());
         return Iterables.getOnlyElement(itty);
     }
 
@@ -61,5 +62,15 @@ public abstract class Template implements Tree<Template>
                       .add("cardinality", cardinality)
                       .add("children", getChildren())
                       .toString();
+    }
+
+    public void setMy(Map<String, Object> of)
+    {
+        this.my = new My(of);
+    }
+
+    public My getMy()
+    {
+        return my;
     }
 }

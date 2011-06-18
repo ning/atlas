@@ -5,7 +5,8 @@ import java.util.Map;
 public class ErrorInitializer implements Initializer
 {
 
-    public ErrorInitializer(Map<String, String> attributes) {
+    public ErrorInitializer(Map<String, String> attributes)
+    {
 
     }
 

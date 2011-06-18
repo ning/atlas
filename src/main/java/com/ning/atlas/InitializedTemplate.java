@@ -6,11 +6,18 @@ public abstract class InitializedTemplate implements Tree<InitializedTemplate>
 {
     private final String type;
     private final String name;
+    private final My     my;
 
-    public InitializedTemplate(String type, String name)
+    public InitializedTemplate(String type, String name, My my)
     {
         this.type = type;
         this.name = name;
+        this.my = my;
+    }
+
+    public My getMy()
+    {
+        return my;
     }
 
     public String getName()

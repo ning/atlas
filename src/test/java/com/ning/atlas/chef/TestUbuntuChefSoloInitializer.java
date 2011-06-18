@@ -8,6 +8,7 @@ import com.ning.atlas.Environment;
 import com.ning.atlas.InitializedServerTemplate;
 import com.ning.atlas.InitializedTemplate;
 import com.ning.atlas.Initializer;
+import com.ning.atlas.My;
 import com.ning.atlas.ProvisionedServerTemplate;
 import com.ning.atlas.ProvisionedSystemTemplate;
 import com.ning.atlas.ProvisionedTemplate;
@@ -21,7 +22,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
-import sun.tools.jstat.Literal;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -75,7 +75,7 @@ public class TestUbuntuChefSoloInitializer
 
         try {
             Server init_server = initializer.initialize(s, "{ \"run_list\": [ \"role[java-core]\" ] }",
-                                                        new ProvisionedSystemTemplate("root", "0", Lists.<ProvisionedTemplate>newArrayList()));
+                                                        new ProvisionedSystemTemplate("root", "0", new My(), Lists.<ProvisionedTemplate>newArrayList()));
 
 
             SSH ssh = new SSH(new File(props.getProperty("aws.private-key-fle")),
@@ -219,9 +219,9 @@ public class TestUbuntuChefSoloInitializer
     @Test
     public void testAtlasSystemMapParsing() throws Exception
     {
-        ProvisionedServerTemplate console = new ProvisionedServerTemplate("galaxy-console", "0", new MyServer("10.0.0.1"));
-        ProvisionedServerTemplate repo = new ProvisionedServerTemplate("galaxy-repo", "0", new MyServer("10.0.0.2"));
-        ProvisionedSystemTemplate root = new ProvisionedSystemTemplate("ning", "0", asList(console, repo));
+        ProvisionedServerTemplate console = new ProvisionedServerTemplate("galaxy-console", "0", new My(), new MyServer("10.0.0.1"));
+        ProvisionedServerTemplate repo = new ProvisionedServerTemplate("galaxy-repo", "0", new My(), new MyServer("10.0.0.2"));
+        ProvisionedSystemTemplate root = new ProvisionedSystemTemplate("ning", "0", new My(), asList(console, repo));
 
         String json = new ObjectMapper().writeValueAsString(root);
 

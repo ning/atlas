@@ -14,15 +14,15 @@ public class BoundServerTemplate extends BoundTemplate
 {
     private final Base base;
 
-    public BoundServerTemplate(String type, String name, Base base)
+    public BoundServerTemplate(String type, String name, My my, Base base)
     {
-        super(type, name);
+        super(type, name, my);
         this.base = base;
     }
 
     public BoundServerTemplate(ServerTemplate serverTemplate, String name, Environment env, Stack<String> names)
     {
-        this(serverTemplate.getType(), name, extractBase(serverTemplate, env, names));
+        this(serverTemplate.getType(), name, serverTemplate.getMy(), extractBase(serverTemplate, env, names));
     }
 
     private static Base extractBase(ServerTemplate serverTemplate, Environment env, Stack<String> names)
@@ -61,7 +61,7 @@ public class BoundServerTemplate extends BoundTemplate
                         return new ProvisionedServerTemplate(BoundServerTemplate.this, server);
                     }
                     catch (UnableToProvisionServerException e) {
-                        return new ProvisionedErrorTemplate(getType(), getName(), e.getMessage());
+                        return new ProvisionedErrorTemplate(getType(), getName(), getMy(), e.getMessage());
                     }
                 }
             });

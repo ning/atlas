@@ -5,7 +5,8 @@ import java.util.Map;
 public class NoOpInitializer implements Initializer
 {
 
-    public NoOpInitializer(Map<String, String> a) {
+    public NoOpInitializer(Map<String, String> a)
+    {
 
     }
 

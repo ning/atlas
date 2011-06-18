@@ -35,7 +35,8 @@ public class SystemTemplate extends Template
         Iterables.addAll(children, normalize);
     }
 
-    public void addChild(Template child) {
+    public void addChild(Template child)
+    {
         children.add(child);
     }
 

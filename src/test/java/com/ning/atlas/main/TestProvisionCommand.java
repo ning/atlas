@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -93,6 +94,7 @@ public class TestProvisionCommand
         public List<Thing> children;
         public String      internal_ip;
         public String      external_ip;
+        public Map<String, Object> my;
 
         @Override
         public String toString()

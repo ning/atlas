@@ -25,9 +25,10 @@ public class EC2Provisioner implements Provisioner
 {
     private final static Logger logger = LoggerFactory.getLogger(EC2Provisioner.class);
     private final AmazonEC2AsyncClient ec2;
-    private final String keypairId;
+    private final String               keypairId;
 
-    public EC2Provisioner(Map<String, String> attributes) {
+    public EC2Provisioner(Map<String, String> attributes)
+    {
         BasicAWSCredentials credentials = new BasicAWSCredentials(attributes.get("access_key"),
                                                                   attributes.get("secret_key"));
         keypairId = attributes.get("keypair_id");

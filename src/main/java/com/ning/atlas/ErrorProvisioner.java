@@ -4,11 +4,13 @@ import java.util.Map;
 
 public class ErrorProvisioner implements Provisioner
 {
-    public ErrorProvisioner(Map<String, String> args) {
+    public ErrorProvisioner(Map<String, String> args)
+    {
 
     }
 
-    public ErrorProvisioner() {
+    public ErrorProvisioner()
+    {
 
     }
 

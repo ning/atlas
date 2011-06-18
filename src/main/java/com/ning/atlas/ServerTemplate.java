@@ -51,9 +51,9 @@ public class ServerTemplate extends Template
     /**
      * called by jruby template parser
      */
-    @SuppressWarnings({"UnusedDeclaration"})
     public void setInstall(List<String> installs)
     {
         this.installations = new ArrayList<String>(installs);
     }
+
 }

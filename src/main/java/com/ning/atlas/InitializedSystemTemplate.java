@@ -8,9 +8,9 @@ public class InitializedSystemTemplate extends InitializedTemplate
 {
     private final List<? extends InitializedTemplate> children;
 
-    public InitializedSystemTemplate(String type, String name, List<? extends InitializedTemplate> children)
+    public InitializedSystemTemplate(String type, String name, My my, List<? extends InitializedTemplate> children)
     {
-        super(type, name);
+        super(type, name, my);
         this.children = Lists.newArrayList(children);
     }
 

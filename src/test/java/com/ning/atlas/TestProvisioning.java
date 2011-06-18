@@ -25,14 +25,14 @@ public class TestProvisioning
         final Provisioner p = new StaticTaggedServerProvisioner(new HashMap<String, Collection<String>>()
         {{ put("concrete", Arrays.asList("10.0.0.1")); }});
 
-        BoundServerTemplate child = new BoundServerTemplate("child", "0", new Base("concrete",
-                                                                              new Environment("tests")
-                                                                              {{ setProvisioner(p); }},
-                                                                              new HashMap<String, String>()
-                                                                              {{put("tag", "concrete");}}
+        BoundServerTemplate child = new BoundServerTemplate("child", "0", new My(), new Base("concrete",
+                                                                                             new Environment("tests")
+                                                                                             {{ setProvisioner(p); }},
+                                                                                             new HashMap<String, String>()
+                                                                                             {{put("tag", "concrete");}}
         ));
 
-        BoundTemplate root = new BoundSystemTemplate("root", "1", Arrays.<BoundTemplate>asList(child));
+        BoundTemplate root = new BoundSystemTemplate("root", "1", new My(), Arrays.<BoundTemplate>asList(child));
 
         ListenableFuture<? extends ProvisionedTemplate> rs = root.provision(Executors.newFixedThreadPool(2));
         ProvisionedTemplate proot = rs.get();
@@ -51,21 +51,21 @@ public class TestProvisioning
         final Provisioner p = new StaticTaggedServerProvisioner(new HashMap<String, Collection<String>>()
         {{ put("concrete", Arrays.asList("10.0.0.1")); }});
 
-        BoundServerTemplate child = new BoundServerTemplate("child", "0", new Base("concrete",
-                                                                              new Environment("tests")
-                                                                              {{ setProvisioner(p); }},
-                                                                              new HashMap<String, String>()
-                                                                              {{put("tag", "concrete");}}
+        BoundServerTemplate child = new BoundServerTemplate("child", "0", new My(), new Base("concrete",
+                                                                                             new Environment("tests")
+                                                                                             {{ setProvisioner(p); }},
+                                                                                             new HashMap<String, String>()
+                                                                                             {{put("tag", "concrete");}}
         ));
 
-        BoundServerTemplate child2 = new BoundServerTemplate("child", "1", new Base("concrete",
-                                                                               new Environment("tests")
-                                                                               {{ setProvisioner(p); }},
-                                                                               new HashMap<String, String>()
-                                                                               {{put("tag", "concrete");}}
+        BoundServerTemplate child2 = new BoundServerTemplate("child", "1", new My(), new Base("concrete",
+                                                                                              new Environment("tests")
+                                                                                              {{ setProvisioner(p); }},
+                                                                                              new HashMap<String, String>()
+                                                                                              {{put("tag", "concrete");}}
         ));
 
-        BoundTemplate root = new BoundSystemTemplate("root", "0", Arrays.<BoundTemplate>asList(child, child2));
+        BoundTemplate root = new BoundSystemTemplate("root", "0", new My(), Arrays.<BoundTemplate>asList(child, child2));
 
         ExecutorService ex = Executors.newFixedThreadPool(2);
         ListenableFuture<? extends ProvisionedTemplate> rs = root.provision(ex);

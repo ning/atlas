@@ -2,7 +2,6 @@ package com.ning.atlas.tree;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
-import com.ning.atlas.Template;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +32,8 @@ public class Trees
 
     public static <TreeType extends Tree<TreeType>> List<TreeType> leaves(TreeType root)
     {
-        return visit(root, Lists.<TreeType>newArrayList(), new BaseVisitor<TreeType, List<TreeType>>() {
+        return visit(root, Lists.<TreeType>newArrayList(), new BaseVisitor<TreeType, List<TreeType>>()
+        {
 
             public List<TreeType> on(TreeType node, List<TreeType> baton)
             {
@@ -47,7 +47,7 @@ public class Trees
 
     private static class Director<TreeType extends Tree<TreeType>, BatonType>
     {
-        private final TreeType tree;
+        private final TreeType                     tree;
         private final Visitor<TreeType, BatonType> visitor;
 
         Director(TreeType tree, Visitor<TreeType, BatonType> visitor)

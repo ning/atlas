@@ -14,14 +14,11 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.net.idn.StringPrep;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -150,12 +147,14 @@ public class UbuntuChefSoloInitializer implements Initializer
     {
         public List<String> run_list = Lists.newArrayList();
 
-        public Node(String... elems) {
+        public Node(String... elems)
+        {
             run_list.addAll(asList(elems));
         }
 
-        public Node() {
-            this(new String[] {});
+        public Node()
+        {
+            this(new String[]{});
         }
 
         @Override

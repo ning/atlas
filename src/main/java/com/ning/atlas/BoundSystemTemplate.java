@@ -24,9 +24,9 @@ public class BoundSystemTemplate extends BoundTemplate
     /**
      * All other ctors MUST delegate to thi one, it is canonical
      */
-    public BoundSystemTemplate(String type, String name, Iterable<? extends BoundTemplate> children)
+    public BoundSystemTemplate(String type, String name, My my, Iterable<? extends BoundTemplate> children)
     {
-        super(type, name);
+        super(type, name, my);
         this.children = Lists.newArrayList();
         addAll(this.children, children);
     }
@@ -36,14 +36,15 @@ public class BoundSystemTemplate extends BoundTemplate
      */
     public BoundSystemTemplate(SystemTemplate systemTemplate, String name, final Environment env, final Stack<String> names)
     {
-        this(systemTemplate.getType(), name, concat(transform(systemTemplate.getChildren(),
-                                                        new Function<Template, Iterable<BoundTemplate>>()
-                                                        {
-                                                            public Iterable<BoundTemplate> apply(Template input)
-                                                            {
-                                                                return input.normalize(env, names);
-                                                            }
-                                                        })));
+        this(systemTemplate.getType(), name, systemTemplate.getMy(),
+             concat(transform(systemTemplate.getChildren(),
+                              new Function<Template, Iterable<BoundTemplate>>()
+                              {
+                                  public Iterable<BoundTemplate> apply(Template in)
+                                  {
+                                      return in.normalize(env, names);
+                                  }
+                              })));
     }
 
     @Override
@@ -63,26 +64,29 @@ public class BoundSystemTemplate extends BoundTemplate
         for (BoundTemplate child : children) {
             final ListenableFuture<? extends ProvisionedTemplate> cf = child.provision(exec);
             cf.addListener(new Runnable()
-            {
-                public void run()
-                {
-                    try {
-                        ProvisionedTemplate pt =  cf.get();
-                        p_children.add(pt);
-                        if (remaining.decrementAndGet() == 0) {
-                            f.set(new ProvisionedSystemTemplate(getType(), getName(), p_children));
-                        }
-                    }
-                    catch (InterruptedException e) {
-                        e.printStackTrace();
-                        System.exit(1);
-                    }
-                    catch (ExecutionException e) {
-                        e.printStackTrace();
-                        System.exit(1);
-                    }
-                }
-            }, MoreExecutors.sameThreadExecutor());
+                           {
+                               public void run()
+                               {
+                                   try {
+                                       ProvisionedTemplate pt = cf.get();
+                                       p_children.add(pt);
+                                       if (remaining.decrementAndGet() == 0) {
+                                           f.set(new ProvisionedSystemTemplate(getType(),
+                                                                               getName(),
+                                                                               getMy(),
+                                                                               p_children));
+                                       }
+                                   }
+                                   catch (InterruptedException e) {
+                                       e.printStackTrace();
+                                       System.exit(1);
+                                   }
+                                   catch (ExecutionException e) {
+                                       e.printStackTrace();
+                                       System.exit(1);
+                                   }
+                               }
+                           }, MoreExecutors.sameThreadExecutor());
         }
 
         return f;

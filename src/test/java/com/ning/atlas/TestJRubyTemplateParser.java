@@ -4,7 +4,9 @@ import com.google.common.collect.Iterables;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.base.MorePredicates;
 import com.ning.atlas.tree.Trees;
-import org.hamcrest.CoreMatchers;
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 
 import java.io.File;
@@ -19,6 +21,8 @@ import static org.junit.matchers.JUnitMatchers.hasItem;
 
 public class TestJRubyTemplateParser
 {
+    public static final JsonFactory factory = new JsonFactory(new ObjectMapper());
+
     @Test
     public void testSimpleSystem() throws Exception
     {
@@ -53,6 +57,26 @@ public class TestJRubyTemplateParser
     }
 
     @Test
+    public void testMyAttributesPopulated() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
+
+        List<Template> leaves = Trees.leaves(t);
+        assertThat(leaves.size(), equalTo(3));
+
+        Template appc = Iterables.find(leaves, beanPropertyEquals("type", "appcore"));
+        My my = appc.getMy();
+        JsonNode json = factory.createJsonParser(my.toJson()).readValueAsTree();
+        assertThat(json.get("waffle").getIntValue(), equalTo(7));
+
+        JsonNode r = json.get("xn.raspberry");
+        assertThat(r.get(0).getIntValue(), equalTo(1));
+        assertThat(r.get(1).getIntValue(), equalTo(2));
+        assertThat(r.get(2).getIntValue(), equalTo(3));
+    }
+
+    @Test
     public void testSimpleEnvironment() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
@@ -63,5 +87,6 @@ public class TestJRubyTemplateParser
         Base b = cs.getValue();
         assertThat(b.getInits(), equalTo(asList("chef-solo:{ \"run_list\": \"role[java-core]\" }")));
     }
+
 
 }

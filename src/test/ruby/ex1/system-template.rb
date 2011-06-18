@@ -19,7 +19,9 @@ system "ning" do
   system "aclu", :cardinality => ["aclu0", "aclu1"] do
     server "appcore", :base => "ubuntu-small",
                       :count => 5,
-                      :install => ["cast:app-server-2.4.37"]
+                      :install => ["cast:app-server-2.4.37"],
+                      "xn.raspberry" => [1,2,3],
+                      "waffle" => 7
 
     server "content", :base => "ubuntu-small",
                       :cardinality => 2,

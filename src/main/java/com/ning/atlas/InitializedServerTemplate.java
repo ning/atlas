@@ -11,9 +11,9 @@ public class InitializedServerTemplate extends InitializedTemplate
     @JsonIgnore
     private final Server server;
 
-    public InitializedServerTemplate(String type, String name, Server server)
+    public InitializedServerTemplate(String type, String name, My my, Server server)
     {
-        super(type, name);
+        super(type, name, my);
         this.server = server;
     }
 
@@ -25,12 +25,14 @@ public class InitializedServerTemplate extends InitializedTemplate
     }
 
     @JsonIgnore
-    public Server getServer() {
+    public Server getServer()
+    {
         return server;
     }
 
     @JsonProperty("external-ip")
-    public String getExternalIP() {
+    public String getExternalIP()
+    {
         return server.getExternalIpAddress();
     }
 }

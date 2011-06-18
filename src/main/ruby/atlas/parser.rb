@@ -146,6 +146,7 @@ module Atlas
         s.send(sym, v) if s.respond_to? sym
       end
       @children.each { | child | s.addChild(child) }
+      s.my = @args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v; a}
       s
     end
 
@@ -172,6 +173,7 @@ module Atlas
         setter = "#{k}=".to_sym
         s.send(setter, v) if s.respond_to? setter
       end
+      s.my = @args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v; a}
       s
     end
   end

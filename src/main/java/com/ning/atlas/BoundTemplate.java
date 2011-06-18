@@ -10,11 +10,13 @@ public abstract class BoundTemplate implements Tree<BoundTemplate>
 {
     private final String type;
     private final String name;
+    private final My     my;
 
-    protected BoundTemplate(String type, String name)
+    protected BoundTemplate(String type, String name, My my)
     {
         this.type = type;
         this.name = name;
+        this.my = my;
     }
 
     public String getName()
@@ -27,6 +29,12 @@ public abstract class BoundTemplate implements Tree<BoundTemplate>
         return type;
     }
 
+    public My getMy()
+    {
+        return my;
+    }
+
     public abstract List<BoundTemplate> getChildren();
+
     public abstract ListenableFuture<? extends ProvisionedTemplate> provision(Executor exec);
 }

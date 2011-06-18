@@ -9,9 +9,9 @@ public class InitializedErrorTemplate extends InitializedTemplate
 {
     private final String message;
 
-    public InitializedErrorTemplate(String type, String name, String message)
+    public InitializedErrorTemplate(String type, String name, My my, String message)
     {
-        super(type, name);
+        super(type, name, my);
         this.message = message;
     }
 
@@ -22,7 +22,8 @@ public class InitializedErrorTemplate extends InitializedTemplate
     }
 
     @JsonProperty("error")
-    public String getError() {
+    public String getError()
+    {
         return message;
     }
 }
