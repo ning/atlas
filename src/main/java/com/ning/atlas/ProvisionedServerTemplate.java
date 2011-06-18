@@ -47,7 +47,7 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
                 @Override
                 public InitializedServerTemplate call() throws Exception
                 {
-                    return new InitializedServerTemplate(getType(), getType(), getMy(), server.initialize(root));
+                    return new InitializedServerTemplate(getType(), getName(), getMy(), server.initialize(root));
                 }
             });
 

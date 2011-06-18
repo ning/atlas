@@ -39,7 +39,9 @@ public class TestEC2Provisioner
     @Ignore("it is expensive to run test every time")
     public void testFoo() throws Exception
     {
-        Server s = ec2.provision(new Base("test-base", new Environment("test-env"), ImmutableMap.of("ami", "ami-a6f504cf")));
+        Server s = ec2.provision(new Base("test-base",
+                                          new Environment("test-env"),
+                                          ImmutableMap.of("ami", "ami-a6f504cf")));
         assertThat(s, notNullValue());
         try {
             assertThat(s.getExternalIpAddress(), notNullValue());

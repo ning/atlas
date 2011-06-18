@@ -43,7 +43,7 @@ public class ProvisionedSystemTemplate extends ProvisionedTemplate
                                           init_children.add(ct);
                                           if (remaining.decrementAndGet() == 0) {
                                               rs.set(new InitializedSystemTemplate(getType(),
-                                                                                   getType(),
+                                                                                   getName(),
                                                                                    getMy(),
                                                                                    init_children));
                                           }
