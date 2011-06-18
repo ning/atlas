@@ -220,6 +220,7 @@ public class TestUbuntuChefSoloInitializer
 
 
     @Test
+    @Ignore("too expensive to run every time")
     public void testEndToEndOnEC2() throws Exception
     {
         Environment env = new Environment("ec2");

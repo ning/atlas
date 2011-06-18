@@ -4,10 +4,10 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Collections;
+import java.util.List;
 
 public class InitializedServerTemplate extends InitializedTemplate
 {
-
     @JsonIgnore
     private final Server server;
 
@@ -19,7 +19,7 @@ public class InitializedServerTemplate extends InitializedTemplate
 
     @JsonIgnore
     @Override
-    public Iterable<? extends InitializedTemplate> getChildren()
+    public List<? extends InitializedTemplate> getChildren()
     {
         return Collections.emptyList();
     }
@@ -34,5 +34,11 @@ public class InitializedServerTemplate extends InitializedTemplate
     public String getExternalIP()
     {
         return server.getExternalIpAddress();
+    }
+
+    @JsonProperty("internal-ip")
+    public String getInternalIP()
+    {
+        return server.getInternalIpAddress();
     }
 }

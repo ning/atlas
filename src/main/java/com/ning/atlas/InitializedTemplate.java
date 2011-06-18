@@ -2,6 +2,8 @@ package com.ning.atlas;
 
 import com.ning.atlas.tree.Tree;
 
+import java.util.List;
+
 public abstract class InitializedTemplate implements Tree<InitializedTemplate>
 {
     private final String type;
@@ -20,16 +22,16 @@ public abstract class InitializedTemplate implements Tree<InitializedTemplate>
         return my;
     }
 
-    public String getName()
+    public final String getName()
     {
         return name;
     }
 
-    public String getType()
+    public final String getType()
     {
         return type;
     }
 
     @Override
-    public abstract Iterable<? extends InitializedTemplate> getChildren();
+    public abstract List<? extends InitializedTemplate> getChildren();
 }
