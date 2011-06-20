@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.base.MorePredicates;
@@ -10,7 +11,9 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import static com.ning.atlas.base.MorePredicates.beanPropertyEquals;
@@ -86,6 +89,20 @@ public class TestJRubyTemplateParser
         assertThat(cs.getValue(), notNullValue());
         Base b = cs.getValue();
         assertThat(b.getInits(), equalTo(asList("chef-solo:{ \"run_list\": \"role[java-core]\" }")));
+    }
+
+    @Test
+    public void testInstallersAreRegistered() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Environment e = p.parseEnvironment(new File("src/test/ruby/ex1/simple-environment.rb")).getChildren().get(0);
+        final Map<String, Installer> m = e.getInstallers();
+
+
+        Map<String, Installer> target = new HashMap<String, Installer>();
+        target.put("ugx", new MicroGalaxyInstaller(ImmutableMap.of("ssh_user", "ubuntu",
+                                                                   "ssh_key_file", "~/.ec2/brianm-ning.pem")));
+        assertThat(m, equalTo(target));
     }
 
 

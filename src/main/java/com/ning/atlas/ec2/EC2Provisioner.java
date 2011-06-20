@@ -122,5 +122,11 @@ public class EC2Provisioner implements Provisioner
         {
             return base.initialize(this, root);
         }
+
+        @Override
+        public Server install()
+        {
+            throw new UnsupportedOperationException("Not Yet Implemented!");
+        }
     }
 }

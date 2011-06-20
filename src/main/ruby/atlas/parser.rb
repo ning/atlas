@@ -86,6 +86,18 @@ module Atlas
       @env.addInitializer(name, init)
     end
 
+    def installer name, clazz, args={}
+      attr = args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v.to_s; a}
+      installer =  com.ning.atlas.JrubyHelper.create(clazz, attr)
+
+      args.each do |k, v|
+        sym = "#{k}=".to_sym
+        installer.send(sym, v) if installer.respond_to? sym
+      end
+
+      @env.addInstaller(name, installer)
+    end
+
 
     def system *args
       #no-op

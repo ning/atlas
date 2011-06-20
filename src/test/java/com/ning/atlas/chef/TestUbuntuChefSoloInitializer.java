@@ -249,41 +249,4 @@ public class TestUbuntuChefSoloInitializer
         ec2.destroy(ist.getServer());
     }
 
-
-
-    public static class MyServer implements Server
-    {
-        private final String externalIP;
-        private final String internalIP;
-
-        public MyServer(String ip)
-        {
-            this(ip, ip);
-        }
-
-
-        public MyServer(String externalIP, String internalIP)
-        {
-            this.externalIP = externalIP;
-            this.internalIP = internalIP;
-        }
-
-        @Override
-        public String getExternalIpAddress()
-        {
-            return externalIP;
-        }
-
-        @Override
-        public String getInternalIpAddress()
-        {
-            return internalIP;
-        }
-
-        @Override
-        public Server initialize(ProvisionedTemplate root)
-        {
-            return this;
-        }
-    }
 }

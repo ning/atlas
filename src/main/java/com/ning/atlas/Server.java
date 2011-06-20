@@ -7,4 +7,6 @@ public interface Server
     public String getInternalIpAddress();
 
     Server initialize(ProvisionedTemplate root);
+
+    Server install();
 }

@@ -39,6 +39,12 @@ public class TestInitialization
                 initialized.set(true);
                 return this;
             }
+
+            @Override
+            public Server install()
+            {
+                throw new UnsupportedOperationException("Not Yet Implemented!");
+            }
         }));
 
         ProvisionedSystemTemplate root = new ProvisionedSystemTemplate("root", "0", new My(), children);

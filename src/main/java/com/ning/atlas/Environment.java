@@ -25,10 +25,9 @@ public class Environment
         synchronizedMultimap(ArrayListMultimap.<String, Map.Entry<String, String>>create());
 
     private final List<Environment> children = new CopyOnWriteArrayList<Environment>();
-
     private final AtomicReference<Provisioner> provisioner = new AtomicReference<Provisioner>(new ErrorProvisioner());
-
     private final Map<String, Initializer> initializers = Maps.newConcurrentMap();
+    private final Map<String, Installer> installers = Maps.newConcurrentMap();
 
     private final String name;
 
@@ -83,6 +82,11 @@ public class Environment
         initializers.put(name, init);
     }
 
+    public void addInstaller(String name, Installer installer)
+    {
+        installers.put(name, installer);
+    }
+
     public Maybe<Base> findBase(final String base, final Stack<String> names)
     {
         String name = overrideFor(base, "base", names);
@@ -129,5 +133,15 @@ public class Environment
     public Map<String, Initializer> getInitializers()
     {
         return initializers;
+    }
+
+    public Map<String, Installer> getInstallers()
+    {
+        return installers;
+    }
+
+    public List<Environment> getChildren()
+    {
+        return children;
     }
 }

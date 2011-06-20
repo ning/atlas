@@ -3,6 +3,7 @@ package com.ning.atlas;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.ning.atlas.chef.StubServer;
 import org.junit.Test;
 
 import javax.naming.ldap.InitialLdapContext;
@@ -43,26 +44,8 @@ public class TestBase
         base.addInit("waffle:hut");
         base.addInit("pancake:house");
 
-        base.initialize(new Server()
-        {
-            @Override
-            public String getExternalIpAddress()
-            {
-                return null;
-            }
-
-            @Override
-            public String getInternalIpAddress()
-            {
-                return null;
-            }
-
-            @Override
-            public Server initialize(ProvisionedTemplate root)
-            {
-                return this;
-            }
-        }, new ProvisionedSystemTemplate("root", "0", new My(), Lists.<ProvisionedTemplate>newArrayList()));
+        base.initialize(new StubServer("10.0.0.1"),
+                        new ProvisionedSystemTemplate("root", "0", new My(), Lists.<ProvisionedTemplate>newArrayList()));
 
         assertThat(inits, equalTo(asList("waffle+hut", "pancake+house")));
 

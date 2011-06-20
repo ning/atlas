@@ -68,6 +68,12 @@ public class StaticTaggedServerProvisioner implements Provisioner
             throw new UnsupportedOperationException("Not Yet Implemented!");
         }
 
+        @Override
+        public Server install()
+        {
+            throw new UnsupportedOperationException("Not Yet Implemented!");
+        }
+
         public String getExternalIpAddress()
         {
             return host;
