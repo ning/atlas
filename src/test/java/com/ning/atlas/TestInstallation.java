@@ -5,7 +5,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.chef.StubServer;
 import org.junit.Test;
 
-import java.security.PrivateKey;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Arrays.asList;

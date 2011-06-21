@@ -37,4 +37,8 @@ public abstract class ProvisionedTemplate implements Tree<ProvisionedTemplate>
     public abstract List<? extends ProvisionedTemplate> getChildren();
 
     public abstract ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, ProvisionedTemplate root);
+
+    public ListenableFuture<? extends InitializedTemplate> initialize(Executor exec) {
+        return initialize(exec, this);
+    }
 }

@@ -10,7 +10,6 @@ import com.ning.atlas.InitializedServerTemplate;
 import com.ning.atlas.InitializedTemplate;
 import com.ning.atlas.Initializer;
 import com.ning.atlas.My;
-import com.ning.atlas.ProvisionedServerTemplate;
 import com.ning.atlas.ProvisionedSystemTemplate;
 import com.ning.atlas.ProvisionedTemplate;
 import com.ning.atlas.SSH;

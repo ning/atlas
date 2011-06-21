@@ -2,6 +2,8 @@ package com.ning.atlas.tree;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+import com.ning.atlas.InstalledServerTemplate;
+import com.ning.atlas.InstalledTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +41,21 @@ public class Trees
             {
                 if (!node.getChildren().iterator().hasNext()) {
                     baton.add(node);
+                }
+                return baton;
+            }
+        });
+    }
+
+    public static <TreeType extends Tree<TreeType>, T extends TreeType> List<T> findInstancesOf(TreeType root, final Class<T> type)
+    {
+        return visit(root, new ArrayList<T>(), new BaseVisitor<TreeType, List<T>>()
+        {
+            @Override
+            public List<T> on(TreeType node, List<T> baton)
+            {
+                if (type.isAssignableFrom(node.getClass())) {
+                    baton.add(type.cast(node));
                 }
                 return baton;
             }
