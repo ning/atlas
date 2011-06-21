@@ -6,6 +6,7 @@ import com.ning.atlas.tree.Trees;
 import org.junit.Before;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
+import sun.tools.tree.FinallyStatement;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,9 +23,8 @@ import static org.junit.Assume.assumeThat;
 public class TestMicroGalaxyInstaller
 {
 
-
-    private Properties props;
-    private AWSConfig config;
+    private Properties     props;
+    private AWSConfig      config;
     private EC2Provisioner ec2;
 
     @Before
@@ -46,8 +46,8 @@ public class TestMicroGalaxyInstaller
         ExecutorService exec = Executors.newCachedThreadPool();
 
         JRubyTemplateParser parser = new JRubyTemplateParser();
-        Template root = parser.parseSystem(new File("src/test/ruby.//test_micro_galaxy_installer.rb"));
-        Environment env = parser.parseEnvironment(new File("src/test/ruby.//test_micro_galaxy_installer.rb"));
+        Template root = parser.parseSystem(new File("src/test/ruby/test_micro_galaxy_installer.rb"));
+        Environment env = parser.parseEnvironment(new File("src/test/ruby/test_micro_galaxy_installer.rb"));
 
         InstalledTemplate installed = root.normalize(env)
                                           .provision(exec).get()
@@ -56,10 +56,13 @@ public class TestMicroGalaxyInstaller
 
 
         List<InstalledServerTemplate> nodes = Trees.findInstancesOf(installed, InstalledServerTemplate.class);
-        assertThat(nodes.size(), equalTo(1));
-
-        for (InstalledServerTemplate node : nodes) {
-            ec2.destroy(node.getServer());
+        try {
+            assertThat(nodes.size(), equalTo(1));
+        }
+        finally {
+            for (InstalledServerTemplate node : nodes) {
+                ec2.destroy(node.getServer());
+            }
         }
     }
 }

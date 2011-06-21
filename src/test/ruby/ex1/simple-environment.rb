@@ -2,7 +2,9 @@ environment "test" do
 
   installer "ugx", com.ning.atlas.MicroGalaxyInstaller, {
       :ssh_user     => "ubuntu",
-      :ssh_key_file => "~/.ec2/brianm-ning.pem"
+      :ssh_key_file => "~/.ec2/brianm-ning.pem",
+      :ugx_user     => "ugx",
+      :ugx_path     => "/home/ugx/deploy"
   }
 
   provisioner com.ning.atlas.ec2.EC2Provisioner, {

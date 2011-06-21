@@ -101,7 +101,9 @@ public class TestJRubyTemplateParser
 
         Map<String, Installer> target = new HashMap<String, Installer>();
         target.put("ugx", new MicroGalaxyInstaller(ImmutableMap.of("ssh_user", "ubuntu",
-                                                                   "ssh_key_file", "~/.ec2/brianm-ning.pem")));
+                                                                   "ssh_key_file", "~/.ec2/brianm-ning.pem",
+                                                                   "ugx_user", "ugx",
+                                                                   "ugx_path", "/home/ugx/deploy")));
         assertThat(m, equalTo(target));
     }
 

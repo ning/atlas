@@ -147,12 +147,12 @@ public class TestUbuntuChefSoloInitializer
         st.setBase("java-core");
 
         Base java_core = new Base("java-core", env, ImmutableMap.<String, String>of("ami", "ami-e2af508b"));
-        java_core.addInit("chef-solo:{\"run_list\":[\"role[java-core]\"]}");
+        java_core.addInit("chef-solo:role[java-core]");
         env.addBase(java_core);
 
         Map<String, String> attributes =
             ImmutableMap.of("ssh_user", "ubuntu",
-                            "ssh_key_file", new File(props.getProperty("aws.private-key-fle")).getAbsolutePath(),
+                            "ssh_key_file", new File(props.getProperty("aws.key-file-path")).getAbsolutePath(),
                             "recipe_url", "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz");
         env.addInitializer("chef-solo", new UbuntuChefSoloInitializer(attributes));
 
