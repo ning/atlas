@@ -15,12 +15,14 @@ public class Base
     private final Provisioner              provisioner;
     private final Map<String, Initializer> initalizers;
     private final List<String> inits = new CopyOnWriteArrayList<String>();
+    private final Map<String, Installer> installers;
 
     public Base(String name, Environment env, Map<String, String> attributes)
     {
         this.name = name;
         this.provisioner = env.getProvisioner();
         this.initalizers = env.getInitializers();
+        this.installers = env.getInstallers();
         this.attributes.putAll(attributes);
     }
 
@@ -94,5 +96,10 @@ public class Base
     public List<String> getInits()
     {
         return inits;
+    }
+
+    public Installer getInstaller(String prefix)
+    {
+        return installers.get(prefix);
     }
 }

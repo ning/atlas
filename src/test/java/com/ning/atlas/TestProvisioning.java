@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -25,12 +26,14 @@ public class TestProvisioning
         final Provisioner p = new StaticTaggedServerProvisioner(new HashMap<String, Collection<String>>()
         {{ put("concrete", Arrays.asList("10.0.0.1")); }});
 
-        BoundServerTemplate child = new BoundServerTemplate("child", "0", new My(), new Base("concrete",
-                                                                                             new Environment("tests")
-                                                                                             {{ setProvisioner(p); }},
-                                                                                             new HashMap<String, String>()
-                                                                                             {{put("tag", "concrete");}}
-        ));
+        Base base = new Base("concrete",
+                             new Environment("tests")
+                             {{ setProvisioner(p); }},
+                             new HashMap<String, String>()
+                             {{put("tag", "concrete");}}
+        );
+
+        BoundServerTemplate child = new BoundServerTemplate("child", "0", new My(), base, Collections.<String>emptyList());
 
         BoundTemplate root = new BoundSystemTemplate("root", "1", new My(), Arrays.<BoundTemplate>asList(child));
 
@@ -51,19 +54,16 @@ public class TestProvisioning
         final Provisioner p = new StaticTaggedServerProvisioner(new HashMap<String, Collection<String>>()
         {{ put("concrete", Arrays.asList("10.0.0.1")); }});
 
-        BoundServerTemplate child = new BoundServerTemplate("child", "0", new My(), new Base("concrete",
-                                                                                             new Environment("tests")
-                                                                                             {{ setProvisioner(p); }},
-                                                                                             new HashMap<String, String>()
-                                                                                             {{put("tag", "concrete");}}
-        ));
+        Base base1 = new Base("concrete",
+                              new Environment("tests")
+                              {{ setProvisioner(p); }},
+                              new HashMap<String, String>()
+                              {{put("tag", "concrete");}}
+        );
+        BoundServerTemplate child = new BoundServerTemplate("child", "0", new My(), base1, Collections.<String>emptyList());
 
-        BoundServerTemplate child2 = new BoundServerTemplate("child", "1", new My(), new Base("concrete",
-                                                                                              new Environment("tests")
-                                                                                              {{ setProvisioner(p); }},
-                                                                                              new HashMap<String, String>()
-                                                                                              {{put("tag", "concrete");}}
-        ));
+
+        BoundServerTemplate child2 = new BoundServerTemplate("child", "1", new My(), base1, Collections.<String>emptyList());
 
         BoundTemplate root = new BoundSystemTemplate("root", "0", new My(), Arrays.<BoundTemplate>asList(child, child2));
 

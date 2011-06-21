@@ -4,6 +4,7 @@ import com.ning.atlas.ec2.AWSConfig;
 import com.ning.atlas.ec2.EC2Provisioner;
 import com.ning.atlas.tree.Trees;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
 import sun.tools.tree.FinallyStatement;
@@ -41,6 +42,7 @@ public class TestMicroGalaxyInstaller
     }
 
     @Test
+    @Ignore("too expensive to run every time")
     public void testEndToEnd() throws Exception
     {
         ExecutorService exec = Executors.newCachedThreadPool();

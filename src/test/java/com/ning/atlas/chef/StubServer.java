@@ -1,5 +1,7 @@
 package com.ning.atlas.chef;
 
+import com.ning.atlas.Base;
+import com.ning.atlas.Environment;
 import com.ning.atlas.ProvisionedTemplate;
 import com.ning.atlas.Server;
 
@@ -7,6 +9,7 @@ public class StubServer implements Server
 {
     private final String externalIP;
     private final String internalIP;
+    private final Base base;
 
     public StubServer(String ip)
     {
@@ -16,8 +19,14 @@ public class StubServer implements Server
 
     public StubServer(String externalIP, String internalIP)
     {
+        this(externalIP, new Base("base", new Environment("environment")));
+    }
+
+    public StubServer(String externalIP, Base base)
+    {
         this.externalIP = externalIP;
-        this.internalIP = internalIP;
+        this.internalIP = externalIP;
+        this.base = base;
     }
 
     @Override
@@ -39,8 +48,8 @@ public class StubServer implements Server
     }
 
     @Override
-    public Server install()
+    public Base getBase()
     {
-        return this;
+        return base;
     }
 }

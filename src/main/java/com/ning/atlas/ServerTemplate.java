@@ -22,7 +22,7 @@ public class ServerTemplate extends Template
         final List<BoundTemplate> rs = new ArrayList<BoundTemplate>();
         List<String> node_names = getCardinality();
         for (String node_name : node_names) {
-            rs.add(new BoundServerTemplate(this, node_name, env, names));
+            rs.add(new BoundServerTemplate(this, node_name, env, names, installations));
         }
         names.pop();
         return rs;

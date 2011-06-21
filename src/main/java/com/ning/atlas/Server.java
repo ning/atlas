@@ -8,5 +8,5 @@ public interface Server
 
     Server initialize(ProvisionedTemplate root);
 
-    Server install();
+    Base getBase();
 }

@@ -13,16 +13,26 @@ import java.util.concurrent.Executor;
 public class BoundServerTemplate extends BoundTemplate
 {
     private final Base base;
+    private final List<String> installations;
 
-    public BoundServerTemplate(String type, String name, My my, Base base)
+    public BoundServerTemplate(String type, String name, My my, Base base, List<String> installations)
     {
         super(type, name, my);
         this.base = base;
+        this.installations = installations;
     }
 
-    public BoundServerTemplate(ServerTemplate serverTemplate, String name, Environment env, Stack<String> names)
+    public BoundServerTemplate(ServerTemplate serverTemplate,
+                               String name,
+                               Environment env,
+                               Stack<String> names,
+                               List<String> installations)
     {
-        this(serverTemplate.getType(), name, serverTemplate.getMy(), extractBase(serverTemplate, env, names));
+        this(serverTemplate.getType(),
+             name,
+             serverTemplate.getMy(),
+             extractBase(serverTemplate, env, names),
+             installations);
     }
 
     private static Base extractBase(ServerTemplate serverTemplate, Environment env, Stack<String> names)
@@ -58,7 +68,7 @@ public class BoundServerTemplate extends BoundTemplate
                 {
                     try {
                         Server server = base.getProvisioner().provision(base);
-                        return new ProvisionedServerTemplate(BoundServerTemplate.this, server);
+                        return new ProvisionedServerTemplate(BoundServerTemplate.this, server, installations);
                     }
                     catch (UnableToProvisionServerException e) {
                         return new ProvisionedErrorTemplate(getType(), getName(), getMy(), e.getMessage());

@@ -124,9 +124,9 @@ public class EC2Provisioner implements Provisioner
         }
 
         @Override
-        public Server install()
+        public Base getBase()
         {
-            throw new UnsupportedOperationException("Not Yet Implemented!");
+            return base;
         }
     }
 }

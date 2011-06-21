@@ -95,7 +95,7 @@ public class TestUbuntuChefSoloInitializer
     {
         Map<String, String> attributes =
             ImmutableMap.of("ssh_user", "ubuntu",
-                            "ssh_key_file", new File(props.getProperty("aws.private-key-fle")).getAbsolutePath(),
+                            "ssh_key_file", new File(props.getProperty("aws.key-file-path")).getAbsolutePath(),
                             "recipe_url", "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz");
 
         UbuntuChefSoloInitializer i= new UbuntuChefSoloInitializer(attributes);
@@ -110,7 +110,7 @@ public class TestUbuntuChefSoloInitializer
     {
         Map<String, String> attributes =
             ImmutableMap.of("ssh_user", "ubuntu",
-                            "ssh_key_file", new File(props.getProperty("aws.private-key-fle")).getAbsolutePath(),
+                            "ssh_key_file", new File(props.getProperty("aws.key-file-path")).getAbsolutePath(),
                             "recipe_url", "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz");
 
         UbuntuChefSoloInitializer i= new UbuntuChefSoloInitializer(attributes);
@@ -126,7 +126,7 @@ public class TestUbuntuChefSoloInitializer
     {
         Map<String, String> attributes =
             ImmutableMap.of("ssh_user", "ubuntu",
-                            "ssh_key_file", new File(props.getProperty("aws.private-key-fle")).getAbsolutePath(),
+                            "ssh_key_file", new File(props.getProperty("aws.key-file-path")).getAbsolutePath(),
                             "recipe_url", "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz");
 
         UbuntuChefSoloInitializer i= new UbuntuChefSoloInitializer(attributes);

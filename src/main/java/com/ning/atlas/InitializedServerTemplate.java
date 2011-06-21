@@ -14,11 +14,13 @@ public class InitializedServerTemplate extends InitializedTemplate
 {
     @JsonIgnore
     private final Server server;
+    private final List<String> installations;
 
-    public InitializedServerTemplate(String type, String name, My my, Server server)
+    public InitializedServerTemplate(String type, String name, My my, Server server, List<String> installations)
     {
         super(type, name, my);
         this.server = server;
+        this.installations = installations;
     }
 
     @JsonIgnore
@@ -37,8 +39,16 @@ public class InitializedServerTemplate extends InitializedTemplate
                 @Override
                 public InstalledTemplate call() throws Exception
                 {
-                    Server installed = server.install();
-                    return new InstalledServerTemplate(getType(), getName(), getMy(), installed);
+                    for (String installation : installations) {
+                        int offset = installation.indexOf(':');
+                        String prefix = installation.substring(0, offset);
+                        String fragment = installation.substring(offset + 1, installation.length());
+
+                        Installer installer = server.getBase().getInstaller(prefix);
+                        installer.install(server, fragment);
+                    }
+
+                    return new InstalledServerTemplate(getType(), getName(), getMy(), server);
                 }
             });
         exec.execute(f);

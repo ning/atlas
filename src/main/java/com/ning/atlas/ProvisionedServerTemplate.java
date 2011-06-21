@@ -17,19 +17,25 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
 
     @JsonIgnore
     private final Server server;
+    private final List<String> installations;
 
 
-    public ProvisionedServerTemplate(String type, String name, My my, Server server)
+    public ProvisionedServerTemplate(String type, String name, My my, Server server, List<String> installations)
     {
         super(type, name, my);
         this.server = server;
+        this.installations = installations;
         this.externalIpAddress = server.getExternalIpAddress();
         this.internalIpAddress = server.getInternalIpAddress();
     }
 
-    public ProvisionedServerTemplate(BoundServerTemplate boundServerTemplate, Server server)
+    public ProvisionedServerTemplate(BoundServerTemplate boundServerTemplate, Server server, List<String> installations)
     {
-        this(boundServerTemplate.getType(), boundServerTemplate.getName(), boundServerTemplate.getMy(), server);
+        this(boundServerTemplate.getType(),
+             boundServerTemplate.getName(),
+             boundServerTemplate.getMy(),
+             server,
+             installations);
     }
 
     @JsonIgnore
@@ -47,7 +53,11 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
                 @Override
                 public InitializedServerTemplate call() throws Exception
                 {
-                    return new InitializedServerTemplate(getType(), getName(), getMy(), server.initialize(root));
+                    return new InitializedServerTemplate(getType(),
+                                                         getName(),
+                                                         getMy(),
+                                                         server.initialize(root),
+                                                         installations);
                 }
             });
 
