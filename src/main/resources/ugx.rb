@@ -37,12 +37,10 @@ def status
   system("#{Flags.root}/bin/launcher status")
 end
 
-
 class Whee
   attr_accessor :tar, :host, :root, :binary_repo_base
   attr_accessor :repository, :binary_url, :config_path
 end
-
 
 def load_defaults
   flags = Whee.new

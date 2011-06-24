@@ -61,13 +61,6 @@ public class StaticTaggedServerProvisioner implements Provisioner
             return base;
         }
 
-        @Override
-        public Server initialize(ProvisionedTemplate root)
-        {
-
-            throw new UnsupportedOperationException("Not Yet Implemented!");
-        }
-
         public String getExternalIpAddress()
         {
             return host;

@@ -42,12 +42,6 @@ public class StubServer implements Server
     }
 
     @Override
-    public Server initialize(ProvisionedTemplate root)
-    {
-        return this;
-    }
-
-    @Override
     public Base getBase()
     {
         return base;

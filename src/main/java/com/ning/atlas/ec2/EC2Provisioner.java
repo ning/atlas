@@ -118,12 +118,6 @@ public class EC2Provisioner implements Provisioner
         }
 
         @Override
-        public Server initialize(ProvisionedTemplate root)
-        {
-            return base.initialize(this, root);
-        }
-
-        @Override
         public Base getBase()
         {
             return base;

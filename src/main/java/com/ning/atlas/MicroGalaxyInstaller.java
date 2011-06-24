@@ -1,11 +1,13 @@
 package com.ning.atlas;
 
-import org.apache.commons.logging.impl.SimpleLog;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -14,14 +16,24 @@ public class MicroGalaxyInstaller implements Installer
 {
     private final Logger log = LoggerFactory.getLogger(MicroGalaxyInstaller.class);
 
-
     private final String sshUser;
     private final String sshKeyFile;
     private final String microGalaxyUser;
     private final String microGalaxyRoot;
+    private final File ugxFile;
 
     public MicroGalaxyInstaller(Map<String, String> attributes)
     {
+        try {
+            this.ugxFile = File.createTempFile("ugx", ".rb");
+            InputStream in = MicroGalaxyInstaller.class.getResourceAsStream("/ugx.rb");
+            Files.write(ByteStreams.toByteArray(in), this.ugxFile);
+            in.close();
+        }
+        catch (IOException e) {
+            throw new IllegalStateException("Unable to create temp file", e);
+        }
+
 
 
         this.sshUser = attributes.get("ssh_user");
@@ -43,10 +55,11 @@ public class MicroGalaxyInstaller implements Installer
         SSH ssh = null;
         try {
             ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalIpAddress());
-
-            throw new UnsupportedOperationException("Not Yet Implemented!");
-//            ssh.scpUpload();
-
+            ssh.scpUpload(ugxFile, "/tmp/ugx.rb");
+            ssh.exec("chown " + microGalaxyUser + " /tmp/ugx.rb");
+            ssh.exec("chmod +x /tmp/ugx.rb");
+            ssh.exec("sudo -u " + microGalaxyUser  + " mv /tmp/ugx.rb ~" + microGalaxyUser + "/");
+            throw new UnsupportedOperationException("ugx should be installed via chef");
         }
         catch (IOException e) {
 

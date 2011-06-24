@@ -6,7 +6,5 @@ public interface Server
 
     public String getInternalIpAddress();
 
-    Server initialize(ProvisionedTemplate root);
-
     Base getBase();
 }
