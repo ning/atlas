@@ -95,7 +95,6 @@ public class EC2Provisioner implements Provisioner
 
     private final class EC2Server implements Server
     {
-
         private final Base     base;
         private final Instance instance;
 

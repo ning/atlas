@@ -12,7 +12,7 @@ def deploy
   FileUtils.mkdir_p Flags.root
   file = Tempfile.new "ugx"
   open Flags.binary_url do |io|
-    File.open(file, 'w') do |fio|
+    file.open do |fio|
       fio.write io.read
     end
   end

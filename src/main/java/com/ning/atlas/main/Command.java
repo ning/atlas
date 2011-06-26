@@ -25,6 +25,15 @@ public enum Command
             {
                 return new InitializeCommand(mo);
             }
+        },
+
+    install
+        {
+            @Override
+            public Runnable create(MainOptions mo)
+            {
+                return new InstallCommand(mo);
+            }
         };
 
     public abstract Runnable create(MainOptions mo);
