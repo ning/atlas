@@ -2,6 +2,8 @@ package com.ning.atlas;
 
 import com.ning.atlas.tree.Tree;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class InstalledTemplate implements Tree<InstalledTemplate>
@@ -20,7 +22,7 @@ public class InstalledTemplate implements Tree<InstalledTemplate>
     @Override
     public List<? extends InstalledTemplate> getChildren()
     {
-        return null;
+        return Collections.emptyList();
     }
 
 

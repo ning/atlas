@@ -89,37 +89,23 @@ public class EC2Provisioner implements Provisioner
     public void destroy(Server server)
     {
         EC2Server ec2s = EC2Server.class.cast(server);
-        TerminateInstancesRequest tr = new TerminateInstancesRequest(asList(ec2s.instance.getInstanceId()));
+        TerminateInstancesRequest tr = new TerminateInstancesRequest(asList(ec2s.getInstanceId()));
         ec2.terminateInstances(tr);
     }
 
-    private final class EC2Server implements Server
+    private final class EC2Server extends Server
     {
-        private final Base     base;
-        private final Instance instance;
+        private final String instanceId;
 
         EC2Server(Base base, Instance instance)
         {
-            this.base = base;
-            this.instance = instance;
+            super(instance.getPrivateDnsName(), instance.getPublicDnsName(), base);
+            this.instanceId = instance.getInstanceId();
         }
 
-        @Override
-        public String getExternalIpAddress()
+        public String getInstanceId()
         {
-            return instance.getPublicIpAddress();
-        }
-
-        @Override
-        public String getInternalIpAddress()
-        {
-            return instance.getPrivateIpAddress();
-        }
-
-        @Override
-        public Base getBase()
-        {
-            return base;
+            return instanceId;
         }
     }
 }

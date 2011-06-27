@@ -33,7 +33,7 @@ public class TestStaticTaggedServerProvisioner
 
         assertThat(leaves.get(0), instanceOf(ProvisionedServerTemplate.class));
         ProvisionedServerTemplate pst = (ProvisionedServerTemplate) leaves.get(0);
-        assertThat(pst.getExternalIP(), equalTo("10.0.0.1"));
+        assertThat(pst.getServer().getExternalIpAddress(), equalTo("10.0.0.1"));
 
     }
 }

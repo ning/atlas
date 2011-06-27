@@ -1,6 +1,5 @@
 package com.ning.atlas;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -43,42 +42,11 @@ public class StaticTaggedServerProvisioner implements Provisioner
 
     }
 
-    private static class MyServer implements Server
+    private static class MyServer extends Server
     {
-        private final String host;
-        private final Base   base;
-
         public MyServer(String host, Base base)
         {
-            this.host = host;
-
-            this.base = base;
-        }
-
-
-        public Base getBase()
-        {
-            return base;
-        }
-
-        public String getExternalIpAddress()
-        {
-            return host;
-        }
-
-        public String getInternalIpAddress()
-        {
-            return host;
-        }
-
-        @Override
-        public String toString()
-        {
-            return Objects.toStringHelper(this)
-                          .add("externalIpAddress", getExternalIpAddress())
-                          .add("internalIpAddress", getInternalIpAddress())
-                          .add("base", getBase())
-                          .toString();
+            super(host, host, base);
         }
     }
 }

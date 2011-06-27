@@ -12,9 +12,6 @@ import java.util.concurrent.Executor;
 
 public class ProvisionedServerTemplate extends ProvisionedTemplate
 {
-    private final String externalIpAddress;
-    private final String internalIpAddress;
-
     @JsonIgnore
     private final Server server;
     private final List<String> installations;
@@ -25,8 +22,6 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
         super(type, name, my);
         this.server = server;
         this.installations = installations;
-        this.externalIpAddress = server.getExternalIpAddress();
-        this.internalIpAddress = server.getInternalIpAddress();
     }
 
     public ProvisionedServerTemplate(BoundServerTemplate boundServerTemplate, Server server, List<String> installations)
@@ -67,15 +62,7 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
         return f;
     }
 
-    @JsonProperty("external_ip")
-    public String getExternalIP()
-    {
-        return externalIpAddress;
-    }
-
-    @JsonProperty("internal_ip")
-    public String getInternalIP()
-    {
-        return internalIpAddress;
+    public Server getServer() {
+        return server;
     }
 }

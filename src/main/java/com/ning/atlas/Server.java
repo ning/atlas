@@ -1,10 +1,35 @@
 package com.ning.atlas;
 
-public interface Server
+import org.codehaus.jackson.annotate.JsonIgnore;
+
+public class Server
 {
-    public String getExternalIpAddress();
 
-    public String getInternalIpAddress();
+    private final String internalIp;
+    private final String externalIp;
 
-    Base getBase();
+    @JsonIgnore
+    private final Base base;
+
+    public Server(String internalIp, String externalIp, Base base)
+    {
+        this.internalIp = internalIp;
+        this.externalIp = externalIp;
+        this.base = base;
+    }
+
+    public String getExternalIpAddress()
+    {
+        return externalIp;
+    }
+
+    public String getInternalIpAddress()
+    {
+        return internalIp;
+    }
+
+    Base getBase()
+    {
+        return base;
+    }
 }
