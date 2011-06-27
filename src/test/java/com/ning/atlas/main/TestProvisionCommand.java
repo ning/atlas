@@ -38,7 +38,7 @@ public class TestProvisionCommand
 
 
         Thing blog = skife.children.get(0);
-        assertThat(blog.server.internalIpAddress, equalTo("10.0.0.1"));
+        assertThat(blog.server.internal_address, equalTo("10.0.0.1"));
 
         Thing data = skife.children.get(1);
         assertThat(data.type, equalTo("data"));
@@ -55,7 +55,7 @@ public class TestProvisionCommand
         });
 
         assertThat(m1.type, equalTo("memcached"));
-        assertThat(m1.server.internalIpAddress, equalTo("10.0.1.1"));
+        assertThat(m1.server.internal_address, equalTo("10.0.1.1"));
 
         Thing m2 = Iterables.find(data.children, new Predicate<Thing>()
         {
@@ -66,7 +66,7 @@ public class TestProvisionCommand
             }
         });
         assertThat(m2.type, equalTo("memcached"));
-        assertThat(m2.server.internalIpAddress, equalTo("10.0.1.2"));
+        assertThat(m2.server.internal_address, equalTo("10.0.1.2"));
 
         Thing db = Iterables.find(data.children, new Predicate<Thing>()
         {
@@ -77,20 +77,21 @@ public class TestProvisionCommand
             }
         });
         assertThat(db.type, equalTo("db"));
-        assertThat(db.server.internalIpAddress, equalTo("10.0.0.2"));
+        assertThat(db.server.internal_address, equalTo("10.0.0.2"));
 
     }
 
 
-    public static class S {
-        public String      internalIpAddress;
-        public String      externalIpAddress;
+    public static class S
+    {
+        public String internal_address;
+        public String external_address;
     }
 
     public static class Thing
     {
-        public String      type;
-        public String      name;
+        public String type;
+        public String name;
         public List<Thing> children;
         public Map<String, Object> my;
         public S server;
