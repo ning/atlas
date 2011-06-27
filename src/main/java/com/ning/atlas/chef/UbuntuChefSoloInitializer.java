@@ -73,22 +73,17 @@ public class UbuntuChefSoloInitializer implements Initializer
     }
 
     @Override
-    public Server initialize(final Server server, final String arg, ProvisionedTemplate root)
+    public Server initialize(final Server server, final String arg, ProvisionedTemplate root) throws Exception
     {
         boolean done = true;
-        do  {
-            try {
-                String sys_map = mapper.writeValueAsString(root);
-                File sys_map_file = File.createTempFile("system", "map");
-                Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
-                initServer(server, createNodeJsonFor(arg), sys_map_file);
-                sys_map_file.delete();
-            }
-            catch (IOException e) {
-                logger.warn("error while trying to initialize", e);
-                done = false;
-            }
-        } while (!done);
+        do {
+            String sys_map = mapper.writeValueAsString(root);
+            File sys_map_file = File.createTempFile("system", "map");
+            Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
+            initServer(server, createNodeJsonFor(arg), sys_map_file);
+            sys_map_file.delete();
+        }
+        while (!done);
         return server;
     }
 

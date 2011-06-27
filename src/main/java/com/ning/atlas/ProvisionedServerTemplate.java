@@ -42,19 +42,24 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
     @Override
     public ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, final ProvisionedTemplate root)
     {
-        ListenableFutureTask<InitializedServerTemplate> f =
-            new ListenableFutureTask<InitializedServerTemplate>(new Callable<InitializedServerTemplate>()
+        ListenableFutureTask<InitializedTemplate> f =
+            new ListenableFutureTask<InitializedTemplate>(new Callable<InitializedTemplate>()
             {
                 @Override
-                public InitializedServerTemplate call() throws Exception
+                public InitializedTemplate call() throws Exception
                 {
 
-                    final Server rs = server.getBase().initialize(server, root);
-                    return new InitializedServerTemplate(getType(),
-                                                         getName(),
-                                                         getMy(),
-                                                         rs,
-                                                         installations);
+                    try {
+                        final Server rs = server.getBase().initialize(server, root);
+                        return new InitializedServerTemplate(getType(),
+                                                             getName(),
+                                                             getMy(),
+                                                             rs,
+                                                             installations);
+                    }
+                    catch (Exception e) {
+                        return new InitializedErrorTemplate(getType(), getName(), getMy(), e.getMessage());
+                    }
                 }
             });
 
@@ -62,7 +67,8 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
         return f;
     }
 
-    public Server getServer() {
+    public Server getServer()
+    {
         return server;
     }
 }

@@ -80,7 +80,7 @@ public class Base
         inits.add(initializer);
     }
 
-    public Server initialize(Server server, ProvisionedTemplate root)
+    public Server initialize(Server server, ProvisionedTemplate root) throws Exception
     {
         Server next = server;
         for (String init : inits) {

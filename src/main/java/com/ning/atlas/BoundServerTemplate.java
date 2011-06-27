@@ -70,7 +70,7 @@ public class BoundServerTemplate extends BoundTemplate
                         Server server = base.getProvisioner().provision(base);
                         return new ProvisionedServerTemplate(BoundServerTemplate.this, server, installations);
                     }
-                    catch (UnableToProvisionServerException e) {
+                    catch (Exception e) {
                         return new ProvisionedErrorTemplate(getType(), getName(), getMy(), e.getMessage());
                     }
                 }

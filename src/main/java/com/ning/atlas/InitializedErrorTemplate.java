@@ -27,7 +27,10 @@ public class InitializedErrorTemplate extends InitializedTemplate
     @Override
     public ListenableFuture<InstalledErrorTemplate> install(Executor exec)
     {
-        return Futures.immediateFuture(new InstalledErrorTemplate(getType(),  getName(), getMy()));
+        return Futures.immediateFuture(new InstalledErrorTemplate(getType(),
+                                                                  getName(),
+                                                                  getMy(),
+                                                                  message));
     }
 
     @JsonProperty("error")

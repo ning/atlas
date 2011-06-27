@@ -39,16 +39,21 @@ public class InitializedServerTemplate extends InitializedTemplate
                 @Override
                 public InstalledTemplate call() throws Exception
                 {
-                    for (String installation : installations) {
-                        int offset = installation.indexOf(':');
-                        String prefix = installation.substring(0, offset);
-                        String fragment = installation.substring(offset + 1, installation.length());
+                    try {
+                        for (String installation : installations) {
+                            int offset = installation.indexOf(':');
+                            String prefix = installation.substring(0, offset);
+                            String fragment = installation.substring(offset + 1, installation.length());
 
-                        Installer installer = server.getBase().getInstaller(prefix);
-                        installer.install(server, fragment);
+                            Installer installer = server.getBase().getInstaller(prefix);
+                            installer.install(server, fragment);
+                        }
+
+                        return new InstalledServerTemplate(getType(), getName(), getMy(), server);
                     }
-
-                    return new InstalledServerTemplate(getType(), getName(), getMy(), server);
+                    catch (Exception e) {
+                        return new InstalledErrorTemplate(getType(),  getName(), getMy(), e);
+                    }
                 }
             });
         exec.execute(f);
