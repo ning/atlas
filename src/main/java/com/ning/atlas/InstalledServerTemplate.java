@@ -1,9 +1,11 @@
 package com.ning.atlas;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonPropertyOrder;
 
 import java.util.List;
 
+@JsonPropertyOrder({"type", "name", "server"})
 public class InstalledServerTemplate extends InstalledTemplate
 {
     private final Server server;

@@ -10,6 +10,7 @@ import com.ning.atlas.ProvisionedTemplate;
 import com.ning.atlas.Template;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.util.concurrent.ExecutorService;
@@ -49,6 +50,7 @@ public class InstallCommand implements Runnable
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
             mapper.writeValue(System.out, installed);
+            System.out.println();
             System.out.flush();
         }
         catch (Exception e) {

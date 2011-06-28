@@ -1,11 +1,13 @@
 package com.ning.atlas;
 
 import com.ning.atlas.tree.Tree;
+import org.codehaus.jackson.annotate.JsonPropertyOrder;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@JsonPropertyOrder({"type", "name", "children"})
 public class InstalledTemplate implements Tree<InstalledTemplate>
 {
     private final String type;

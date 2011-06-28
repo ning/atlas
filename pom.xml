@@ -80,9 +80,9 @@
 
         <!-- added to override open ended version required by amazon sdk -->
         <dependency>
-          <groupId>javax.mail</groupId>
-          <artifactId>mail</artifactId>
-          <version>1.4.1</version>
+            <groupId>javax.mail</groupId>
+            <artifactId>mail</artifactId>
+            <version>1.4.1</version>
         </dependency>
 
 
@@ -154,6 +154,8 @@
             <version>4.8.2</version>
             <scope>test</scope>
         </dependency>
+        <!-- ASL -->
+
     </dependencies>
 
     <build>
