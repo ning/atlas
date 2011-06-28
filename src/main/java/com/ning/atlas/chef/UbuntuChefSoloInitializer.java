@@ -38,8 +38,8 @@ public class UbuntuChefSoloInitializer implements Initializer
 
     private final String sshUser;
     private final String sshKeyFile;
-    private final File chefSoloInitFile;
-    private final File soloRbFile;
+    private final File   chefSoloInitFile;
+    private final File   soloRbFile;
 
     public UbuntuChefSoloInitializer(Map<String, String> attributes)
     {

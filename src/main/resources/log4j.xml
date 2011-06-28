@@ -25,6 +25,10 @@
         <level value="fatal"/>
     </logger>
 
+    <logger name="com.ning.atlas.SSH">
+        <level value="info"/>
+    </logger>
+
     <logger name="com.ning.atlas">
         <level value="debug"/>
     </logger>

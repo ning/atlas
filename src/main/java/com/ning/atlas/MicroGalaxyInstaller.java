@@ -50,6 +50,7 @@ public class MicroGalaxyInstaller implements Installer
         SSH ssh = null;
         try {
             ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalIpAddress());
+            log.debug("installing {} on {}", fragment, server.getExternalIpAddress());
             ssh.exec(format("cd ~%s; sudo -u %s ugx -b %s deploy; sudo -u %s ugx start",
                             microGalaxyUser,
                             microGalaxyUser,

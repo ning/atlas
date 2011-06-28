@@ -11,10 +11,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.String.format;
+
 public class SSH
 {
     private final static Logger logger = LoggerFactory.getLogger(SSH.class);
     private final SSHClient ssh;
+    private final String host;
 
     public SSH(File privateKeyFile, String userName, String host) throws IOException
     {
@@ -41,7 +44,6 @@ public class SSH
                 connected = true;
             }
             catch (Exception e) {
-                logger.debug("grumble, grumble, ec2 is cranky {}", e.getMessage());
                 // ec2 is not ready yet, probably
                 try {
                     Thread.sleep(2000);
@@ -51,7 +53,7 @@ public class SSH
                 }
             }
         }
-
+        this.host = host;
         this.ssh = ssh;
     }
 
@@ -65,6 +67,7 @@ public class SSH
     {
         Session s = ssh.startSession();
         try {
+            logger.debug("executing '{}' on {}", command, host);
             Session.Command cmd = s.exec(command);
             cmd.join();
             String rs = cmd.getOutputAsString() + "\n" + cmd.getErrorAsString();
@@ -78,6 +81,7 @@ public class SSH
 
     public void scpUpload(File localFile, String remotePath) throws IOException
     {
+        logger.debug(format("uploading %s to %s:%s", localFile.getAbsolutePath(), host, remotePath));
         ssh.newSCPFileTransfer().upload(localFile.getAbsolutePath(), remotePath);
     }
 }
