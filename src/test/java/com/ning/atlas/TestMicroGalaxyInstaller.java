@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
-import sun.tools.tree.FinallyStatement;
 
 import java.io.File;
 import java.io.FileInputStream;
