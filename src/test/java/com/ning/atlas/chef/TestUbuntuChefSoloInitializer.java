@@ -213,9 +213,9 @@ public class TestUbuntuChefSoloInitializer
                           s.getExternalIpAddress());
         String out = ssh.exec("cat /etc/atlas/system_map.json");
 
-        assertThat(out, containsString("\"name\" : \"server\""));
-        assertThat(out, containsString("externalIP"));
-        assertThat(out, containsString("internalIP"));
+        assertThat(out, containsString("\"type\" : \"server\""));
+        assertThat(out, containsString("external_address"));
+        assertThat(out, containsString("internal_address"));
 
         ex.shutdown();
         ec2.destroy(s);
