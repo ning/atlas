@@ -151,7 +151,7 @@ public class TestUbuntuChefSoloInitializer
         st.setBase("java-core");
 
         Base java_core = new Base("java-core", env, ImmutableMap.<String, String>of("ami", "ami-e2af508b"));
-        java_core.addInit("chef-solo:role[java-core]");
+        java_core.addInit("chef-solo:role[server]");
         env.addBase(java_core);
 
         Map<String, String> attributes =
