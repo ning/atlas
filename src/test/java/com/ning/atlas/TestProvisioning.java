@@ -78,14 +78,4 @@ public class TestProvisioning
         assertThat(leaves, containsInstanceOf(ProvisionedErrorTemplate.class));
         ex.shutdown();
     }
-
-    @Test
-    @Ignore("there was a concurrency bug in the static server provisioner, this just exercised the fix" +
-            "takes too long to run normally")
-    public void testLotsOfTimes() throws Exception
-    {
-        for (int i = 0; i < 100000; i++) {
-            testUnableToFindNeededServer();
-        }
-    }
 }

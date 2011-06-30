@@ -36,9 +36,10 @@ public class TestEC2Provisioner
     }
 
     @Test
-    @Ignore("it is expensive to run test every time")
     public void testFoo() throws Exception
     {
+        assumeThat(System.getProperty("RUN_EC2_TESTS"), notNullValue());
+
         Server s = ec2.provision(new Base("test-base",
                                           new Environment("test-env"),
                                           ImmutableMap.of("ami", "ami-a6f504cf")));

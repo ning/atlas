@@ -102,33 +102,4 @@ public class TestTemplateBuilding
         assertThat(lookup_base_for_first_NAME_in_normalized.apply("happy"), is(w));
         assertThat(lookup_base_for_first_NAME_in_normalized.apply("sad"), is(p));
     }
-
-    @Test
-    @Ignore("broken test, cardinality override not supported right now")
-    public void testServerCardinalityOverride() throws Exception
-    {
-        env.override("root.happy:cardinality", "5");
-        List<BoundTemplate> normalized_root = newArrayList(root.normalize(env));
-        assertThat(normalized_root.size(), equalTo(1));
-
-        List<BoundTemplate> leaves = Trees.leaves(normalized_root.get(0));
-        List<BoundTemplate> happy = Lists.newArrayList(Iterables.filter(leaves, new Predicate<BoundTemplate>()
-        {
-            public boolean apply(@Nullable BoundTemplate input)
-            {
-                return "happy".equals(input.getType());
-            }
-        }));
-
-        List<BoundTemplate> sad = Lists.newArrayList(Iterables.filter(leaves, new Predicate<BoundTemplate>()
-        {
-            public boolean apply(@Nullable BoundTemplate input)
-            {
-                return "sad".equals(input.getType());
-            }
-        }));
-
-        assertThat(happy.size(), equalTo(5));
-        assertThat(sad.size(), equalTo(2));
-    }
 }

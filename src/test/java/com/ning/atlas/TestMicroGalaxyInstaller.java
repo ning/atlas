@@ -17,6 +17,7 @@ import java.util.concurrent.Executors;
 
 import static com.ning.atlas.testing.AtlasMatchers.exists;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
 
@@ -41,9 +42,10 @@ public class TestMicroGalaxyInstaller
     }
 
     @Test
-    @Ignore("too expensive to run every time")
     public void testEndToEnd() throws Exception
     {
+        assumeThat(System.getProperty("RUN_EC2_TESTS"), notNullValue());
+
         ExecutorService exec = Executors.newCachedThreadPool();
 
         JRubyTemplateParser parser = new JRubyTemplateParser();
