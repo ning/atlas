@@ -1,4 +1,6 @@
 
+task :default => :package
+
 desc "clean and package up the executable"
 task :package do
   sh "mvn clean package"
