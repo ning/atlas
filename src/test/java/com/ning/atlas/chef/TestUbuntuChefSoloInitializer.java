@@ -190,7 +190,7 @@ public class TestUbuntuChefSoloInitializer
         st.setBase("java-core");
 
         Base java_core = new Base("java-core", env, ImmutableMap.<String, String>of("ami", "ami-e2af508b"));
-        java_core.addInit("chef-solo:{\"run_list\":[\"role[java-core]\"]}");
+        java_core.addInit("chef-solo:{\"run_list\":[\"role[server]\"]}");
         env.addBase(java_core);
 
         Map<String, String> attributes =
@@ -208,7 +208,7 @@ public class TestUbuntuChefSoloInitializer
         InitializedServerTemplate ist = (InitializedServerTemplate) it;
 
         Server s = ist.getServer();
-        SSH ssh = new SSH(new File(props.getProperty("aws.private-key-fle")),
+        SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
                           "ubuntu",
                           s.getExternalIpAddress());
         String out = ssh.exec("cat /etc/atlas/system_map.json");
