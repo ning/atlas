@@ -1,4 +1,4 @@
-package com.ning.atlas.ec2;
+package com.ning.atlas.aws;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
@@ -11,7 +11,6 @@ import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.collect.Lists;
 import com.ning.atlas.Base;
-import com.ning.atlas.ProvisionedTemplate;
 import com.ning.atlas.Provisioner;
 import com.ning.atlas.Server;
 import org.slf4j.Logger;

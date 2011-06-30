@@ -1,4 +1,4 @@
-package com.ning.atlas.ec2;
+package com.ning.atlas.aws;
 
 import com.google.common.collect.ImmutableMap;
 import com.ning.atlas.Base;

@@ -1,7 +1,7 @@
 package com.ning.atlas;
 
-import com.ning.atlas.ec2.AWSConfig;
-import com.ning.atlas.ec2.EC2Provisioner;
+import com.ning.atlas.aws.AWSConfig;
+import com.ning.atlas.aws.EC2Provisioner;
 import com.ning.atlas.tree.Trees;
 import org.junit.Before;
 import org.junit.Ignore;

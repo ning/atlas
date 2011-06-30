@@ -1,4 +1,4 @@
-package com.ning.atlas.ec2;
+package com.ning.atlas.aws;
 
 import org.skife.config.Config;
 

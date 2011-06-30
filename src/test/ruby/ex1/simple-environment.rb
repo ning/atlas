@@ -7,7 +7,7 @@ environment "test" do
       :ugx_path     => "/home/ugx/deploy"
   }
 
-  provisioner com.ning.atlas.ec2.EC2Provisioner, {
+  provisioner com.ning.atlas.aws.EC2Provisioner, {
       :access_key => "",
       :secret_key => "",
       :keypair_id => "brianm-ning",

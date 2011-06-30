@@ -10,7 +10,7 @@ end
 
 
 environment "ec2" do
-  provisioner com.ning.atlas.ec2.EC2Provisioner, {
+  provisioner com.ning.atlas.aws.EC2Provisioner, {
       :access_key => creds['aws.access-key'],
       :secret_key => creds['aws.secret-key'],
       :keypair_id => creds['aws.key-name']
