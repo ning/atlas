@@ -2,6 +2,7 @@ package com.ning.atlas;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +18,9 @@ public class Base
     private final List<String> inits = new CopyOnWriteArrayList<String>();
     private final Map<String, Installer> installers;
 
+    @JsonIgnore
+    private final Environment env;
+
     public Base(String name, Environment env, Map<String, String> attributes)
     {
         this.name = name;
@@ -24,6 +28,7 @@ public class Base
         this.initalizers = env.getInitializers();
         this.installers = env.getInstallers();
         this.attributes.putAll(attributes);
+        this.env = env;
     }
 
     public Base(String name, Environment env)
@@ -101,5 +106,10 @@ public class Base
     public Installer getInstaller(String prefix)
     {
         return installers.get(prefix);
+    }
+
+    public Map<String, String> getProperties()
+    {
+        return env.getProperties();
     }
 }
