@@ -2,7 +2,9 @@ package com.ning.atlas.main;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.junit.Test;
 
 import javax.annotation.Nullable;
@@ -81,13 +83,14 @@ public class TestProvisionCommand
 
     }
 
-
     public static class S
     {
         public String internal_address;
         public String external_address;
     }
 
+
+    @JsonIgnoreProperties("environment")
     public static class Thing
     {
         public String type;
@@ -95,6 +98,7 @@ public class TestProvisionCommand
         public List<Thing> children;
         public Map<String, Object> my;
         public S server;
+
 
         @Override
         public String toString()

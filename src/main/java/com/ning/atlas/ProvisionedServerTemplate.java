@@ -7,6 +7,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
@@ -70,5 +71,10 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
     public Server getServer()
     {
         return server;
+    }
+
+    @JsonProperty("environment")
+    public Map<String, String> getEnvironmentProperties() {
+        return this.server.getEnvironmentProperties();
     }
 }

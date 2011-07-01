@@ -1,9 +1,11 @@
 package com.ning.atlas;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
 
 import java.util.List;
+import java.util.Map;
 
 @JsonPropertyOrder({"type", "name", "server"})
 public class InstalledServerTemplate extends InstalledTemplate
@@ -26,5 +28,10 @@ public class InstalledServerTemplate extends InstalledTemplate
     public List<? extends InstalledTemplate> getChildren()
     {
         return super.getChildren();
+    }
+
+    @JsonProperty("environment")
+    public Map<String, String> getEnvironmentProperties() {
+        return this.server.getEnvironmentProperties();
     }
 }

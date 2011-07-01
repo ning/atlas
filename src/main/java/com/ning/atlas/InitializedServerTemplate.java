@@ -7,6 +7,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
@@ -66,15 +67,8 @@ public class InitializedServerTemplate extends InitializedTemplate
         return server;
     }
 
-    @JsonProperty("external-ip")
-    public String getExternalIP()
-    {
-        return server.getExternalIpAddress();
-    }
-
-    @JsonProperty("internal-ip")
-    public String getInternalIP()
-    {
-        return server.getInternalIpAddress();
+    @JsonProperty("environment")
+    public Map<String, String> getEnvironmentProperties() {
+        return this.server.getEnvironmentProperties();
     }
 }

@@ -3,6 +3,8 @@ package com.ning.atlas;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.util.Map;
+
 public class Server
 {
 
@@ -31,8 +33,15 @@ public class Server
         return internalIp;
     }
 
-    Base getBase()
+    @JsonIgnore
+    public Base getBase()
     {
         return base;
+    }
+
+    @JsonIgnore
+    public Map<String,String> getEnvironmentProperties()
+    {
+        return getBase().getProperties();
     }
 }

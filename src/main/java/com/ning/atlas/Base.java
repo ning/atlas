@@ -46,6 +46,7 @@ public class Base
         return name;
     }
 
+    @JsonIgnore
     public Provisioner getProvisioner()
     {
         return provisioner;
