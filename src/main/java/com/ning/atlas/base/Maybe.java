@@ -2,6 +2,7 @@ package com.ning.atlas.base;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.ning.atlas.Environment;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -93,6 +94,11 @@ public abstract class Maybe<T> implements Iterable<T>
     }
 
     public abstract T getValue();
+
+    public static <T> Maybe<T> elideNull(T value)
+    {
+        return value == null ? Maybe.<T>unknown() : definitely(value);
+    }
 
     private static class DefiniteValue<T> extends Maybe<T>
     {

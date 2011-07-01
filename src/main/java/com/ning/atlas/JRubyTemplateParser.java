@@ -5,6 +5,7 @@ import org.jruby.embed.ScriptingContainer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 
 public class JRubyTemplateParser
@@ -13,8 +14,8 @@ public class JRubyTemplateParser
     {
         ScriptingContainer container = new ScriptingContainer();
         try {
-            container.runScriptlet(Resources.toString(Resources.getResource("atlas/parser.rb"),
-                                                      Charset.defaultCharset()));
+            container.runScriptlet(new StringReader(Resources.toString(Resources.getResource("atlas/parser.rb"),
+                                                                       Charset.defaultCharset())), "atlas/parser.rb");
         }
         catch (IOException e) {
             throw new IllegalStateException("cannot open atlas/parser.rb from classpath", e);
@@ -27,8 +28,8 @@ public class JRubyTemplateParser
     {
         ScriptingContainer container = new ScriptingContainer();
         try {
-            container.runScriptlet(Resources.toString(Resources.getResource("atlas/parser.rb"),
-                                                      Charset.defaultCharset()));
+            container.runScriptlet(new StringReader(Resources.toString(Resources.getResource("atlas/parser.rb"),
+                                                                       Charset.defaultCharset())), "atlas/parser.rb");
         }
         catch (IOException e) {
             throw new IllegalStateException("cannot open atlas/parser.rb from classpath", e);

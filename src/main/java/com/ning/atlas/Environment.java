@@ -1,50 +1,52 @@
 package com.ning.atlas;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.ning.atlas.base.Maybe;
+import com.sun.istack.internal.NotNull;
 
+import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Multimaps.synchronizedMultimap;
-
 public class Environment
 {
     private final List<Base> bases = new CopyOnWriteArrayList<Base>();
 
-    private final Multimap<String, Map.Entry<String, String>> overrides =
-        synchronizedMultimap(ArrayListMultimap.<String, Map.Entry<String, String>>create());
-
-    private final List<Environment> children = new CopyOnWriteArrayList<Environment>();
-    private final AtomicReference<Provisioner> provisioner = new AtomicReference<Provisioner>(new ErrorProvisioner());
-    private final Map<String, Initializer> initializers = Maps.newConcurrentMap();
-    private final Map<String, Installer> installers = Maps.newConcurrentMap();
+    private final List<Environment>            children     = new CopyOnWriteArrayList<Environment>();
+    private final AtomicReference<Provisioner> provisioner  = new AtomicReference<Provisioner>(new ErrorProvisioner());
+    private final Map<String, Initializer>     initializers = Maps.newConcurrentMap();
+    private final Map<String, Installer>       installers   = Maps.newConcurrentMap();
+    private final Map<String, String>          properties   = Maps.newConcurrentMap();
 
     private final String name;
 
+    private final Maybe<Environment> parent;
+
     public Environment(String name)
     {
-        this.name = name;
+        this(name, new ErrorProvisioner());
     }
 
     public Environment(String name, Provisioner provisioner)
     {
-        this.name = name;
-        this.provisioner.set(provisioner);
+        this(name, provisioner, Collections.<String, Initializer>emptyMap(), null);
     }
 
-    public Environment(String name, Provisioner provisioner, Map<String, Initializer> initializers)
+    public Environment(@NotNull String name,
+                       @NotNull Provisioner provisioner,
+                       @NotNull Map<String, Initializer> initializers,
+                       @Nullable Environment parent)
     {
-        this(name, provisioner);
+        this.name = name;
+        this.parent = Maybe.elideNull(parent);
+        this.setProvisioner(provisioner);
         this.initializers.putAll(initializers);
     }
 
@@ -57,7 +59,6 @@ public class Environment
                       .add("provisioner", provisioner.get())
                       .add("initializers", initializers)
                       .add("children", children)
-                      .add("overrides", overrides)
                       .add("bases", bases)
                       .toString();
     }
@@ -89,9 +90,8 @@ public class Environment
 
     public Maybe<Base> findBase(final String base, final Stack<String> names)
     {
-        String name = overrideFor(base, "base", names);
         for (Base candidate : bases) {
-            if (candidate.getName().equals(name)) {
+            if (candidate.getName().equals(base)) {
                 return Maybe.definitely(candidate);
             }
         }
@@ -111,25 +111,6 @@ public class Environment
         bases.add(base);
     }
 
-
-    public String overrideFor(Object defaultValue, String name, Stack<String> names)
-    {
-        String key = Joiner.on('.').join(names);
-        for (Map.Entry<String, String> pair : overrides.get(key)) {
-            if (name.equals(pair.getKey())) {
-                return pair.getValue();
-            }
-        }
-        return defaultValue.toString();
-    }
-
-    public void override(String key, String value)
-    {
-        List<String> parts = newArrayList(Splitter.on(':').split(key));
-        String new_key = parts.get(0);
-        this.overrides.put(new_key, Maps.immutableEntry(parts.get(1), value));
-    }
-
     public Map<String, Initializer> getInitializers()
     {
         return initializers;
@@ -143,5 +124,27 @@ public class Environment
     public List<Environment> getChildren()
     {
         return children;
+    }
+
+    public void addProperties(Map<String, String> props)
+    {
+        this.properties.putAll(props);
+    }
+
+    public Map<String, String> getProperties()
+    {
+        Map<String, String> rs = Maps.newHashMap();
+        rs.putAll(parent.to(new Function<Environment, Map<String, String>>()
+        {
+            @Override
+            public Map<String, String> apply(@Nullable Environment input)
+            {
+                return input.getProperties();
+            }
+        }).otherwise(Collections.<String, String>emptyMap()));
+
+        // override parent props with ours
+        rs.putAll(this.properties);
+        return rs;
     }
 }

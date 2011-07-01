@@ -28,7 +28,7 @@ module Atlas
     def __parse
       @root = com.ning.atlas.Environment.new @name
       eval @template, binding, @path, 1
-      @children.each {|t| @root.addChild(t)}
+      @children.each { |t| @root.addChild(t) }
       @root
     end
 
@@ -44,7 +44,10 @@ module Atlas
     end
 
     def __parse
-      @env = com.ning.atlas.Environment.new @name, @parent.provisioner, @parent.initializers
+      @env = com.ning.atlas.Environment.new @name,
+                                            @parent.provisioner,
+                                            @parent.initializers,
+                                            @env
       instance_eval &@block
       @env
     end
@@ -54,19 +57,19 @@ module Atlas
     end
 
     def base name, args={}
-      attr = args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v.to_s; a}
+      attr = args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v.to_s; a }
       base = com.ning.atlas.Base.new(name, @env, attr)
 
       if args[:init]
-        args[:init].each {|v| base.addInit(v)}
+        args[:init].each { |v| base.addInit(v) }
       end
 
       @env.addBase(base)
     end
 
     def provisioner clazz, args={}
-      attr = args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v.to_s; a}
-      p =  com.ning.atlas.JrubyHelper.create(clazz, attr)
+      attr = args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v.to_s; a }
+      p    = com.ning.atlas.JrubyHelper.create(clazz, attr)
       args.each do |k, v|
         sym = "#{k}=".to_sym
         p.send(sym, v) if p.respond_to? sym
@@ -75,8 +78,8 @@ module Atlas
     end
 
     def initializer name, clazz, args={}
-      attr = args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v.to_s; a}
-      init =  com.ning.atlas.JrubyHelper.create(clazz, attr)
+      attr = args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v.to_s; a }
+      init = com.ning.atlas.JrubyHelper.create(clazz, attr)
 
       args.each do |k, v|
         sym = "#{k}=".to_sym
@@ -87,8 +90,8 @@ module Atlas
     end
 
     def installer name, clazz, args={}
-      attr = args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v.to_s; a}
-      installer =  com.ning.atlas.JrubyHelper.create(clazz, attr)
+      attr      = args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v.to_s; a }
+      installer = com.ning.atlas.JrubyHelper.create(clazz, attr)
 
       args.each do |k, v|
         sym = "#{k}=".to_sym
@@ -102,6 +105,16 @@ module Atlas
     def system *args
       #no-op
     end
+
+    def set args
+      props = args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v.to_s; a }
+      @env.addProperties(props)
+    end
+
+    def halibut args
+      set args
+    end
+
   end
 
 
@@ -157,8 +170,8 @@ module Atlas
         sym = "#{k}=".to_sym
         s.send(sym, v) if s.respond_to? sym
       end
-      @children.each { | child | s.addChild(child) }
-      s.my = @args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v; a}
+      @children.each { |child| s.addChild(child) }
+      s.my = @args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v; a }
       s
     end
 
@@ -185,7 +198,7 @@ module Atlas
         setter = "#{k}=".to_sym
         s.send(setter, v) if s.respond_to? setter
       end
-      s.my = @args.inject(Hash.new) {| a, (k, v)| a[k.to_s] = v; a}
+      s.my = @args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v; a }
       s
     end
   end

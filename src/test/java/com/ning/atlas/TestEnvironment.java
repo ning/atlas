@@ -18,7 +18,7 @@ public class TestEnvironment
         top.addBase(new Base("top-base", top, new HashMap<String, String>()
         {{put("ami", "ami-1234");}}));
 
-        Environment child = new Environment("child", top.getProvisioner(), top.getInitializers());
+        Environment child = new Environment("child", top.getProvisioner(), top.getInitializers(), top);
         child.addBase(new Base("child-base", child, new HashMap<String, String>()
         {{put("ami", "ami-9876");}}));
 
