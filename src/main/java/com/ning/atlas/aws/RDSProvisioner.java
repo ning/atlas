@@ -1,5 +1,6 @@
 package com.ning.atlas.aws;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.rds.AmazonRDSClient;
 import com.amazonaws.services.rds.model.CreateDBInstanceRequest;
@@ -7,7 +8,7 @@ import com.amazonaws.services.rds.model.DBInstance;
 import com.amazonaws.services.rds.model.DeleteDBInstanceRequest;
 import com.amazonaws.services.rds.model.DescribeDBInstancesRequest;
 import com.amazonaws.services.rds.model.DescribeDBInstancesResult;
-import com.google.common.base.Objects;
+import com.google.common.base.Throwables;
 import com.ning.atlas.Base;
 import com.ning.atlas.Provisioner;
 import com.ning.atlas.Server;
@@ -15,11 +16,18 @@ import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.base.MapConfigSource;
 import org.skife.config.Config;
 import org.skife.config.ConfigurationObjectFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.UUID;
 
 public class RDSProvisioner implements Provisioner
 {
+
+    private final Logger log = LoggerFactory.getLogger(RDSProvisioner.class);
+
+
     private final AmazonRDSClient rds;
 
     public RDSProvisioner(String accessKey, String secretKey)
@@ -38,7 +46,7 @@ public class RDSProvisioner implements Provisioner
     {
         RDSConfig cfg = new ConfigurationObjectFactory(new MapConfigSource(b.getAttributes())).build(RDSConfig.class);
 
-        CreateDBInstanceRequest req = new CreateDBInstanceRequest(cfg.getInstanceId(),
+        CreateDBInstanceRequest req = new CreateDBInstanceRequest("db-" + UUID.randomUUID().toString(),
                                                                   cfg.getStorageSize(),
                                                                   cfg.getInstanceClass(),
                                                                   cfg.getEngine(),
@@ -47,18 +55,40 @@ public class RDSProvisioner implements Provisioner
 
         DBInstance db = rds.createDBInstance(req);
 
-        DBInstance instance;
+        DBInstance instance = null;
+        String last_state = "";
         do {
+            try {
+                Thread.sleep(10000);
+            }
+            catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw Throwables.propagate(e);
+            }
             DescribeDBInstancesRequest rdy = new DescribeDBInstancesRequest();
             rdy.setDBInstanceIdentifier(db.getDBInstanceIdentifier());
-            DescribeDBInstancesResult rs = rds.describeDBInstances(rdy);
+            DescribeDBInstancesResult rs;
+            try {
+                rs = rds.describeDBInstances(rdy);
+            }
+            catch (AmazonServiceException e) {
+                continue;
+            }
             instance = rs.getDBInstances().get(0);
+            String state = instance.getDBInstanceStatus();
+            if (!last_state.equals(state)) {
+                log.debug("database instance {} achieved state {}", instance.getDBInstanceIdentifier(), state);
+                last_state = state;
+            }
         }
-        while (!(instance.getDBInstanceStatus().equals("available") && instance.getEndpoint() != null));
+        while (!(instance != null
+                 && instance.getDBInstanceStatus().equals("available")
+                 && instance.getEndpoint() != null));
 
         return new RDSServer(instance.getEndpoint().getAddress(),
                              instance.getEndpoint().getPort(),
                              instance.getDBInstanceIdentifier(),
+                             cfg,
                              b);
     }
 
@@ -66,6 +96,7 @@ public class RDSProvisioner implements Provisioner
     public void destroy(RDSServer server)
     {
         DeleteDBInstanceRequest req = new DeleteDBInstanceRequest(server.getInstanceId());
+        req.setSkipFinalSnapshot(true);
         rds.deleteDBInstance(req);
     }
 
@@ -73,12 +104,26 @@ public class RDSProvisioner implements Provisioner
     {
         private final Integer port;
         private final String  instanceId;
+        private final String  engine;
+        private final String  instanceClass;
+        private final String password;
+        private final int storageSize;
+        private final String username;
 
-        public RDSServer(String ip, Integer port, String instanceId, Base base)
+        public RDSServer(String ip,
+                         Integer port,
+                         String instanceId,
+                         RDSConfig config,
+                         Base base)
         {
             super(ip, ip, base);
             this.port = port;
             this.instanceId = instanceId;
+            this.engine = config.getEngine();
+            this.instanceClass = config.getInstanceClass();
+            this.password = config.getPassword();
+            this.storageSize = config.getStorageSize();
+            this.username = config.getUsername();
         }
 
         public Integer getPort()
@@ -91,26 +136,34 @@ public class RDSProvisioner implements Provisioner
             return instanceId;
         }
 
-        @Override
-        public String toString()
+        public String getEngine()
         {
-            return Objects.toStringHelper(this).toString();
+            return engine;
+        }
+
+        public String getInstanceClass()
+        {
+            return instanceClass;
+        }
+
+        public String getPassword()
+        {
+            return password;
+        }
+
+        public int getStorageSize()
+        {
+            return storageSize;
+        }
+
+        public String getUsername()
+        {
+            return username;
         }
     }
 
     public interface RDSConfig
     {
-        /**
-         * The DB Instance identifier. This parameter
-         * is stored as a lowercase string. <p>Constraints: <ul> <li>Must contain
-         * from 1 to 63 alphanumeric characters or hyphens.</li> <li>First
-         * character must be a letter.</li> <li>Cannot end with a hyphen or
-         * contain two consecutive hyphens.</li> </ul> <p>Example:
-         * <code>mydbinstance</code>
-         */
-        @Config("instance_id")
-        public abstract String getInstanceId();
-
         /**
          * The amount of storage (in gigabytes) to be
          * initially allocated for the database instance. Must be an integer from

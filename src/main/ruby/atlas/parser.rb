@@ -50,7 +50,7 @@ module Atlas
     end
 
     def environment name, &block
-      @children << EnvironmentParser.new(name, @env, block).__parse
+      @env.addChild(EnvironmentParser.new(name, @env, block).__parse)
     end
 
     def base name, args={}

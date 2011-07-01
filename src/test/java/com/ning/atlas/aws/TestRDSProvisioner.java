@@ -38,7 +38,6 @@ public class TestRDSProvisioner
         assumeThat(System.getProperty("RUN_EC2_TESTS"), notNullValue());
 
         Map<String, String> props = new HashMap<String, String>();
-        props.put("instance_id", "testmysql3");
         props.put("storage_size", "5");
         props.put("instance_class", "db.m1.small");
         props.put("engine", "MySQL");
@@ -53,6 +52,6 @@ public class TestRDSProvisioner
 
         System.out.println(db_server);
 
-        rds.destroy(db_server);
+//        rds.destroy(db_server);
     }
 }
