@@ -6,7 +6,6 @@ import com.ning.atlas.aws.EC2Provisioner;
 import com.ning.atlas.tree.Trees;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.internal.matchers.StringContains;
 import org.skife.config.ConfigurationObjectFactory;
 
 import java.io.File;
