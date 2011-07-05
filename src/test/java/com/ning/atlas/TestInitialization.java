@@ -22,7 +22,8 @@ public class TestInitialization
         Initializer initializer = new Initializer()
         {
             @Override
-            public Server initialize(Server server, String arg, ProvisionedTemplate root)
+            public Server initialize(Server server, String arg, ProvisionedTemplate root,
+                      ProvisionedServerTemplate node)
             {
                 initialized.set(true);
                 assertThat(arg, equalTo("meow"));

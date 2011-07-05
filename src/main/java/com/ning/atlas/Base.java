@@ -86,15 +86,26 @@ public class Base
         inits.add(initializer);
     }
 
-    public Server initialize(Server server, ProvisionedTemplate root) throws Exception
+    public Server initialize(Server server,
+                             ProvisionedTemplate root,
+                             ProvisionedServerTemplate node) throws Exception
     {
         Server next = server;
         for (String init : inits) {
             int idx = init.indexOf(':');
-            String prefix = init.substring(0, idx);
-            String arg = init.substring(idx + 1, init.length());
+            final String prefix;
+            final String arg;
+            if (idx < 0) {
+                prefix = init;
+                arg = "";
+            }
+            else {
+                prefix = init.substring(0, idx);
+                arg = init.substring(idx + 1, init.length());
+            }
+
             Initializer i = initalizers.get(prefix);
-            next = i.initialize(server, arg, root);
+            next = i.initialize(server, arg, root, node);
         }
         return next;
     }

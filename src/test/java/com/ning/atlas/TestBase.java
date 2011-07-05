@@ -7,6 +7,7 @@ import com.ning.atlas.chef.StubServer;
 import org.junit.Test;
 
 import javax.naming.ldap.InitialLdapContext;
+import java.util.Collections;
 import java.util.List;
 
 import static java.util.Arrays.asList;
@@ -23,7 +24,7 @@ public class TestBase
         env.addInitializer("waffle", new Initializer()
         {
             @Override
-            public Server initialize(Server server, String arg, ProvisionedTemplate root)
+            public Server initialize(Server server, String arg, ProvisionedTemplate root, ProvisionedServerTemplate node)
             {
                 inits.add("waffle+" + arg);
                 return server;
@@ -33,7 +34,8 @@ public class TestBase
         env.addInitializer("pancake", new Initializer()
         {
             @Override
-            public Server initialize(Server server, String arg, ProvisionedTemplate root)
+            public Server initialize(Server server, String arg, ProvisionedTemplate root,
+                                     ProvisionedServerTemplate node)
             {
                 inits.add("pancake+" + arg);
                 return server;
@@ -44,8 +46,10 @@ public class TestBase
         base.addInit("waffle:hut");
         base.addInit("pancake:house");
 
-        base.initialize(new StubServer("10.0.0.1"),
-                        new ProvisionedSystemTemplate("root", "0", new My(), Lists.<ProvisionedTemplate>newArrayList()));
+        Server s = new StubServer("10.0.0.1");
+        base.initialize(s,
+                        new ProvisionedSystemTemplate("root", "0", new My(), Lists.<ProvisionedTemplate>newArrayList()),
+                        new ProvisionedServerTemplate("server", "waffle", new My(), s, Collections.<String>emptyList()));
 
         assertThat(inits, equalTo(asList("waffle+hut", "pancake+house")));
 

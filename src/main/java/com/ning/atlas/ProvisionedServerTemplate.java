@@ -41,7 +41,7 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
     }
 
     @Override
-    public ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, final ProvisionedTemplate root)
+    protected ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, final ProvisionedTemplate root)
     {
         ListenableFutureTask<InitializedTemplate> f =
             new ListenableFutureTask<InitializedTemplate>(new Callable<InitializedTemplate>()
@@ -51,7 +51,7 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
                 {
 
                     try {
-                        final Server rs = server.getBase().initialize(server, root);
+                        final Server rs = server.getBase().initialize(server, root, ProvisionedServerTemplate.this);
                         return new InitializedServerTemplate(getType(),
                                                              getName(),
                                                              getMy(),

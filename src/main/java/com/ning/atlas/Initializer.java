@@ -2,5 +2,8 @@ package com.ning.atlas;
 
 public interface Initializer
 {
-    Server initialize(Server server, String arg, ProvisionedTemplate root) throws Exception;
+    Server initialize(Server server,
+                      String arg,
+                      ProvisionedTemplate root,
+                      ProvisionedServerTemplate node) throws Exception;
 }

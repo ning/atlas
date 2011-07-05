@@ -26,7 +26,7 @@ public class ProvisionedSystemTemplate extends ProvisionedTemplate
     }
 
     @Override
-    public ListenableFuture<InitializedTemplate> initialize(Executor ex, ProvisionedTemplate root)
+    protected ListenableFuture<InitializedTemplate> initialize(Executor ex, ProvisionedTemplate root)
     {
         final AtomicInteger remaining = new AtomicInteger(getChildren().size());
         final List<InitializedTemplate> init_children = new CopyOnWriteArrayList<InitializedTemplate>();

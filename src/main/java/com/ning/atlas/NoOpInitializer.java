@@ -11,7 +11,8 @@ public class NoOpInitializer implements Initializer
     }
 
     @Override
-    public Server initialize(Server server, String arg, ProvisionedTemplate root)
+    public Server initialize(Server server, String arg, ProvisionedTemplate root,
+                             ProvisionedServerTemplate node)
     {
         return server;
     }

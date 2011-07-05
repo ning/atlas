@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.ning.atlas.Initializer;
+import com.ning.atlas.ProvisionedServerTemplate;
 import com.ning.atlas.ProvisionedTemplate;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
@@ -73,7 +74,10 @@ public class UbuntuChefSoloInitializer implements Initializer
     }
 
     @Override
-    public Server initialize(final Server server, final String arg, ProvisionedTemplate root) throws Exception
+    public Server initialize(final Server server,
+                             final String arg,
+                             ProvisionedTemplate root,
+                             ProvisionedServerTemplate node) throws Exception
     {
         boolean done = true;
         do {
@@ -110,8 +114,14 @@ public class UbuntuChefSoloInitializer implements Initializer
 
             ssh.exec("sudo mkdir /etc/atlas");
 
-            ssh.scpUpload(sysMapFile, "/tmp/system_map.json");
-            ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
+
+            // we require that the /etc/atlas/system_map.json file exist
+            String out = ssh.exec("ls /etc/atlas/");
+            if (!out.contains("system_map.json")) {
+                logger.info("AtlasInitializer was not run, placing system map on {}", server.getExternalIpAddress());
+                ssh.scpUpload(sysMapFile, "/tmp/system_map.json");
+                ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
+            }
 
             logger.debug("about to execute initial chef-solo");
             ssh.exec("sudo chef-solo");

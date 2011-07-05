@@ -43,7 +43,7 @@ public class InstallCommand implements Runnable
             }
 
 
-            InitializedTemplate it = pt.initialize(ex, pt).get();
+            InitializedTemplate it = pt.initialize(ex).get();
 
             InstalledTemplate installed = it.install(ex).get();
 

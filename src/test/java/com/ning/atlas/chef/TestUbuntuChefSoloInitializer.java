@@ -10,6 +10,7 @@ import com.ning.atlas.InitializedServerTemplate;
 import com.ning.atlas.InitializedTemplate;
 import com.ning.atlas.Initializer;
 import com.ning.atlas.My;
+import com.ning.atlas.ProvisionedServerTemplate;
 import com.ning.atlas.ProvisionedSystemTemplate;
 import com.ning.atlas.ProvisionedTemplate;
 import com.ning.atlas.SSH;
@@ -26,6 +27,7 @@ import org.skife.config.ConfigurationObjectFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -42,7 +44,6 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 
 public class TestUbuntuChefSoloInitializer
 {
-
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private AWSConfig      config;
@@ -79,7 +80,8 @@ public class TestUbuntuChefSoloInitializer
         try {
             Server init_server = initializer.initialize(s, "role[server]",
                                                         new ProvisionedSystemTemplate("root", "0", new My(),
-                                                                                      Lists.<ProvisionedTemplate>newArrayList()));
+                                                                                      Lists.<ProvisionedTemplate>newArrayList()),
+                                                        new ProvisionedServerTemplate("woof", "meow", new My(), s, Collections.<String>emptyList()));
 
 
             SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
@@ -164,7 +166,7 @@ public class TestUbuntuChefSoloInitializer
         BoundTemplate bt = st.normalize(env);
         ExecutorService ex = Executors.newCachedThreadPool();
         ProvisionedTemplate pt = bt.provision(ex).get();
-        InitializedTemplate it = pt.initialize(ex, pt).get();
+        InitializedTemplate it = pt.initialize(ex).get();
         assertThat(it, instanceOf(InitializedServerTemplate.class));
         InitializedServerTemplate ist = (InitializedServerTemplate) it;
 
@@ -203,7 +205,7 @@ public class TestUbuntuChefSoloInitializer
         BoundTemplate bt = st.normalize(env);
         ExecutorService ex = Executors.newCachedThreadPool();
         ProvisionedTemplate pt = bt.provision(ex).get();
-        InitializedTemplate it = pt.initialize(ex, pt).get();
+        InitializedTemplate it = pt.initialize(ex).get();
         assertThat(it, instanceOf(InitializedServerTemplate.class));
         InitializedServerTemplate ist = (InitializedServerTemplate) it;
 
@@ -247,7 +249,7 @@ public class TestUbuntuChefSoloInitializer
 
         BoundTemplate bt = st.normalize(env);
         ProvisionedTemplate pt = bt.provision(MoreExecutors.sameThreadExecutor()).get();
-        InitializedTemplate it = pt.initialize(MoreExecutors.sameThreadExecutor(), pt).get();
+        InitializedTemplate it = pt.initialize(MoreExecutors.sameThreadExecutor()).get();
 
         InitializedServerTemplate ist = (InitializedServerTemplate) it;
         ec2.destroy(ist.getServer());

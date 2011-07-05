@@ -25,7 +25,7 @@ public class ProvisionedErrorTemplate extends ProvisionedTemplate
     }
 
     @Override
-    public ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, ProvisionedTemplate root)
+    protected ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, ProvisionedTemplate root)
     {
         return Futures.immediateFuture(new InitializedErrorTemplate(getType(), getType(), getMy(),
                                                                     "Unable to initialize server because " +
