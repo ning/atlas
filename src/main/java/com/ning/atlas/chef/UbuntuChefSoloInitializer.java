@@ -10,16 +10,21 @@ import com.ning.atlas.ProvisionedServerTemplate;
 import com.ning.atlas.ProvisionedTemplate;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
+import com.ning.atlas.base.Maybe;
 import org.antlr.stringtemplate.StringTemplate;
+import org.antlr.stringtemplate.StringTemplateErrorListener;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.nio.cs.ext.SJIS_0213;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -41,6 +46,7 @@ public class UbuntuChefSoloInitializer implements Initializer
     private final String sshKeyFile;
     private final File   chefSoloInitFile;
     private final File   soloRbFile;
+    private final File s3InitFile;
 
     public UbuntuChefSoloInitializer(Map<String, String> attributes)
     {
@@ -52,6 +58,10 @@ public class UbuntuChefSoloInitializer implements Initializer
 
         final String recipeUrl = attributes.get("recipe_url");
         checkNotNull(recipeUrl, "recipe_url attribute required");
+
+        Maybe<String> s3AccessKey = Maybe.elideNull(attributes.get("s3_access_key"));
+        Maybe<String> s3SecretKey = Maybe.elideNull(attributes.get("s3_secret_key"));
+
         try {
             this.chefSoloInitFile = File.createTempFile("chef-solo-init", "sh");
             InputStream in = UbuntuChefSoloInitializer.class.getResourceAsStream("/ubuntu-chef-solo-setup.sh");
@@ -60,11 +70,22 @@ public class UbuntuChefSoloInitializer implements Initializer
 
             this.soloRbFile = File.createTempFile("solo", "rb");
             InputStream in2 = UbuntuChefSoloInitializer.class.getResourceAsStream("/ubuntu-chef-solo-solo.st");
-
             StringTemplate template = new StringTemplate(new String(ByteStreams.toByteArray(in2)));
             template.setAttribute("recipe_url", recipeUrl);
             Files.write(template.toString().getBytes(), this.soloRbFile);
             in2.close();
+
+            this.s3InitFile = File.createTempFile("s3_init", ".rb");
+            if (s3AccessKey.isKnown() && s3SecretKey.isKnown()) {
+                InputStream in3 = UbuntuChefSoloInitializer.class.getResourceAsStream("/s3_init.rb.st");
+                StringTemplate s3_init_template = new StringTemplate(new String(ByteStreams.toByteArray(in3)));
+                s3_init_template.setAttribute("aws_access_key", s3AccessKey.otherwise(""));
+                s3_init_template.setAttribute("aws_secret_key", s3SecretKey.otherwise(""));
+                Files.write(s3_init_template.toString().getBytes(), this.s3InitFile);
+            }
+            else {
+                Files.write("".getBytes(), this.s3InitFile);
+            }
 
         }
         catch (IOException e) {
@@ -91,7 +112,6 @@ public class UbuntuChefSoloInitializer implements Initializer
         return server;
     }
 
-
     private void initServer(Server server, String nodeJson, File sysMapFile) throws IOException
     {
         SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalIpAddress());
@@ -112,12 +132,13 @@ public class UbuntuChefSoloInitializer implements Initializer
             ssh.scpUpload(soloRbFile, "/tmp/solo.rb");
             ssh.exec("sudo mv /tmp/solo.rb /etc/chef/solo.rb");
 
-            ssh.exec("sudo mkdir /etc/atlas");
-
+            ssh.scpUpload(s3InitFile, "/tmp/s3_init.rb");
+            ssh.exec("sudo mv /tmp/s3_init.rb /etc/chef/s3_init.rb");
 
             // we require that the /etc/atlas/system_map.json file exist
             String out = ssh.exec("ls /etc/atlas/");
             if (!out.contains("system_map.json")) {
+                ssh.exec("sudo mkdir /etc/atlas");
                 logger.info("AtlasInitializer was not run, placing system map on {}", server.getExternalIpAddress());
                 ssh.scpUpload(sysMapFile, "/tmp/system_map.json");
                 ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
@@ -131,23 +152,22 @@ public class UbuntuChefSoloInitializer implements Initializer
         }
     }
 
-//    private final ObjectMapper mapper = new ObjectMapper();
-
     public String createNodeJsonFor(String literal)
     {
-        if (literal.contains("run_list")) {
-            return literal;
+        final Node node;
+        try {
+            if (literal.contains("run_list")) {
+                node = mapper.readValue(literal, Node.class);
+            }
+            else {
+                node = new Node();
+                Iterable<String> split = Splitter.on(Pattern.compile(",\\s*")).split(literal);
+                Iterables.addAll(node.run_list, split);
+            }
+            return mapper.writeValueAsString(node);
         }
-        else {
-            Node node = new Node();
-            Iterable<String> split = Splitter.on(Pattern.compile(",\\s*")).split(literal);
-            Iterables.addAll(node.run_list, split);
-            try {
-                return mapper.writeValueAsString(node);
-            }
-            catch (IOException e) {
-                throw new IllegalStateException(e);
-            }
+        catch (IOException e) {
+            throw new IllegalStateException(e);
         }
     }
 

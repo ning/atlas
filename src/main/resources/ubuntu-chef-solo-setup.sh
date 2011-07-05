@@ -18,6 +18,9 @@ sudo apt-get -y install libopenssl-ruby
 sudo apt-get -y install ruby-dev
 sudo apt-get -y install libnet-ssh-multi-ruby
 sudo apt-get -y install libhighline-ruby
+sudo apt-get -y install rubygems1.8
+
+yes |sudo gem install aws-s3 -v 0.6.2 --no-ri --no-rdoc
 
 #install chef
 sudo apt-get -y install chef
