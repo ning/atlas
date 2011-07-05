@@ -34,6 +34,16 @@ public enum Command
             {
                 return new InstallCommand(mo);
             }
+        },
+    /**
+     * alias for install
+     */
+    start
+        {
+            public Runnable create(MainOptions mo)
+            {
+                return install.create(mo);
+            }
         };
 
     public abstract Runnable create(MainOptions mo);
