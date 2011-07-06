@@ -3,6 +3,8 @@ package com.ning.atlas;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.ning.atlas.base.Maybe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -12,6 +14,8 @@ import java.util.concurrent.Executor;
 
 public class BoundServerTemplate extends BoundTemplate
 {
+    private final Logger log = LoggerFactory.getLogger(BoundServerTemplate.class);
+
     private final Base base;
     private final List<String> installations;
 
@@ -71,6 +75,7 @@ public class BoundServerTemplate extends BoundTemplate
                         return new ProvisionedServerTemplate(BoundServerTemplate.this, server, installations);
                     }
                     catch (Exception e) {
+                        log.warn("unable to provision server {}", getType() + "." + getName(), e);
                         return new ProvisionedErrorTemplate(getType(), getName(), getMy(), e.getMessage());
                     }
                 }

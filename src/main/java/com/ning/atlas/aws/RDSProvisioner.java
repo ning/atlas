@@ -27,18 +27,24 @@ public class RDSProvisioner implements Provisioner
 
     private final Logger log = LoggerFactory.getLogger(RDSProvisioner.class);
 
-
     private final AmazonRDSClient rds;
+    private String licenseModel;
 
-    public RDSProvisioner(String accessKey, String secretKey)
+    public RDSProvisioner(String accessKey, String secretKey, String licenseModel)
     {
         BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
         rds = new AmazonRDSClient(credentials);
+        this.licenseModel = licenseModel;
+    }
+
+    public RDSProvisioner(String accessKey, String secretKey)
+    {
+        this(accessKey, secretKey, "general-public-license");
     }
 
     public RDSProvisioner(Map<String, String> attributes)
     {
-        this(attributes.get("access_key"), attributes.get("secret_key"));
+        this(attributes.get("access_key"), attributes.get("secret_key"), attributes.get("license_model"));
     }
 
     @Override
@@ -52,7 +58,7 @@ public class RDSProvisioner implements Provisioner
                                                                   cfg.getEngine(),
                                                                   cfg.getUsername(),
                                                                   cfg.getPassword());
-
+        req.setLicenseModel(licenseModel);
         DBInstance db = rds.createDBInstance(req);
 
         DBInstance instance = null;
