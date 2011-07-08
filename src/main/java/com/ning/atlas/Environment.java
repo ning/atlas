@@ -1,11 +1,9 @@
 package com.ning.atlas;
 
 import com.google.common.base.Function;
-import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.ning.atlas.base.Maybe;
-import com.sun.istack.internal.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -39,9 +37,9 @@ public class Environment
         this(name, provisioner, Collections.<String, Initializer>emptyMap(), null);
     }
 
-    public Environment(@NotNull String name,
-                       @NotNull Provisioner provisioner,
-                       @NotNull Map<String, Initializer> initializers,
+    public Environment(String name,
+                       Provisioner provisioner,
+                       Map<String, Initializer> initializers,
                        @Nullable Environment parent)
     {
         this.name = name;
