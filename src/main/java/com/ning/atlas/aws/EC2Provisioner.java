@@ -94,7 +94,7 @@ public class EC2Provisioner implements Provisioner
         ec2.terminateInstances(tr);
     }
 
-    private final class EC2Server extends Server
+    public final class EC2Server extends Server
     {
         private final String instanceId;
 
