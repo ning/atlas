@@ -26,13 +26,20 @@ public class InitializedSystemTemplate extends InitializedTemplate
         return children;
     }
 
+    @Override
     public ListenableFuture<? extends InstalledTemplate> install(Executor ex)
+    {
+        return install(ex, this);
+    }
+
+    @Override
+    public ListenableFuture<? extends InstalledTemplate> install(Executor ex, InitializedTemplate root)
     {
         final AtomicInteger remaining = new AtomicInteger(getChildren().size());
         final List<InstalledTemplate> init_children = new CopyOnWriteArrayList<InstalledTemplate>();
         final SettableFuture<InstalledTemplate> rs = SettableFuture.create();
         for (InitializedTemplate template : getChildren()) {
-            final ListenableFuture<? extends InstalledTemplate> child = template.install(ex);
+            final ListenableFuture<? extends InstalledTemplate> child = template.install(ex, root);
             child.addListener(new Runnable()
                               {
                                   @Override

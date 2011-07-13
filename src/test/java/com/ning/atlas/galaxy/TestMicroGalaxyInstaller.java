@@ -1,5 +1,10 @@
-package com.ning.atlas;
+package com.ning.atlas.galaxy;
 
+import com.ning.atlas.Environment;
+import com.ning.atlas.InstalledServerTemplate;
+import com.ning.atlas.InstalledTemplate;
+import com.ning.atlas.JRubyTemplateParser;
+import com.ning.atlas.Template;
 import com.ning.atlas.aws.AWSConfig;
 import com.ning.atlas.aws.EC2Provisioner;
 import com.ning.atlas.tree.Trees;

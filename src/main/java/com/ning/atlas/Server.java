@@ -22,13 +22,13 @@ public class Server
     }
 
     @JsonProperty("external_address")
-    public String getExternalIpAddress()
+    public String getExternalAddress()
     {
         return externalIp;
     }
 
     @JsonProperty("internal_address")
-    public String getInternalIpAddress()
+    public String getInternalAddress()
     {
         return internalIp;
     }

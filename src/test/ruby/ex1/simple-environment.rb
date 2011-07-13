@@ -2,7 +2,7 @@ environment "test" do
 
   set "xn.base-domain" => "waffles.test"
 
-  installer "ugx", com.ning.atlas.MicroGalaxyInstaller, {
+  installer "ugx", com.ning.atlas.galaxy.MicroGalaxyInstaller, {
       :ssh_user     => "ubuntu",
       :ssh_key_file => "~/.ec2/brianm-ning.pem",
       :ugx_user     => "ugx",

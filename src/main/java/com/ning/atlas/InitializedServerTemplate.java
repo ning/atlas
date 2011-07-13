@@ -34,6 +34,13 @@ public class InitializedServerTemplate extends InitializedTemplate
     @Override
     public ListenableFuture<? extends InstalledTemplate> install(Executor exec)
     {
+        return install(exec, this);
+    }
+
+
+    @Override
+    public ListenableFuture<? extends InstalledTemplate> install(Executor exec, final InitializedTemplate root)
+    {
         ListenableFutureTask<InstalledTemplate> f =
             new ListenableFutureTask<InstalledTemplate>(new Callable<InstalledTemplate>()
             {
@@ -47,7 +54,7 @@ public class InitializedServerTemplate extends InitializedTemplate
                             String fragment = installation.substring(offset + 1, installation.length());
 
                             Installer installer = server.getBase().getInstaller(prefix);
-                            installer.install(server, fragment);
+                            installer.install(server, fragment, root);
                         }
 
                         return new InstalledServerTemplate(getType(), getName(), getMy(), server);

@@ -63,6 +63,11 @@ public class SSH
     }
 
 
+    public String exec(String commandFormatString, Object... args) throws IOException
+    {
+        return exec(format(commandFormatString, args));
+    }
+
     public String exec(String command) throws IOException
     {
         Session s = ssh.startSession();

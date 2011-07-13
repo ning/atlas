@@ -2,7 +2,6 @@ package com.ning.atlas;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.ning.atlas.tree.Trees;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -45,7 +44,7 @@ public class TestProvisioning
         assertThat(leaves.get(0), instanceOf(ProvisionedServerTemplate.class));
 
         ProvisionedServerTemplate pst = (ProvisionedServerTemplate) leaves.get(0);
-        assertThat(pst.getServer().getExternalIpAddress(), equalTo("10.0.0.1"));
+        assertThat(pst.getServer().getExternalAddress(), equalTo("10.0.0.1"));
     }
 
     @Test

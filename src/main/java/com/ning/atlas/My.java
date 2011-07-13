@@ -37,10 +37,15 @@ public class My
         }
     }
 
+    public Object get(String key)
+    {
+        return attributes.get(key);
+    }
+
     public static class MySerializer extends JsonSerializer<My>
     {
         @Override
-        public void serialize(My value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException
+        public void serialize(My value, JsonGenerator jgen, SerializerProvider provider) throws IOException
         {
             jgen.writeStartObject();
             for (Map.Entry<String, Object> entry : value.attributes.entrySet()) {

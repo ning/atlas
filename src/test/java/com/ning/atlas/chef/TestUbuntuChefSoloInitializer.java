@@ -19,9 +19,7 @@ import com.ning.atlas.ServerTemplate;
 import com.ning.atlas.aws.AWSConfig;
 import com.ning.atlas.aws.EC2Provisioner;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
 
@@ -86,7 +84,7 @@ public class TestUbuntuChefSoloInitializer
 
             SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
                               "ubuntu",
-                              init_server.getExternalIpAddress());
+                              init_server.getExternalAddress());
             String out = ssh.exec("java -version");
             assertThat(out, containsString("Java(TM) SE Runtime Environment"));
         }
@@ -173,7 +171,7 @@ public class TestUbuntuChefSoloInitializer
         Server s = ist.getServer();
         SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
                           "ubuntu",
-                          s.getExternalIpAddress());
+                          s.getExternalAddress());
         String out = ssh.exec("java -version");
         assertThat(out, containsString("Java(TM) SE Runtime Environment"));
         ex.shutdown();
@@ -212,7 +210,7 @@ public class TestUbuntuChefSoloInitializer
         Server s = ist.getServer();
         SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
                           "ubuntu",
-                          s.getExternalIpAddress());
+                          s.getExternalAddress());
         String out = ssh.exec("cat /etc/atlas/system_map.json");
 
         assertThat(out, containsString("\"type\" : \"server\""));

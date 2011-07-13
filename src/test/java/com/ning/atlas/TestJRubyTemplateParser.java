@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.base.MorePredicates;
+import com.ning.atlas.galaxy.MicroGalaxyInstaller;
 import com.ning.atlas.tree.Trees;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;

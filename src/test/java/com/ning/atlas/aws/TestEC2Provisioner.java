@@ -5,7 +5,6 @@ import com.ning.atlas.Base;
 import com.ning.atlas.Environment;
 import com.ning.atlas.Server;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
 
@@ -45,8 +44,8 @@ public class TestEC2Provisioner
                                           ImmutableMap.of("ami", "ami-a6f504cf")));
         assertThat(s, notNullValue());
         try {
-            assertThat(s.getExternalIpAddress(), notNullValue());
-            assertThat(s.getInternalIpAddress(), notNullValue());
+            assertThat(s.getExternalAddress(), notNullValue());
+            assertThat(s.getInternalAddress(), notNullValue());
         }
         finally {
             ec2.destroy(s);

@@ -38,4 +38,5 @@ public abstract class InitializedTemplate implements Tree<InitializedTemplate>
     public abstract List<? extends InitializedTemplate> getChildren();
 
     public abstract ListenableFuture<? extends InstalledTemplate> install(Executor exec);
+    public abstract ListenableFuture<? extends InstalledTemplate> install(Executor exec, InitializedTemplate root);
 }

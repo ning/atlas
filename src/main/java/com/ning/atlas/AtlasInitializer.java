@@ -36,9 +36,9 @@ public class AtlasInitializer implements Initializer
     @Override
     public Server initialize(Server server, String arg, ProvisionedTemplate root, ProvisionedServerTemplate node) throws Exception
     {
-        SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalIpAddress());
+        SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
         try {
-            log.debug("initializing {}", server.getExternalIpAddress());
+            log.debug("initializing {}", server.getExternalAddress());
 
             ssh.exec("sudo mkdir /etc/atlas");
 

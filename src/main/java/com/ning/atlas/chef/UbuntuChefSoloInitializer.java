@@ -12,19 +12,15 @@ import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
 import com.ning.atlas.base.Maybe;
 import org.antlr.stringtemplate.StringTemplate;
-import org.antlr.stringtemplate.StringTemplateErrorListener;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.nio.cs.ext.SJIS_0213;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -114,7 +110,7 @@ public class UbuntuChefSoloInitializer implements Initializer
 
     private void initServer(Server server, String nodeJson, File sysMapFile) throws IOException
     {
-        SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalIpAddress());
+        SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
         try {
             logger.debug("woot, we have an ssh connection, doing stuff!");
             String remote_path = "/home/" + sshUser + "/ubuntu-chef-solo-init.sh";
@@ -139,7 +135,7 @@ public class UbuntuChefSoloInitializer implements Initializer
             String out = ssh.exec("ls /etc/atlas/");
             if (!out.contains("system_map.json")) {
                 ssh.exec("sudo mkdir /etc/atlas");
-                logger.info("AtlasInitializer was not run, placing system map on {}", server.getExternalIpAddress());
+                logger.info("AtlasInitializer was not run, placing system map on {}", server.getExternalAddress());
                 ssh.scpUpload(sysMapFile, "/tmp/system_map.json");
                 ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
             }

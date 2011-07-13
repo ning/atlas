@@ -58,7 +58,7 @@ public class TestAtlasInitializer
         InitializedServerTemplate ist = leaves.get(0);
         SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
                           "ubuntu",
-                          ist.getServer().getExternalIpAddress());
+                          ist.getServer().getExternalAddress());
 
         String node_info = ssh.exec("cat /etc/atlas/node_info.json");
         assertThat(node_info, containsString("\"name\" : \"eshell\""));

@@ -4,6 +4,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
 import com.amazonaws.services.elasticloadbalancing.model.Instance;
 import com.amazonaws.services.elasticloadbalancing.model.RegisterInstancesWithLoadBalancerRequest;
+import com.ning.atlas.InitializedTemplate;
 import com.ning.atlas.Installer;
 import com.ning.atlas.Server;
 import org.slf4j.Logger;
@@ -27,13 +28,14 @@ public class ELBInstaller implements Installer
 
 
     @Override
-    public Server install(Server server, String fragment)
+    public Server install(Server server, String fragment, InitializedTemplate root)
     {
         EC2Provisioner.EC2Server s = (EC2Provisioner.EC2Server) server;
         Instance i = new Instance(s.getInstanceId());
         RegisterInstancesWithLoadBalancerRequest req = new RegisterInstancesWithLoadBalancerRequest(fragment,
                                                                                                     asList(i));
         elb.registerInstancesWithLoadBalancer(req);
+        logger.debug("added {} to elb group {}", s.getExternalAddress(), fragment);
         return s;
     }
 }

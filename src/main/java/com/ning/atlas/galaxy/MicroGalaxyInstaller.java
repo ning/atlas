@@ -1,5 +1,9 @@
-package com.ning.atlas;
+package com.ning.atlas.galaxy;
 
+import com.ning.atlas.InitializedTemplate;
+import com.ning.atlas.Installer;
+import com.ning.atlas.SSH;
+import com.ning.atlas.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,12 +35,12 @@ public class MicroGalaxyInstaller implements Installer
     }
 
     @Override
-    public Server install(Server server, String fragment)
+    public Server install(Server server, String fragment, InitializedTemplate root)
     {
         SSH ssh = null;
         try {
-            ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalIpAddress());
-            log.debug("installing {} on {}", fragment, server.getExternalIpAddress());
+            ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
+            log.debug("installing {} on {}", fragment, server.getExternalAddress());
             ssh.exec(format("cd ~%s; sudo -u %s ugx -b %s deploy; sudo -u %s ugx start",
                             microGalaxyUser,
                             microGalaxyUser,

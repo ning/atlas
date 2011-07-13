@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.annotate.JsonDeserialize;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nullable;
@@ -19,6 +20,7 @@ import static org.junit.Assert.assertThat;
 public class TestProvisionCommand
 {
     @Test
+    @Ignore
     public void testFoo() throws Exception
     {
         MainOptions opts = new MainOptions("-e", "src/test/ruby/ex1/static-tagged.rb",
