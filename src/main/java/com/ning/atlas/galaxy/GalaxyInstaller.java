@@ -9,7 +9,6 @@ import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.reflect.generics.tree.ArrayTypeSignature;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -38,31 +37,31 @@ public class GalaxyInstaller implements Installer
     @Override
     public Server install(Server server, String fragment, InitializedTemplate root) throws Exception
     {
-        Iterable<InitializedServerTemplate> shells = filter(findInstancesOf(root, InitializedServerTemplate.class), new Predicate<InitializedServerTemplate>()
-        {
-            @Override
-            public boolean apply(@Nullable InitializedServerTemplate input)
-            {
-                return "shell".equals(input.getMy().get("galaxy"));
-            }
-        });
-
-        if (Iterables.isEmpty(shells)) {
-            throw new IllegalStateException("no galaxy shell defined in the deploy tree, unable to continue");
-        }
-
-        InitializedServerTemplate shell = Iterables.getFirst(shells, null);
-        assert shell != null;
-
-        SSH ssh = new SSH(new File(sshKeyFile), sshUser, shell.getServer().getExternalAddress());
-        log.debug("installing {} on {}", fragment, server.getInternalAddress());
-
-
-        String[] parts = fragment.split(":");
-        String env = parts[0];
-        String version = parts[1];
-        String type = parts[2];
-        ssh.exec("galaxy -i %s assign %s %s %s", server.getInternalAddress(), env, version, type);
+//        Iterable<InitializedServerTemplate> shells = filter(findInstancesOf(root, InitializedServerTemplate.class), new Predicate<InitializedServerTemplate>()
+//        {
+//            @Override
+//            public boolean apply(@Nullable InitializedServerTemplate input)
+//            {
+//                return "shell".equals(input.getMy().get("galaxy"));
+//            }
+//        });
+//
+//        if (Iterables.isEmpty(shells)) {
+//            throw new IllegalStateException("no galaxy shell defined in the deploy tree, unable to continue");
+//        }
+//
+//        InitializedServerTemplate shell = Iterables.getFirst(shells, null);
+//        assert shell != null;
+//
+//        SSH ssh = new SSH(new File(sshKeyFile), sshUser, shell.getServer().getExternalAddress());
+//        log.debug("installing {} on {}", fragment, server.getInternalAddress());
+//
+//
+//        String[] parts = fragment.split(":");
+//        String env = parts[0];
+//        String version = parts[1];
+//        String type = parts[2];
+//        ssh.exec("galaxy -i %s assign %s %s %s", server.getInternalAddress(), env, version, type);
 
         return server;
     }

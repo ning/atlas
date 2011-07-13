@@ -30,21 +30,15 @@ public class RDSProvisioner implements Provisioner
     private final AmazonRDSClient rds;
     private String licenseModel;
 
-    public RDSProvisioner(String accessKey, String secretKey, String licenseModel)
+    public RDSProvisioner(String accessKey, String secretKey)
     {
         BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
         rds = new AmazonRDSClient(credentials);
-        this.licenseModel = licenseModel;
-    }
-
-    public RDSProvisioner(String accessKey, String secretKey)
-    {
-        this(accessKey, secretKey, "general-public-license");
     }
 
     public RDSProvisioner(Map<String, String> attributes)
     {
-        this(attributes.get("access_key"), attributes.get("secret_key"), attributes.get("license_model"));
+        this(attributes.get("access_key"), attributes.get("secret_key"));
     }
 
     @Override
@@ -58,7 +52,11 @@ public class RDSProvisioner implements Provisioner
                                                                   cfg.getEngine(),
                                                                   cfg.getUsername(),
                                                                   cfg.getPassword());
-        req.setLicenseModel(licenseModel);
+        String license_model = b.getAttributes().containsKey("license_model")
+                               ? b.getAttributes().get("license_model")
+                               : "general_public_license";
+
+        req.setLicenseModel(license_model);
         DBInstance db = rds.createDBInstance(req);
 
         DBInstance instance = null;
