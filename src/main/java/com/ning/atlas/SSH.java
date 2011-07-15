@@ -70,6 +70,7 @@ public class SSH
 
     public String exec(String command) throws IOException
     {
+        logger.debug("executing {} on {}", command, host);
         Session s = ssh.startSession();
         try {
             logger.debug("executing '{}' on {}", command, host);

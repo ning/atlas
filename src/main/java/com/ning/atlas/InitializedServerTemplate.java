@@ -32,13 +32,6 @@ public class InitializedServerTemplate extends InitializedTemplate
     }
 
     @Override
-    public ListenableFuture<? extends InstalledTemplate> install(Executor exec)
-    {
-        return install(exec, this);
-    }
-
-
-    @Override
     public ListenableFuture<? extends InstalledTemplate> install(Executor exec, final InitializedTemplate root)
     {
         ListenableFutureTask<InstalledTemplate> f =

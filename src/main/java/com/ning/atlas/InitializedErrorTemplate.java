@@ -25,12 +25,6 @@ public class InitializedErrorTemplate extends InitializedTemplate
     }
 
     @Override
-    public ListenableFuture<InstalledErrorTemplate> install(Executor exec)
-    {
-        return install(exec, this);
-    }
-
-    @Override
     public ListenableFuture<InstalledErrorTemplate> install(Executor exec, InitializedTemplate root)
     {
         return Futures.immediateFuture(new InstalledErrorTemplate(getType(),

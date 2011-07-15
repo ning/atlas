@@ -1,6 +1,7 @@
 package com.ning.atlas.galaxy;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.ning.atlas.InitializedServerTemplate;
 import com.ning.atlas.InitializedTemplate;
@@ -17,6 +18,7 @@ import java.util.Map;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static com.ning.atlas.tree.Trees.findInstancesOf;
+import static java.lang.String.format;
 
 public class GalaxyInstaller implements Installer
 {
@@ -42,11 +44,13 @@ public class GalaxyInstaller implements Installer
             @Override
             public boolean apply(@Nullable InitializedServerTemplate input)
             {
+                log.debug("looking at {}", input.getMy().toJson());
                 return "shell".equals(input.getMy().get("galaxy"));
             }
         });
 
         if (Iterables.isEmpty(shells)) {
+            log.warn("unable to find a :galaxy => 'shell' host to run install on, failing");
             throw new IllegalStateException("no galaxy shell defined in the deploy tree, unable to continue");
         }
 
@@ -57,12 +61,19 @@ public class GalaxyInstaller implements Installer
         log.debug("installing {} on {}", fragment, server.getInternalAddress());
 
 
-        String[] parts = fragment.split(":");
+        String[] parts = fragment.split("/");
         String env = parts[0];
         String version = parts[1];
         String type = parts[2];
-        ssh.exec("galaxy -i %s assign %s %s %s", server.getInternalAddress(), env, version, type);
-        ssh.exec("galaxy -i %s start", server.getInternalAddress());
+
+        String internal_first_part = Splitter.on('.').split(server.getInternalAddress()).iterator().next();
+
+        String cmd = format("galaxy -i %s assign %s %s %s", internal_first_part, env, version, type);
+        log.debug("about to run '{}'", cmd);
+        log.debug(ssh.exec(cmd));
+        String cmd2 = format("galaxy -i %s start", internal_first_part);
+        log.debug("about to run '{}'", cmd2);
+        log.debug(ssh.exec(cmd2));
 
         return server;
     }

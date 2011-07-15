@@ -27,12 +27,6 @@ public class InitializedSystemTemplate extends InitializedTemplate
     }
 
     @Override
-    public ListenableFuture<? extends InstalledTemplate> install(Executor ex)
-    {
-        return install(ex, this);
-    }
-
-    @Override
     public ListenableFuture<? extends InstalledTemplate> install(Executor ex, InitializedTemplate root)
     {
         final AtomicInteger remaining = new AtomicInteger(getChildren().size());

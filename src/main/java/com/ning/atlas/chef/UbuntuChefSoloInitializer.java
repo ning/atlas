@@ -112,7 +112,6 @@ public class UbuntuChefSoloInitializer implements Initializer
     {
         SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
         try {
-            logger.debug("woot, we have an ssh connection, doing stuff!");
             String remote_path = "/home/" + sshUser + "/ubuntu-chef-solo-init.sh";
             ssh.scpUpload(this.chefSoloInitFile, remote_path);
             ssh.exec("chmod +x " + remote_path);
