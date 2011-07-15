@@ -46,7 +46,8 @@ public class RDSProvisioner implements Provisioner
     {
         RDSConfig cfg = new ConfigurationObjectFactory(new MapConfigSource(b.getAttributes())).build(RDSConfig.class);
 
-        CreateDBInstanceRequest req = new CreateDBInstanceRequest("db-" + UUID.randomUUID().toString(),
+        String name = "db-" + UUID.randomUUID().toString();
+        CreateDBInstanceRequest req = new CreateDBInstanceRequest(name,
                                                                   cfg.getStorageSize(),
                                                                   cfg.getInstanceClass(),
                                                                   cfg.getEngine(),
@@ -89,9 +90,7 @@ public class RDSProvisioner implements Provisioner
                  && instance.getDBInstanceStatus().equals("available")
                  && instance.getEndpoint() != null));
 
-        return new RDSServer(instance.getEndpoint().getAddress(),
-                             instance.getEndpoint().getPort(),
-                             instance.getDBInstanceIdentifier(),
+        return new RDSServer(instance,
                              cfg,
                              b);
     }
@@ -108,26 +107,36 @@ public class RDSProvisioner implements Provisioner
     {
         private final Integer port;
         private final String  instanceId;
+        private final String name;
         private final String  engine;
         private final String  instanceClass;
         private final String password;
         private final int storageSize;
         private final String username;
+        private final String engineVersion;
 
-        public RDSServer(String ip,
-                         Integer port,
-                         String instanceId,
-                         RDSConfig config,
-                         Base base)
+        public RDSServer(DBInstance instance, RDSConfig cfg, Base b)
         {
-            super(ip, ip, base);
-            this.port = port;
-            this.instanceId = instanceId;
-            this.engine = config.getEngine();
-            this.instanceClass = config.getInstanceClass();
-            this.password = config.getPassword();
-            this.storageSize = config.getStorageSize();
-            this.username = config.getUsername();
+            super(instance.getEndpoint().getAddress(), instance.getEndpoint().getAddress(), b);
+            this.port = instance.getEndpoint().getPort();
+            this.instanceId = instance.getDBInstanceIdentifier();
+            this.instanceClass = instance.getDBInstanceClass();
+            this.name = instance.getDBName();
+            this.engine = instance.getEngine();
+            this.engineVersion = instance.getEngineVersion();
+            this.password = cfg.getPassword();
+            this.username = cfg.getUsername();
+            this.storageSize = cfg.getStorageSize();
+        }
+
+        public String getEngineVersion()
+        {
+            return engineVersion;
+        }
+
+        public String getName()
+        {
+            return name;
         }
 
         public Integer getPort()

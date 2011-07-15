@@ -33,7 +33,6 @@ public class Server
         return internalIp;
     }
 
-    @JsonIgnore
     public Base getBase()
     {
         return base;

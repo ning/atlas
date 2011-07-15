@@ -120,6 +120,7 @@ public class Base
         return installers.get(prefix);
     }
 
+    @JsonIgnore
     public Map<String, String> getProperties()
     {
         return env.getProperties();
