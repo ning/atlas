@@ -58,23 +58,36 @@ public class GalaxyInstaller implements Installer
         assert shell != null;
 
         SSH ssh = new SSH(new File(sshKeyFile), sshUser, shell.getServer().getExternalAddress());
-        log.debug("installing {} on {}", fragment, server.getInternalAddress());
+        try {
+            log.debug("installing {} on {}", fragment, server.getInternalAddress());
 
 
-        String[] parts = fragment.split("/");
-        String env = parts[0];
-        String version = parts[1];
-        String type = parts[2];
+            String[] parts = fragment.split("/");
+            String env = parts[0];
+            String version = parts[1];
+            String type = parts[2];
 
-        String internal_first_part = Splitter.on('.').split(server.getInternalAddress()).iterator().next();
+            String internal_first_part = Splitter.on('.').split(server.getInternalAddress()).iterator().next();
 
-        String cmd = format("galaxy -i %s assign %s %s %s", internal_first_part, env, version, type);
-        log.debug("about to run '{}'", cmd);
-        log.debug(ssh.exec(cmd));
-        String cmd2 = format("galaxy -i %s start", internal_first_part);
-        log.debug("about to run '{}'", cmd2);
-        log.debug(ssh.exec(cmd2));
+            String query_cmd = format("galaxy -i %s show", internal_first_part);
+            String out;
+            do {
+                out = ssh.exec(query_cmd);
+            }
+            while (out.contains("No agents matching the provided filter"));
 
-        return server;
+
+            String cmd = format("galaxy -i %s assign %s %s %s", internal_first_part, env, version, type);
+            log.debug("about to run '{}'", cmd);
+            log.debug(ssh.exec(cmd));
+            String cmd2 = format("galaxy -i %s start", internal_first_part);
+            log.debug("about to run '{}'", cmd2);
+            log.debug(ssh.exec(cmd2));
+
+            return server;
+        }
+        finally {
+            ssh.close();
+        }
     }
 }
