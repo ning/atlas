@@ -7,7 +7,6 @@ import java.util.Map;
 
 public class Server
 {
-
     private final String internalIp;
     private final String externalIp;
 

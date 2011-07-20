@@ -76,7 +76,6 @@ public class GalaxyInstaller implements Installer
             }
             while (out.contains("No agents matching the provided filter"));
 
-
             String cmd = format("galaxy -i %s assign %s %s %s", internal_first_part, env, version, type);
             log.debug("about to run '{}'", cmd);
             log.debug(ssh.exec(cmd));
