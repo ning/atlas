@@ -18,16 +18,24 @@ public class SSH
     private final static Logger logger = LoggerFactory.getLogger(SSH.class);
     private final SSHClient ssh;
     private final String host;
+    private final int port;
+    
+    private final static int TIMEOUT_MINUTES = 2; // time out in minutes
 
     public SSH(File privateKeyFile, String userName, String host) throws IOException
     {
-        this(privateKeyFile, userName, host, 2, TimeUnit.MINUTES);
+        this(privateKeyFile, userName, host, SSHClient.DEFAULT_PORT);
     }
-
-    public SSH(File privateKeyFile, String userName, String host, long time, TimeUnit unit) throws IOException
+    
+    public SSH(File privateKeyFile, String userName, String host, int port) throws IOException
+    {
+    	this(privateKeyFile, userName, host, port, SSH.TIMEOUT_MINUTES, TimeUnit.MINUTES);
+    }
+    
+    public SSH(File privateKeyFile, String userName, String host, int port, long time, TimeUnit unit) throws IOException
     {
         long give_up_at = System.currentTimeMillis() + unit.toMillis(time);
-
+        
         boolean connected = false;
         SSHClient ssh = null;
         while (!connected) {
@@ -37,7 +45,7 @@ public class SSH
             ssh = new SSHClient();
             ssh.addHostKeyVerifier(new PromiscuousVerifier());
             try {
-                ssh.connect(host);
+                ssh.connect(host, port);
                 PKCS8KeyFile keyfile = new PKCS8KeyFile();
                 keyfile.init(privateKeyFile);
                 ssh.authPublickey(userName, keyfile);
@@ -55,6 +63,7 @@ public class SSH
         }
         this.host = host;
         this.ssh = ssh;
+        this.port = port;
     }
 
     public void close() throws IOException
@@ -87,7 +96,7 @@ public class SSH
 
     public void scpUpload(File localFile, String remotePath) throws IOException
     {
-        logger.debug(format("uploading %s to %s:%s", localFile.getAbsolutePath(), host, remotePath));
+        logger.debug(format("uploading %s to %s:%d:%s", localFile.getAbsolutePath(), host, port, remotePath));
         ssh.newSCPFileTransfer().upload(localFile.getAbsolutePath(), remotePath);
     }
 }
