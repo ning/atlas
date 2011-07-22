@@ -1,3 +1,5 @@
+# basics
+
 \#*\#
 .\#*
 *.iml
@@ -5,3 +7,9 @@
 target
 tmp
 .awscreds
+
+# build stuff
+
+.classpath
+.project
+.settings
