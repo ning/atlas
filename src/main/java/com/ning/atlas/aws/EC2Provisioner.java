@@ -47,7 +47,11 @@ public class EC2Provisioner implements Provisioner
     {
         logger.debug("provisioning server for base {}", base.getName());
         RunInstancesRequest req = new RunInstancesRequest(base.getAttributes().get("ami"), 1, 1);
-
+  
+        if (base.getAttributes().containsKey("instance_type")) {
+        	req.setInstanceType(base.getAttributes().get("instance_type"));
+        }
+      
         req.setKeyName(keypairId);
         RunInstancesResult rs = ec2.runInstances(req);
 
