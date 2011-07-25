@@ -15,24 +15,38 @@ import static java.lang.String.format;
 
 public class SSH
 {
+	// http://www.jarvana.com/jarvana/view/net/schmizz/sshj/0.1.1/sshj-0.1.1-javadoc.jar!/net/schmizz/sshj/SSHClient.html
+	
     private final static Logger logger = LoggerFactory.getLogger(SSH.class);
     private final SSHClient ssh;
     private final String host;
     private final int port;
-    
     private final static int TIMEOUT_MINUTES = 2; // time out in minutes
+    
+    public enum AuthType {
+    	AUTH_KEY, AUTH_PASSWORD
+    }
 
+    // Key
     public SSH(File privateKeyFile, String userName, String host) throws IOException
     {
         this(privateKeyFile, userName, host, SSHClient.DEFAULT_PORT);
     }
     
+    // Key
     public SSH(File privateKeyFile, String userName, String host, int port) throws IOException
     {
-    	this(privateKeyFile, userName, host, port, SSH.TIMEOUT_MINUTES, TimeUnit.MINUTES);
+    	this(privateKeyFile, userName, null, host, port, AuthType.AUTH_KEY, SSH.TIMEOUT_MINUTES, TimeUnit.MINUTES);
     }
     
-    public SSH(File privateKeyFile, String userName, String host, int port, long time, TimeUnit unit) throws IOException
+    // Password
+    public SSH(String passWord, String userName, String host, int port) throws IOException
+    {
+    	this(null, userName, passWord, host, port, AuthType.AUTH_PASSWORD, SSH.TIMEOUT_MINUTES, TimeUnit.MINUTES);
+    	
+    }
+    
+    public SSH(File privateKeyFile, String userName, String passWord, String host, int port, AuthType authtype, long time, TimeUnit unit) throws IOException
     {
         long give_up_at = System.currentTimeMillis() + unit.toMillis(time);
         
@@ -46,9 +60,13 @@ public class SSH
             ssh.addHostKeyVerifier(new PromiscuousVerifier());
             try {
                 ssh.connect(host, port);
-                PKCS8KeyFile keyfile = new PKCS8KeyFile();
-                keyfile.init(privateKeyFile);
-                ssh.authPublickey(userName, keyfile);
+                if (authtype == AuthType.AUTH_KEY) {
+	                PKCS8KeyFile keyfile = new PKCS8KeyFile();
+	                keyfile.init(privateKeyFile);
+	                ssh.authPublickey(userName, keyfile);
+                } else if (authtype == AuthType.AUTH_PASSWORD) {
+                	ssh.authPassword(userName, passWord);
+                }
                 connected = true;
             }
             catch (Exception e) {
