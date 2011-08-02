@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -13,7 +14,10 @@ public class Server
     @JsonIgnore
     private final Base base;
 
-    public Server(String internalIp, String externalIp, Base base)
+    @JsonCreator
+    public Server(@JsonProperty("internal_address") String internalIp,
+                  @JsonProperty("external_address")String externalIp,
+                  @JsonProperty("base") Base base)
     {
         this.internalIp = internalIp;
         this.externalIp = externalIp;

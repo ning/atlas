@@ -33,7 +33,7 @@
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.8.0</version>
+            <version>1.8.4</version>
             <!-- ASL 2.0 -->
         </dependency>
 

@@ -8,6 +8,8 @@ import com.ning.atlas.Template;
 import com.ning.atlas.aws.AWSConfig;
 import com.ning.atlas.aws.EC2Provisioner;
 import com.ning.atlas.tree.Trees;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -61,6 +63,11 @@ public class TestMicroGalaxyInstaller
                                           .provision(exec).get()
                                           .initialize(exec).get()
                                           .install(exec).get();
+
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+        mapper.writeValue(System.out, installed);
 
 
         List<InstalledServerTemplate> nodes = Trees.findInstancesOf(installed, InstalledServerTemplate.class);

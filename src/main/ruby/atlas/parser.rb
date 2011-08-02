@@ -69,7 +69,7 @@ module Atlas
 
     def provisioner clazz, args={}
       attr = args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v.to_s; a }
-      p    = com.ning.atlas.JrubyHelper.create(clazz, attr)
+      p    = com.ning.atlas.Instantiator.create(clazz, attr)
       args.each do |k, v|
         sym = "#{k}=".to_sym
         p.send(sym, v) if p.respond_to? sym
@@ -79,7 +79,7 @@ module Atlas
 
     def initializer name, clazz, args={}
       attr = args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v.to_s; a }
-      init = com.ning.atlas.JrubyHelper.create(clazz, attr)
+      init = com.ning.atlas.Instantiator.create(clazz, attr)
 
       args.each do |k, v|
         sym = "#{k}=".to_sym
@@ -91,7 +91,7 @@ module Atlas
 
     def installer name, clazz, args={}
       attr      = args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v.to_s; a }
-      installer = com.ning.atlas.JrubyHelper.create(clazz, attr)
+      installer = com.ning.atlas.Instantiator.create(clazz, attr)
 
       args.each do |k, v|
         sym = "#{k}=".to_sym

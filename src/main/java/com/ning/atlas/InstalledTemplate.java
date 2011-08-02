@@ -1,13 +1,18 @@
 package com.ning.atlas;
 
 import com.ning.atlas.tree.Tree;
+import com.sun.xml.internal.ws.api.pipe.ServerTubeAssemblerContext;
+import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
+import org.codehaus.jackson.annotate.JsonTypeInfo;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-@JsonPropertyOrder({"type", "name", "children"})
+@JsonPropertyOrder({"type", "name", "my", "children"})
 public class InstalledTemplate implements Tree<InstalledTemplate>
 {
     private final String type;
@@ -27,7 +32,6 @@ public class InstalledTemplate implements Tree<InstalledTemplate>
         return Collections.emptyList();
     }
 
-
     public String getType()
     {
         return type;
@@ -41,5 +45,23 @@ public class InstalledTemplate implements Tree<InstalledTemplate>
     public My getMy()
     {
         return my;
+    }
+
+    @JsonCreator
+    public static InstalledTemplate create(@JsonProperty("name") String name,
+                                           @JsonProperty("type") String type,
+                                           @JsonProperty("my") Map<String, Object> my,
+                                           @JsonProperty("children") List<InstalledTemplate> children,
+                                           @JsonProperty("server") Server server)
+    {
+
+        if (children == null) {
+            return new InstalledServerTemplate(type, name, new My(my), server);
+        }
+        else {
+            return new InstalledSystemTemplate(type, name, new My(my), children);
+        }
+
+
     }
 }

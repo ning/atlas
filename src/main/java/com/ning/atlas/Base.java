@@ -2,7 +2,10 @@ package com.ning.atlas;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
+import org.bouncycastle.jce.provider.JDKAlgorithmParameterGenerator;
+import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Collections;
 import java.util.List;
@@ -11,15 +14,27 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Base
 {
-    private final String name;
+
+    public static final ThreadLocal<Environment> DESERIALIZATION_HACK = new ThreadLocal<Environment>();
+
+
+    private final List<String>        inits      = new CopyOnWriteArrayList<String>();
     private final Map<String, String> attributes = Maps.newConcurrentMap();
-    private final Provisioner              provisioner;
+
     private final Map<String, Initializer> initalizers;
-    private final List<String> inits = new CopyOnWriteArrayList<String>();
-    private final Map<String, Installer> installers;
+    private final Provisioner              provisioner;
+    private final Map<String, Installer>   installers;
+    private final String                   name;
 
     @JsonIgnore
     private final Environment env;
+
+
+    @JsonCreator
+    public Base(@JsonProperty("name") String name, @JsonProperty("attributes") Map<String, String> attributes) {
+        this(name, DESERIALIZATION_HACK.get(), attributes);
+    }
+
 
     public Base(String name, Environment env, Map<String, String> attributes)
     {

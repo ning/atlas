@@ -3,7 +3,7 @@ package com.ning.atlas;
 import java.lang.reflect.Constructor;
 import java.util.Map;
 
-public class JrubyHelper
+public class Instantiator
 {
     public static <T> T create(Class<T> type, Map<String, String> args) throws IllegalAccessException, InstantiationException
     {
