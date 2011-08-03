@@ -8,13 +8,20 @@ Atlas is current able to spin up environments on EC2 and VirtualBox.
 
 # 5 minute quick start
 
-Build it and make it executable:
+Build it:
 
-    mvn install
-    chmod +x target/atlas-<version>.jar
+    rake package
 
 Create a [environment-specification] and [system-specification].
-Run atlas:
+Provision stuff:
 
-    ./target/atlas-<version>.jar -e <environment specification file> -s <system specification file>
+    ./target/atlas -e <environment specification file> -s <system specification file> provision
+
+Initialize stuff:
+
+    ./target/atlas -e <environment specification file> -s <system specification file> initialize
+
+Start stuff:
+
+    ./target/atlas -e <environment specification file> -s <system specification file> start
 
