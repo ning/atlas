@@ -8,7 +8,7 @@ Atlas is current able to spin up environments on EC2 and VirtualBox.
 
 # Where to get it
 
-Atlas is on github: [https://github.com/ning/atlas].
+Atlas is on github: <https://github.com/ning/atlas>.
 
 # 5 minute quick start
 
