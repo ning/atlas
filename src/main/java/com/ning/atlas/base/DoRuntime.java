@@ -16,26 +16,26 @@ import com.google.common.base.Joiner;
  */
 public class DoRuntime {
 
-    private final static Logger logger = LoggerFactory.getLogger(DoRuntime.class);
+	private final static Logger logger = LoggerFactory.getLogger(DoRuntime.class);
 
-    public static String exec(String ... cmdarray) throws UnableToProvisionServerException
-    {
-        Runtime runtime = Runtime.getRuntime();
+	public static String exec(String ... cmdarray) throws UnableToProvisionServerException
+	{
+		Runtime runtime = Runtime.getRuntime();
 
-        Joiner joiner = Joiner.on(" ").skipNulls();
-        logger.info("Exec: $ {}", joiner.join(cmdarray));
+		Joiner joiner = Joiner.on(" ").skipNulls();
+		logger.info("Exec: $ {}", joiner.join(cmdarray));
 
 		StringBuilder sb = new StringBuilder();
-        try {
+		try {
 			Process p = runtime.exec(cmdarray);
 			InputStream is = p.getInputStream();
 			InputStreamReader isr = new InputStreamReader(is);
 			BufferedReader br = new BufferedReader(isr);
 			String line, newLine = "\n";
 
-		    while ((line = br.readLine()) != null) {
-		    	sb.append(line).append(newLine);
-		    }
+			while ((line = br.readLine()) != null) {
+				sb.append(line).append(newLine);
+			}
 
 			try {
 				int exitcode = p.waitFor();
@@ -46,16 +46,16 @@ public class DoRuntime {
 			throw new UnableToProvisionServerException(e.toString());
 		}
 		return sb.toString();
-    }
+	}
 
-    /**
-     * Returns the specified string in quotes
-     * @param s A string
-     * @return The modified string
-     */
-    public static String stringify(String s) {
-    	s = s.replace("\\", "\\\\");
-    	s = s.replace("\"", "\\\"");
-    	return "\"" + s + "\"";
-    }
+	/**
+	 * Returns the specified string in quotes
+	 * @param s A string
+	 * @return The modified string
+	 */
+	public static String stringify(String s) {
+		s = s.replace("\\", "\\\\");
+		s = s.replace("\"", "\\\"");
+		return "\"" + s + "\"";
+	}
 }
