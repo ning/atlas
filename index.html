@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="date" content="" />
+  <link rel="stylesheet" href="pandoc.css" type="text/css" />
+</head>
+<body>
+<div id="introduction"
+><h1
+  >Introduction</h1
+  ><p
+  >Atlas is a tool to automatically spin up complete environments consisting of multiple machines and software installed on them. These environments are described via configuration files which are fed to Atlas, and Atlas then automatically procures the necessary resources and installs the base machines and the software running on them. Atlas is current able to spin up environments on EC2 and VirtualBox.</p
+  ></div
+><div id="minute-quick-start"
+><h1
+  >5 minute quick start</h1
+  ><p
+  >Build it and make it executable:</p
+  ><pre
+  ><code
+    >mvn install
+chmod +x target/atlas-&lt;version&gt;.jar
+</code
+    ></pre
+  ><p
+  >Create a [environment-specification] and [system-specification]. Run atlas:</p
+  ><pre
+  ><code
+    >./target/atlas-&lt;version&gt;.jar -e &lt;environment specification file&gt; -s &lt;system specification file&gt;
+</code
+    ></pre
+  ></div
+><div id="building"
+><h1
+  >Building</h1
+  ><p
+  >Use maven to build it:</p
+  ><pre
+  ><code
+    >mvn install
+</code
+    ></pre
+  ><p
+  >This will generate an executable jar in the target folder. In fact, the jar is executable directly on the shell once you set the executable bit</p
+  ><pre
+  ><code
+    >chmod +x target/atlas-&lt;version&gt;.jar
+</code
+    ></pre
+  ></div
+><div id="configuration"
+><h1
+  >Configuration</h1
+  ><p
+  >Atlas distinguishes between environment and system configuration.</p
+  ><div id="environment-specification"
+  ><h2
+    >Environment specification</h2
+    ><p
+    >TBD</p
+    ></div
+  ><div id="system-specification"
+  ><h2
+    >System specification</h2
+    ><p
+    >TBD</p
+    ></div
+  ></div
+><div id="running"
+><h1
+  >Running</h1
+  ><p
+  >Invoking atlas without any arguments will show the basic help</p
+  ><pre
+  ><code
+    >./target/atlas-&lt;version&gt;.jar 
+
+Missing one or both of environment or system specification paths
+Option                                  Description
+------                                  -----------
+-e, --env, --environment                Environment specification file
+-s, --sys, --system                     System specification file
+</code
+    ></pre
+  ><p
+  >Atlas only needs two arguments on the command line: the path to the [environment-specification] and the path to the [system-specification]. Everything else is configured within those two files.</p
+  ></div
+><div id="output"
+><h1
+  >Output</h1
+  ><p
+  >TBD</p
+  ></div
+>
+</body>
+</html>
+
