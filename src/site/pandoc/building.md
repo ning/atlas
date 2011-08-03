@@ -1,11 +1,15 @@
 # Building
 
-Use maven to build it:
+The easiest way to build atlas, is to use [rake](http://rake.rubyforge.org/)
+which usually comes with any decent ruby installation:
+
+    rake package
+
+This will invoke Maven and generate an executable ``atlas`` file.
+
+You can also do this manually:
 
     mvn install
-
-This will generate an executable jar in the target folder. In fact, the jar is executable
-directly on the shell once you set the executable bit
-
-    chmod +x target/atlas-<version>.jar
+    cat target/atlas-*.jar >> target/atlas
+    chmod +x target/atlas
 
