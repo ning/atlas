@@ -132,10 +132,12 @@ public abstract class Maybe<T> implements Iterable<T>
             return this;
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public <U> Maybe<U> to(Function<? super T, ? extends U> mapping)
         {
-            return definitely(mapping.apply(theValue));
+            // cast is to make e.g. Eclipse happy with this line
+            return (Maybe<U>)definitely(mapping.apply(theValue));
         }
 
         @Override
