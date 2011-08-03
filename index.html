@@ -31,12 +31,17 @@ code.sourceCode span.er { color: red; font-weight: bold; }
 <h1 id="introduction">Introduction</h1>
 <p>Atlas is a tool to automatically spin up complete environments consisting of multiple machines and software installed on them. These environments are described via configuration files which are fed to Atlas, and Atlas then automatically procures the necessary resources and installs the base machines and the software running on them. Atlas is current able to spin up environments on EC2 and VirtualBox.</p>
 <h1 id="minute-quick-start">5 minute quick start</h1>
-<p>Build it and make it executable:</p>
-<pre><code>mvn install
-chmod +x target/atlas-&lt;version&gt;.jar
+<p>Build it:</p>
+<pre><code>rake package
 </code></pre>
-<p>Create a [environment-specification] and [system-specification]. Run atlas:</p>
-<pre><code>./target/atlas-&lt;version&gt;.jar -e &lt;environment specification file&gt; -s &lt;system specification file&gt;
+<p>Create a [environment-specification] and [system-specification]. Provision stuff:</p>
+<pre><code>./target/atlas -e &lt;environment specification file&gt; -s &lt;system specification file&gt; provision
+</code></pre>
+<p>Initialize stuff:</p>
+<pre><code>./target/atlas -e &lt;environment specification file&gt; -s &lt;system specification file&gt; initialize
+</code></pre>
+<p>Start stuff:</p>
+<pre><code>./target/atlas -e &lt;environment specification file&gt; -s &lt;system specification file&gt; start
 </code></pre>
 <h1 id="building">Building</h1>
 <p>The easiest way to build atlas, is to use <a href="http://rake.rubyforge.org/">rake</a> which usually comes with any decent ruby installation:</p>
