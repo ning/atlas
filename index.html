@@ -1,100 +1,106 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <title></title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="generator" content="pandoc" />
-  <meta name="date" content="" />
+  <title></title>
+  <style type="text/css">
+/*<![CDATA[*/
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode, table.sourceCode pre 
+   { margin: 0; padding: 0; border: 0; vertical-align: baseline; border: none; }
+td.lineNumbers { border-right: 1px solid #AAAAAA; text-align: right; color: #AAAAAA; padding-right: 5px; padding-left: 5px; }
+td.sourceCode { padding-left: 5px; }
+code.sourceCode span.kw { color: #007020; font-weight: bold; } 
+code.sourceCode span.dt { color: #902000; }
+code.sourceCode span.dv { color: #40a070; }
+code.sourceCode span.bn { color: #40a070; }
+code.sourceCode span.fl { color: #40a070; }
+code.sourceCode span.ch { color: #4070a0; }
+code.sourceCode span.st { color: #4070a0; }
+code.sourceCode span.co { color: #60a0b0; font-style: italic; }
+code.sourceCode span.ot { color: #007020; }
+code.sourceCode span.al { color: red; font-weight: bold; }
+code.sourceCode span.fu { color: #06287e; }
+code.sourceCode span.re { }
+code.sourceCode span.er { color: red; font-weight: bold; }
+/*]]>*/
+  </style>
   <link rel="stylesheet" href="pandoc.css" type="text/css" />
 </head>
 <body>
-<div id="introduction"
-><h1
-  >Introduction</h1
-  ><p
-  >Atlas is a tool to automatically spin up complete environments consisting of multiple machines and software installed on them. These environments are described via configuration files which are fed to Atlas, and Atlas then automatically procures the necessary resources and installs the base machines and the software running on them. Atlas is current able to spin up environments on EC2 and VirtualBox.</p
-  ></div
-><div id="minute-quick-start"
-><h1
-  >5 minute quick start</h1
-  ><p
-  >Build it and make it executable:</p
-  ><pre
-  ><code
-    >mvn install
+<h1 id="introduction">Introduction</h1>
+<p>Atlas is a tool to automatically spin up complete environments consisting of multiple machines and software installed on them. These environments are described via configuration files which are fed to Atlas, and Atlas then automatically procures the necessary resources and installs the base machines and the software running on them. Atlas is current able to spin up environments on EC2 and VirtualBox.</p>
+<h1 id="minute-quick-start">5 minute quick start</h1>
+<p>Build it and make it executable:</p>
+<pre><code>mvn install
 chmod +x target/atlas-&lt;version&gt;.jar
-</code
-    ></pre
-  ><p
-  >Create a [environment-specification] and [system-specification]. Run atlas:</p
-  ><pre
-  ><code
-    >./target/atlas-&lt;version&gt;.jar -e &lt;environment specification file&gt; -s &lt;system specification file&gt;
-</code
-    ></pre
-  ></div
-><div id="building"
-><h1
-  >Building</h1
-  ><p
-  >Use maven to build it:</p
-  ><pre
-  ><code
-    >mvn install
-</code
-    ></pre
-  ><p
-  >This will generate an executable jar in the target folder. In fact, the jar is executable directly on the shell once you set the executable bit</p
-  ><pre
-  ><code
-    >chmod +x target/atlas-&lt;version&gt;.jar
-</code
-    ></pre
-  ></div
-><div id="configuration"
-><h1
-  >Configuration</h1
-  ><p
-  >Atlas distinguishes between environment and system configuration.</p
-  ><div id="environment-specification"
-  ><h2
-    >Environment specification</h2
-    ><p
-    >TBD</p
-    ></div
-  ><div id="system-specification"
-  ><h2
-    >System specification</h2
-    ><p
-    >TBD</p
-    ></div
-  ></div
-><div id="running"
-><h1
-  >Running</h1
-  ><p
-  >Invoking atlas without any arguments will show the basic help</p
-  ><pre
-  ><code
-    >./target/atlas-&lt;version&gt;.jar 
+</code></pre>
+<p>Create a [environment-specification] and [system-specification]. Run atlas:</p>
+<pre><code>./target/atlas-&lt;version&gt;.jar -e &lt;environment specification file&gt; -s &lt;system specification file&gt;
+</code></pre>
+<h1 id="building">Building</h1>
+<p>Use maven to build it:</p>
+<pre><code>mvn install
+</code></pre>
+<p>This will generate an executable jar in the target folder. In fact, the jar is executable directly on the shell once you set the executable bit</p>
+<pre><code>chmod +x target/atlas-&lt;version&gt;.jar
+</code></pre>
+<h1 id="configuration">Configuration</h1>
+<p>Atlas distinguishes between environment and system when it comes to configuration.</p>
+<p>The environment configuration specifies the &quot;how&quot;: how to provision machines, how to deploy services onto those machines, and so forth.</p>
+<p>The system configuration specifies the &quot;what&quot;: which services are defined, how many of each service should be deployed, etc.</p>
+<p>Both files are basically ruby files that get executed. The configuration is specified in a DSL that gets executed as normal ruby code. Thus, you can basically do whatever you want in these files as long as you can express it in ruby.</p>
+<h2 id="environment-specification">Environment specification</h2>
+<p>An environment specification file typically has this structure:</p>
+<pre class="sourceCode"><code class="sourceCode ruby"><span class="co"># require statements etc.</span><br /><span class="co"># constants</span><br /><span class="co"># first environment definition</span><br /><span class="co">#   provisioner declarations</span><br /><span class="co">#   initializer declarations</span><br /><span class="co">#   installer declarations</span><br /><span class="co">#   base declarations</span><br /><span class="co"># additional environment definitions as necessary</span></code></pre>
+<p>A simple environment configuration for EC2 might look like this:</p>
+<pre class="sourceCode"><code class="sourceCode ruby"><span class="co"># EC2 access configuration, could also be read from a file</span><br />ec2_access_key = <span class="st">&quot;...&quot;</span> <span class="co"># EC2 access key</span><br />ec2_secret_key = <span class="st">&quot;...&quot;</span> <span class="co"># EC2 secret key</span><br />ec2_keypair_id = <span class="st">&quot;...&quot;</span> <span class="co"># name of the .pem file used for ssh'ing into the EC2 machines</span><br />s3_access_key  = <span class="st">&quot;...&quot;</span> <span class="co"># S3 access key</span><br />s3_secret_key  = <span class="st">&quot;...&quot;</span> <span class="co"># S3 secret key</span><br /><br />environment <span class="st">&quot;ec2&quot;</span> <span class="kw">do</span><br />  set <span class="st">&quot;xn.base-domain&quot;</span> =&gt; <span class="st">&quot;echo.xn.io&quot;</span><br /><br />  set <span class="st">&quot;aws.shared.access_key&quot;</span> =&gt; s3_access_key,<br />      <span class="st">&quot;aws.shared.secret_key&quot;</span> =&gt; s3_secret_key<br /><br />  provisioner com.ning.atlas.aws.<span class="dt">EC2Provisioner</span>, {<br />    <span class="st">:access_key</span> =&gt; ec2_access_key,<br />    <span class="st">:secret_key</span> =&gt; ec2_secret_key,<br />    <span class="st">:keypair_id</span> =&gt; ec2_keypair_id<br />  }<br /><br />  initializer <span class="st">&quot;atlas&quot;</span>, com.ning.atlas.<span class="dt">AtlasInitializer</span>, {<br />    <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />    <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span><br />  }<br /><br />  initializer <span class="st">&quot;chef&quot;</span>, com.ning.atlas.chef.<span class="dt">UbuntuChefSoloInitializer</span>, {<br />    <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />    <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span>,<br />    <span class="st">:recipe_url</span>   =&gt; <span class="st">&quot;s3://atlas-resources/chef-solo.tar.gz&quot;</span>,<br />    <span class="st">:s3_access_key</span> =&gt; s3_access_key,<br />    <span class="st">:s3_secret_key</span> =&gt; s3_secret_key<br />  }<br /><br />  installer <span class="st">&quot;ugx&quot;</span>, com.ning.atlas.galaxy.<span class="dt">MicroGalaxyInstaller</span>, {<br />    <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />    <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span>,<br />    <span class="st">:ugx_user</span>     =&gt; <span class="st">&quot;user&quot;</span><br />  }<br /><br />  base <span class="st">&quot;ruby-server&quot;</span>, <span class="st">:ami</span> =&gt; <span class="st">&quot;ami-e2af508b&quot;</span>, <span class="st">:init</span> =&gt; [<span class="st">'atlas'</span>, <span class="st">'chef:role[ruby_server]'</span>]<br />  base <span class="st">&quot;shell&quot;</span>,       <span class="st">:ami</span> =&gt; <span class="st">&quot;ami-e2af508b&quot;</span>, <span class="st">:init</span> =&gt; [<span class="st">'atlas'</span>, <span class="st">'chef:role[shell]'</span>]<br /><span class="kw">end</span></code></pre>
+<p>This configuration defines one ec2 provisionier, two initializers and one installer, and it declares two bases that then can be used in the system configuration.</p>
+<h3 id="provisioners">Provisioners</h3>
+<p>A provisioner is responsible for provisioning bare machines/instances. Atlas currently has three provisioners: <code>com.ning.atlas.aws.EC2Provisioner</code>, <code>com.ning.atlas.aws.RDSProvisioner</code> and <code>com.ning.atlas.virtualbox.VBoxProvisioner</code>.</p>
+<h5 id="com.ning.atlas.aws.ec2provisioner">com.ning.atlas.aws.EC2Provisioner</h5>
+<p>The <code>EC2Provisioner</code> brings up EC2 instances. It needs to be provided with three configuration options (see <a href="http://alestic.com/2009/11/ec2-credentials">this post</a> for an explanation of what these mean):</p>
+<ul>
+<li><code>access_key</code>: The EC2 access key.</li>
+<li><code>secret_key</code>: The EC2 secret key.</li>
+<li><code>keypair_id</code>: The name of the private key <code>.pem</code> file which is used to ssh to EC2 machines, without the <code>.pem</code> file extension.</li>
+</ul>
+<p>It makes use of two additional properties defined in the [base] (which is explained furtehr below):</p>
+<ul>
+<li><code>ami</code>: The AMI identifier, e.g. <code>ami-e2af508b</code>.</li>
+<li><code>instance_type</code>: The <a href="http://aws.amazon.com/ec2/instance-types/">type of the instance</a>, e.g. <code>m1.large</code>.</li>
+</ul>
+<h5 id="com.ning.atlas.aws.rdsprovisioner">com.ning.atlas.aws.RDSProvisioner</h5>
+<p>The <code>RDSProvisioner</code> provisions <a href="http://aws.amazon.com/rds/">Amazon RDS</a> databases. For details about RDS see the <a href="http://docs.amazonwebservices.com/AmazonRDS/latest/GettingStartedGuide/">Getting Started Guide</a>. The provisioner needs these configuration options:</p>
+<ul>
+<li><code>access_key</code>: The EC2 access key.</li>
+<li><code>secret_key</code>: The EC2 secret key.</li>
+</ul>
+<p>In addition, it makes use of these [base] properties:</p>
+<ul>
+<li><code>license_model</code>: The license model for the database instance. One of <code>license-included</code>, <code>bring-your-own-license</code>, <code>general-public-license</code>. Default is <code>general-public-license</code>. For MySQL, this is the only valid option.</li>
+<li><code>storage_size</code>: The amount of storage (in gigabytes) to be initially allocated for the database instance. Must be an integer from 5 to 1024.</li>
+<li><code>instance_class</code>: The compute and memory capacity of the database instance. One of <code>db.m1.small</code>, <code>db.m1.large</code>, <code>db.m1.xlarge</code>, <code>db.m2.xlarge</code>, <code>db.m2.2xlarge</code>, <code>db.m2.4xlarge</code>.</li>
+<li><code>engine</code>: The name of the database engine to be used for this instance. Valid values are <code>MySQL</code>, <code>oracle-se1</code>, <code>oracle-se</code>, <code>oracle-ee</code>.</li>
+<li><code>username</code>: The name of master user for the client database instance. Must be 1 to 16 alphanumeric characters, and the first character must be a letter. Cannot be a reserved word for the chosen database engine.</li>
+<li><code>password</code>: The password for the master database instance user. Must contain 4 to 41 alphanumeric characters.</li>
+</ul>
+<h5 id="com.ning.atlas.virtualbox.vboxprovisioner">com.ning.atlas.virtualbox.VBoxProvisioner</h5>
+<p>TBD</p>
+<h2 id="system-specification">System specification</h2>
+<p>TBD</p>
+<h1 id="running">Running</h1>
+<p>Invoking atlas without any arguments will show the basic help</p>
+<pre><code>./target/atlas-&lt;version&gt;.jar 
 
 Missing one or both of environment or system specification paths
 Option                                  Description
 ------                                  -----------
 -e, --env, --environment                Environment specification file
 -s, --sys, --system                     System specification file
-</code
-    ></pre
-  ><p
-  >Atlas only needs two arguments on the command line: the path to the [environment-specification] and the path to the [system-specification]. Everything else is configured within those two files.</p
-  ></div
-><div id="output"
-><h1
-  >Output</h1
-  ><p
-  >TBD</p
-  ></div
->
+</code></pre>
+<p>Atlas only needs two arguments on the command line: the path to the [environment-specification] and the path to the [system-specification]. Everything else is configured within those two files.</p>
+<h1 id="output">Output</h1>
+<p>TBD</p>
 </body>
 </html>
-
