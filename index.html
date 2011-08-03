@@ -30,6 +30,8 @@ code.sourceCode span.er { color: red; font-weight: bold; }
 <body>
 <h1 id="introduction">Introduction</h1>
 <p>Atlas is a tool to automatically spin up complete environments consisting of multiple machines and software installed on them. These environments are described via configuration files which are fed to Atlas, and Atlas then automatically procures the necessary resources and installs the base machines and the software running on them. Atlas is current able to spin up environments on EC2 and VirtualBox.</p>
+<h1 id="where-to-get-it">Where to get it</h1>
+<p>Atlas is on github: [https://github.com/ning/atlas].</p>
 <h1 id="minute-quick-start">5 minute quick start</h1>
 <p>Build it:</p>
 <pre><code>rake package
@@ -95,6 +97,36 @@ chmod +x target/atlas
 </ul>
 <h5 id="com.ning.atlas.virtualbox.vboxprovisioner">com.ning.atlas.virtualbox.VBoxProvisioner</h5>
 <p>TBD</p>
+<h3 id="initializers">Initializers</h3>
+<p>Initializers are used to configure the provisioned instances so that they can actually run services. Think of them as the part of the tool that deploys all that base software that is needed to run your software, but is not actually part of your software. Things like ruby, java, ...</p>
+<p>Atlas defines two initializers at the moment, <code>com.ning.atlas.AtlasInitializer</code> and <code>com.ning.atlas.chef.UbuntuChefSoloInitializer</code>.</p>
+<h5 id="com.ning.atlas.atlasinitializer">com.ning.atlas.AtlasInitializer</h5>
+<p>This initializer is required for proper working of Atlas because other initializers usually depend on the data it puts on the individual instances. It performs two simple functions:</p>
+<ul>
+<li>Upload the system map to every provisioned instance. It can then be found under <code>/etc/atlas/system_map.json</code>.</li>
+<li>Upload the node info for each every provisioned instance to that instance. Can be found under <code>/etc/atlas/node_info.json</code>.</li>
+</ul>
+<p>The initializer needs these configuration options:</p>
+<ul>
+<li><code>ssh_user</code>: The ssh user name for the instance.</li>
+<li><code>ssh_key_file</code>: The ssh private key file.</li>
+</ul>
+<p>Both of these depends on the how the instance is setup. For EC2 for instance, the ssh user is defined by the AMI and the private key file can be retrieved from AWS.</p>
+<h5 id="com.ning.atlas.chef.ubuntuchefsoloinitializer">com.ning.atlas.chef.UbuntuChefSoloInitializer</h5>
+<p>This initializer uses <a href="http://wiki.opscode.com/display/chef/Chef+Solo">Chef Solo</a> to put bits on the provisioned machines/instances. There are lots of tutorials on chef solo, so we won't go into detail here on what it can do and how it does things.</p>
+<p>The initializer needs these configuration options:</p>
+<ul>
+<li><code>ssh_user</code>: The ssh user name for the instance (same as for the atlas initializer).</li>
+<li><code>ssh_key_file</code>: The ssh private key file (same as for the atlas initializer).</li>
+<li><code>recipe_url</code>: The url to the chef solo recipe bundle. For EC2, this is usually an S3 url.</li>
+</ul>
+<p>If the <code>recipe_url</code> is an S3 url, then the initializer also uses these two configuration values if given:</p>
+<ul>
+<li><code>s3_access_key</code>: The S3 access key.</li>
+<li><code>s3_secret_key</code>: The S3 secret key.</li>
+</ul>
+<p>They can be used to access private S3 files. For that, they only need to be read-only as the initializer only uses them to download the resource from S3.</p>
+<p>What this initializer actually does, is explained below in the [system-specification] section.</p>
 <h2 id="system-specification">System specification</h2>
 <p>TBD</p>
 <h1 id="running">Running</h1>
