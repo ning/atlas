@@ -52,7 +52,7 @@ public class InstalledTemplate implements Tree<InstalledTemplate>
                                            @JsonProperty("server") Server server)
     {
 
-        if (children == null) {
+        if (server != null) {
             return new InstalledServerTemplate(type, name, new My(my), server);
         }
         else {
