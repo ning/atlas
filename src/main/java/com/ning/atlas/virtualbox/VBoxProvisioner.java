@@ -27,41 +27,65 @@ public class VBoxProvisioner implements Provisioner
 	 * - VBoxManage is not multi-process safe, so know what you are doing
 	 */
 
-    private static boolean dhcp_done = false;
+	private final static Logger logger = LoggerFactory.getLogger(VBoxProvisioner.class);
+	private final static AtomicInteger portCounter = new AtomicInteger(0);
 
-    private final static Logger logger = LoggerFactory.getLogger(VBoxProvisioner.class);
-    private final static AtomicInteger portCounter = new AtomicInteger(0);
+	private final String username;
+	private final String password;
+	private final String public_key;
+	private final int port_start;
+	private final String hostonlyif_name, bridgedif_name;
 
-    private String vmname = null;
-    private String username;
-    private String password;
-    private String pub_key_file; // path to file containing public key
-    private int port_start;
-    private String hostonlyif_name, bridgedif_name;
-    private int sshport;
+	private final static int BOOTUP_TIME = 20; // seconds
+	private final static int DEFAULT_PORT = 2222;
 
-    private final static int BOOTUP_TIME = 20; // seconds
-    private final static int DEFAULT_PORT = 2222;
+	// NIC number of the adapters in our image (NIC numbering starts from 1)
+	private final static int NET_HOSTONLY_ADAPTER = 1;
+	private final static int NET_BRIDGED_ADAPTER = 2;
+	private final static int NET_NAT = 3;
 
-    // NIC number of the adapters in our image (NIC numbering starts from 1)
-    private final static int NET_HOSTONLY_ADAPTER = 1;
-    private final static int NET_BRIDGED_ADAPTER = 2;
-    private final static int NET_NAT = 3;
 
-    public VBoxProvisioner(Map<String, String> attributes)
-    {
-        this.username = attributes.get("username");
-        this.password = attributes.get("password");
-        this.pub_key_file = attributes.get("pub_key_file");
-        this.hostonlyif_name = attributes.get("hostonlyif_name");
-        this.bridgedif_name = attributes.get("bridgedif_name");
+	public VBoxProvisioner(Map<String, String> attributes) throws UnableToProvisionServerException
+	{
+		this.username = attributes.get("username");
+		this.password = attributes.get("password");
+		this.hostonlyif_name = attributes.get("hostonlyif_name");
+		this.bridgedif_name = attributes.get("bridgedif_name");
 
-        if (!attributes.containsKey("port")) {
-        	this.port_start = VBoxProvisioner.DEFAULT_PORT;
-        } else {
-        	this.port_start = Integer.parseInt(attributes.get("port_start"));
-        }
-    }
+		if (!attributes.containsKey("port")) {
+			this.port_start = VBoxProvisioner.DEFAULT_PORT;
+		} else {
+			this.port_start = Integer.parseInt(attributes.get("port_start"));
+		}
+
+		String pub_key_file = attributes.get("pub_key_file");
+
+		// read public key
+		try {
+			FileReader input = null;
+			input = new FileReader(pub_key_file);
+			BufferedReader bufRead = new BufferedReader(input);
+			String line;	
+			StringBuilder sb = new StringBuilder();
+			String newLine = "\n";
+			while ((line = bufRead.readLine()) != null) {
+				sb.append(line).append(newLine);
+			}
+			public_key = sb.toString();
+			logger.info("Public key obtained");
+			logger.trace("Public key is {}", public_key);
+		} catch (Exception e) {
+			throw new UnableToProvisionServerException("Unable to read public key from " + pub_key_file);
+		}
+
+
+		// Configure the DHCP (Only need to do this once)
+		DoRuntime.exec("VBoxManage", "hostonlyif", "ipconfig", this.hostonlyif_name, "--ip", "192.168.133.0"); // adapter
+		DoRuntime.exec("VBoxManage", "dhcpserver", "modify", "--ifname", this.hostonlyif_name, 
+				"--ip", "192.168.133.7", "--netmask", "255.255.255.0",
+				"--lowerip", "192.168.133.8", "--upperip", "192.168.133.255", "--enable"); // dhcp
+
+	}
 
 
 	@Override
@@ -81,76 +105,51 @@ public class VBoxProvisioner implements Provisioner
 		 * - Connected to the WWW
 		 */
 
-        logger.debug("provisioning server for base {}", base.getName());
+		String vmname = null;
+		int sshport;
 
-        synchronized (this) {
-	        // Configure the DHCP (Only need to do this once)
-        	if (!dhcp_done) {
-		        DoRuntime.exec("VBoxManage", "hostonlyif", "ipconfig", this.hostonlyif_name, "--ip", "192.168.133.0"); // adapter
-		        DoRuntime.exec("VBoxManage", "dhcpserver", "modify", "--ifname", this.hostonlyif_name,
-		        	"--ip", "192.168.133.7", "--netmask", "255.255.255.0",
-		        	"--lowerip", "192.168.133.8", "--upperip", "192.168.133.255", "--enable"); // dhcp
-		        dhcp_done = true;
-        	}
-        }
+		logger.debug("provisioning server for base {}", base.getName());
 
-        // import and find the name of the new vm
+		// import and find the name of the new vm
 
-        String res;
-        // Want to prevent name mangling with import
-        synchronized (this) {
-	        res = DoRuntime.exec("VBoxManage", "import", base.getAttributes().get("ovf"));
-	        logger.trace("Dump from `VBoxManage import`:\n" + res);
-        }
+		String res;
+		// Want to prevent name mangling with import
+		synchronized (this) {
+			res = DoRuntime.exec("VBoxManage", "import", base.getAttributes().get("ovf"));
+			logger.trace("Dump from `VBoxManage import`:\n" + res);
+		}
 
-        // Output:
-        // VM name specified with --vmname: "somename"	OR
-        // Suggested VM name "somename"
+		// Output:
+		// VM name specified with --vmname: "somename"	OR
+		// Suggested VM name "somename"
 		Pattern p = Pattern.compile("VM name.*?\"(.*?)\"");
 
 		Matcher m = p.matcher(res);
-		if (m.find()) this.vmname = m.group(1);
-		logger.info("VM name is {}", this.vmname);
+		if (m.find()) vmname = m.group(1);
+		logger.info("VM name is {}", vmname);
 
-		this.sshport = this.port_start + portCounter.getAndIncrement();
-        logger.info("Using port {} for ssh", this.sshport);
+		sshport = this.port_start + portCounter.getAndIncrement();
+		logger.info("Using port {} for ssh", sshport);
 
 
-		logger.trace(DoRuntime.exec("VBoxManage", "modifyvm", this.vmname,
-			// Update hostonlyif_name
-			"--hostonlyadapter" + VBoxProvisioner.NET_HOSTONLY_ADAPTER, this.hostonlyif_name,
-			// Update bridgedif_name
-			"--bridgeadapter" + VBoxProvisioner.NET_BRIDGED_ADAPTER, this.bridgedif_name)
+
+		logger.trace(DoRuntime.exec("VBoxManage", "modifyvm", vmname,
+				// Update hostonlyif_name
+				"--hostonlyadapter" + VBoxProvisioner.NET_HOSTONLY_ADAPTER, this.hostonlyif_name,
+				// Update bridgedif_name
+				"--bridgeadapter" + VBoxProvisioner.NET_BRIDGED_ADAPTER, this.bridgedif_name)
 		);
 
 		// Change port forwarding (handled separately since this might fail)
 		// If port forwarding mapping already exist, output is:
 		// VBoxManage: error: A NAT rule for this host port and this host IP already exists
-		logger.trace(DoRuntime.exec("VBoxManage", "modifyvm", this.vmname,
-			"--natpf" + VBoxProvisioner.NET_NAT, "ssh,tcp,," + sshport + ",,22"));
+		logger.trace(DoRuntime.exec("VBoxManage", "modifyvm", vmname,
+				"--natpf" + VBoxProvisioner.NET_NAT, "ssh,tcp,," + sshport + ",,22"));
 
 
-		// DoRuntime.exec("VBoxHeadless", "--vdre", "off", "--startvm", this.vmname));
-		logger.trace(DoRuntime.exec("VBoxManage", "startvm", this.vmname));
+		// DoRuntime.exec("VBoxHeadless", "--vdre", "off", "--startvm", vmname));
+		logger.trace(DoRuntime.exec("VBoxManage", "startvm", vmname));
 
-		// read public key
-		String public_key;
-		try {
-	        FileReader input = null;
-			input = new FileReader(this.pub_key_file);
-			BufferedReader bufRead = new BufferedReader(input);
-			String line;
-			StringBuilder sb = new StringBuilder();
-			String newLine = "\n";
-			while ((line = bufRead.readLine()) != null) {
-				sb.append(line).append(newLine);
-			}
-	        public_key = sb.toString();
-	        logger.info("Public key obtained");
-	        logger.trace("Public key is {}", public_key);
-		} catch (Exception e) {
-			throw new UnableToProvisionServerException("Unable to read public key: " + e.toString());
-		}
 
 		// wait for virtual machine to boot up
 		try {
@@ -174,8 +173,17 @@ public class VBoxProvisioner implements Provisioner
 
 			// get the ip addresses
 			// time on vm != time on host, so sleep on the vm side
-			ifconfig = ssh.exec("sleep 10; ifconfig");
+			ssh.exec("sleep 10; sudo dhclient eth" + (NET_BRIDGED_ADAPTER - 1));
+			ifconfig = ssh.exec("sleep 2; ifconfig");
 			logger.trace("ifconfig output:\n" + ifconfig);
+
+			// check that networking is OK by doing a ping
+			String hostcheck = "www.google.com";
+			String ping = ssh.exec("ping -c 1 " + hostcheck);
+			if (!ping.toLowerCase().contains("ttl")) {
+				throw new UnableToProvisionServerException("Ping to " + hostcheck + " failed: " + ping);
+			}
+
 
 			ssh.close();
 		} catch (IOException e) {
@@ -208,7 +216,7 @@ public class VBoxProvisioner implements Provisioner
 			logger.info("Found externalIp: {}", externalIp);
 		}
 
-        return new VBoxServer(base, this.vmname, internalIp, externalIp, sshport);
+		return new VBoxServer(base, vmname, internalIp, externalIp, sshport);
 	}
 
 	public void destroy(Server server) throws UnableToProvisionServerException {
