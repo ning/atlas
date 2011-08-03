@@ -6,6 +6,10 @@ are fed to Atlas, and Atlas then automatically procures the necessary resources 
 the base machines and the software running on them.
 Atlas is current able to spin up environments on EC2 and VirtualBox.
 
+# Where to get it
+
+Atlas is on github: <https://github.com/ning/atlas>.
+
 # 5 minute quick start
 
 Build it:

@@ -125,6 +125,53 @@ In addition, it makes use of these [base] properties:
 
 TBD
 
+### Initializers
+
+Initializers are used to configure the provisioned instances so that they can actually run services. Think of them
+as the part of the tool that deploys all that base software that is needed to run your software, but is not
+actually part of your software. Things like ruby, java, ...
+
+Atlas defines two initializers at the moment, ``com.ning.atlas.AtlasInitializer`` and
+``com.ning.atlas.chef.UbuntuChefSoloInitializer``.
+
+##### com.ning.atlas.AtlasInitializer
+
+This initializer is required for proper working of Atlas because other initializers usually depend on the data
+it puts on the individual instances. It performs two simple functions:
+
+* Upload the system map to every provisioned instance. It can then be found under ``/etc/atlas/system_map.json``.
+* Upload the node info for each every provisioned instance to that instance. Can be found under ``/etc/atlas/node_info.json``.
+
+The initializer needs these configuration options:
+
+* ``ssh_user``: The ssh user name for the instance.
+* ``ssh_key_file``: The ssh private key file.
+
+Both of these depends on the how the instance is setup. For EC2 for instance, the ssh user is defined by the AMI
+and the private key file can be retrieved from AWS.
+
+##### com.ning.atlas.chef.UbuntuChefSoloInitializer
+
+This initializer uses [Chef Solo](http://wiki.opscode.com/display/chef/Chef+Solo) to put bits on the provisioned
+machines/instances. There are lots of tutorials on chef solo, so we won't go into detail here on what it can do
+and how it does things.
+
+The initializer needs these configuration options:
+
+* ``ssh_user``: The ssh user name for the instance (same as for the atlas initializer).
+* ``ssh_key_file``: The ssh private key file (same as for the atlas initializer).
+* ``recipe_url``: The url to the chef solo recipe bundle. For EC2, this is usually an S3 url.
+
+If the ``recipe_url`` is an S3 url, then the initializer also uses these two configuration values if given:
+
+* ``s3_access_key``: The S3 access key.
+* ``s3_secret_key``: The S3 secret key.
+
+They can be used to access private S3 files. For that, they only need to be read-only as the initializer only
+uses them to download the resource from S3.
+
+What this initializer actually does, is explained below in the [system-specification] section.
+
 ## System specification
 
 TBD
