@@ -1,13 +1,10 @@
 package com.ning.atlas;
 
 import com.ning.atlas.tree.Tree;
-import com.sun.xml.internal.ws.api.pipe.ServerTubeAssemblerContext;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
-import org.codehaus.jackson.annotate.JsonTypeInfo;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +52,7 @@ public class InstalledTemplate implements Tree<InstalledTemplate>
                                            @JsonProperty("server") Server server)
     {
 
-        if (children == null) {
+        if (server != null) {
             return new InstalledServerTemplate(type, name, new My(my), server);
         }
         else {
