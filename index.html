@@ -39,11 +39,14 @@ chmod +x target/atlas-&lt;version&gt;.jar
 <pre><code>./target/atlas-&lt;version&gt;.jar -e &lt;environment specification file&gt; -s &lt;system specification file&gt;
 </code></pre>
 <h1 id="building">Building</h1>
-<p>Use maven to build it:</p>
-<pre><code>mvn install
+<p>The easiest way to build atlas, is to use <a href="http://rake.rubyforge.org/">rake</a> which usually comes with any decent ruby installation:</p>
+<pre><code>rake package
 </code></pre>
-<p>This will generate an executable jar in the target folder. In fact, the jar is executable directly on the shell once you set the executable bit</p>
-<pre><code>chmod +x target/atlas-&lt;version&gt;.jar
+<p>This will invoke Maven and generate an executable <code>atlas</code> file.</p>
+<p>You can also do this manually:</p>
+<pre><code>mvn install
+cat target/atlas-*.jar &gt;&gt; target/atlas
+chmod +x target/atlas
 </code></pre>
 <h1 id="configuration">Configuration</h1>
 <p>Atlas distinguishes between environment and system when it comes to configuration.</p>
