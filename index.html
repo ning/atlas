@@ -29,7 +29,7 @@ code.sourceCode span.er { color: red; font-weight: bold; }
 <h1 id="introduction">Introduction!</h1>
 <p>Atlas is a tool to automatically spin up complete environments consisting of multiple machines and software installed on them. These environments are described via configuration files which are fed to Atlas, and Atlas then automatically procures the necessary resources and installs the base machines and the software running on them. Atlas is current able to spin up environments on EC2 and VirtualBox.</p>
 <h1 id="where-to-get-it">Where to get it</h1>
-<p>Atlas is on github: <a href="https://github.com/ning/atlas"><code class="url">https://github.com/ning/atlas</code></a>.</p>
+<p>Atlas is on github: <a href="https://github.com/ning/atlas">https://github.com/ning/atlas</a>.</p>
 <h1 id="minute-quick-start">5 minute quick start</h1>
 <p>Build it:</p>
 <pre><code>rake package
@@ -161,9 +161,12 @@ chmod +x target/atlas
 <li><code>ssh_key_file</code>: The ssh private key file.</li>
 <li><code>ugx_user</code>: The user to run uGalaxy as.</li>
 </ul>
+<p>To use the micro-galaxy installer, specify a URL of the form</p>
+<pre><code>ugx:&lt;url&gt;
+</code></pre>
+<p>in the <code>install</code> property for the <code>server</code> element. The url points to the tarball containing the service to deploy.</p>
 <p>Example:</p>
 <pre class="sourceCode"><code class="sourceCode ruby">installer <span class="st">&quot;ugx&quot;</span>, com.ning.atlas.galaxy.<span class="dt">MicroGalaxyInstaller</span>, {<br />  <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />  <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span>,<br />  <span class="st">:ugx_user</span>     =&gt; <span class="st">&quot;xncore&quot;</span><br />}</code></pre>
-<p>To use the micro-galaxy installer, specify a URL for the micro-galaxy tarball in the install directive for the server.</p>
 <pre class="sourceCode"><code class="sourceCode ruby">server <span class="st">&quot;echo&quot;</span>,<br />  <span class="st">:base</span> =&gt; <span class="st">&quot;ruby-server&quot;</span>,<br />  <span class="st">:install</span> =&gt; [<span class="st">&quot;ugx:http://my-atlas-resources.s3.amazonaws.com/echo.tar.gz&quot;</span>]</code></pre>
 <h5 id="com.ning.atlas.galaxy.galaxyinstaller">com.ning.atlas.galaxy.GalaxyInstaller</h5>
 <p>This installer uses <a href="https://github.com/ning/galaxy">Galaxy</a>. It needs these environment configuration options:</p>
