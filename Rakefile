@@ -41,6 +41,7 @@ task "push-docs" do
   require 'tmpdir'
   Dir.mktmpdir do |tmp|
     sh <<-EOS
+      git fetch origin gh-pages
       git clone . #{tmp}
       cd #{tmp}
       git checkout gh-pages
