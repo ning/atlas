@@ -41,8 +41,8 @@ task "gen-docs" do
   require 'tmpdir'
   Dir.mktmpdir do |tmp|
     sh <<-EOS
-      git branch --track __ATLAS_GENERATED__gh-pages origin/gh-pages
-      git clone -b __ATLAS_GENERATED__gh-pages . #{tmp}
+      git branch --track gh-pages origin/gh-pages
+      git clone -b gh-pages . #{tmp}
       pandoc -f markdown -t html -c pandoc.css -o #{tmp}/index.html \
              src/site/pandoc/index.md \
              src/site/pandoc/building.md \
@@ -52,7 +52,7 @@ task "gen-docs" do
       cd #{tmp}
       git add -A
       git commit -am 'updating documentation'
-      git push origin __ATLAS_GENERATED__gh-pages
+      git push origin gh-pages
     EOS
   end
 end
