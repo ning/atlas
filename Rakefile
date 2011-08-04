@@ -42,10 +42,7 @@ task "gen-docs" do
   Dir.mktmpdir do |tmp|
     sh <<-EOS
       git fetch origin gh-pages
-      git clone . #{tmp}
-      cd #{tmp}
-      git checkout gh-pages
-      cd -
+      git clone -b gh-pages . #{tmp}
       pandoc -f markdown -t html -c pandoc.css -o #{tmp}/index.html \
              src/site/pandoc/index.md \
              src/site/pandoc/building.md \
