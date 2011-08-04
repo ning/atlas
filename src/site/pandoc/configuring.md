@@ -304,6 +304,13 @@ The installer needs these environment configuration options:
 * ``ssh_key_file``: The ssh private key file.
 * ``ugx_user``: The user to run uGalaxy as.
 
+To use the micro-galaxy installer, specify a URL of the form
+
+    ugx:<url>
+
+in the ``install`` property for the ``server`` element. The url points to the tarball containing the service to
+deploy.
+
 Example:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
@@ -313,8 +320,6 @@ installer "ugx", com.ning.atlas.galaxy.MicroGalaxyInstaller, {
   :ugx_user     => "xncore"
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To use the micro-galaxy installer, specify a URL for the micro-galaxy tarball in the install directive for the server. 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
 server "echo",
