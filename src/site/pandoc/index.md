@@ -16,7 +16,9 @@ Build it:
 
     rake package
 
-Create a [environment-specification] and [system-specification].
+Create the [environment specification](#environment-specification) and
+[system specification](#system-specification).
+
 Provision stuff:
 
     ./target/atlas -e <environment specification file> -s <system specification file> provision

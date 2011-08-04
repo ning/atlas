@@ -2,7 +2,7 @@
 
 Invoking atlas without any arguments will show the basic help
 
-    ./target/atlas-<version>.jar 
+    $ atlas
 
     Missing one or both of environment or system specification paths
     Option                                  Description
@@ -11,8 +11,8 @@ Invoking atlas without any arguments will show the basic help
     -s, --sys, --system                     System specification file
 
 Atlas only needs two arguments on the command line: the path to the
-[environment-specification] and the path to the [system-specification].
-Everything else is configured within those two files.
+[environment specification](#environment-specification) and the path to the
+[system specification](#system-specification). Everything else is configured within those two files.
 
 # Output
 

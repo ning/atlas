@@ -45,11 +45,13 @@ h3 {
 h4 {
         font-size: 110%;
         font-style: italic;
+        text-decoration: underline;
 }
 
 h5 {
         font-size: 100%;
         font-style: italic;
+        text-decoration: underline;
 }
 
 dt code {
