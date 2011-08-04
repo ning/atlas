@@ -36,3 +36,26 @@ task "kill-ec2" do
 end
 
 
+desc "generate and push documentation up to the site"
+task "push-docs" do
+  require 'tmpdir'
+  Dir.mktmpdir do |tmp|
+    sh <<-EOS
+      git clone . #{tmp}
+      cd #{tmp}
+      git checkout gh-pages
+      mkdir -p target/site
+      cd -
+      pandoc -f markdown -t html -c pandoc.css -o #{tmp}/target/site/index.html \
+             src/site/pandoc/index.md \
+             src/site/pandoc/building.md \
+             src/site/pandoc/configuring.md \
+             src/site/pandoc/running.md
+      cp src/site/pandoc/pandoc.css #{tmp}/target/site/
+      cd #{tmp}
+      git add -A
+      git commit -am 'updating documentation'
+      git push origin gh-pages
+    EOS
+  end
+end
