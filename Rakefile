@@ -36,8 +36,8 @@ task "kill-ec2" do
 end
 
 
-desc "generate and push documentation up to the site"
-task "push-docs" do
+desc "generate documenation and check it into gh-pages branch"
+task "gen-docs" do
   require 'tmpdir'
   Dir.mktmpdir do |tmp|
     sh <<-EOS
