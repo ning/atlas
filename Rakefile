@@ -41,7 +41,7 @@ task "gen-docs" do
   require 'tmpdir'
   Dir.mktmpdir do |tmp|
     sh <<-EOS
-      git fetch origin gh-pages
+      git branch --track gh-pages origin/gh-pages
       git clone -b gh-pages . #{tmp}
       pandoc -f markdown -t html -c pandoc.css -o #{tmp}/index.html \
              src/site/pandoc/index.md \
