@@ -21,8 +21,16 @@ pre {
 }
 code {
     font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
+    border: 1px solid #E2E2E2;
+    border-radius: 2px;
+    padding: 2px 2px 0 2px;
     background: #FAFAFA;
 }
+pre code {
+    border: 0;
+    padding: 0;
+}
+
 h1, h2, h3, h4, h5, h6 { 
     font-family: 'Ubuntu', 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva', 'Verdana', sans-serif;
     text-decoration: none;
