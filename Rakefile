@@ -43,16 +43,18 @@ task "push-docs" do
     sh <<-EOS
       git clone . #{tmp}
       cd #{tmp}
+      ls -l
       git checkout gh-pages
-      mkdir -p target/site
+      ls -l
       cd -
-      pandoc -f markdown -t html -c pandoc.css -o #{tmp}/target/site/index.html \
+      pandoc -f markdown -t html -c pandoc.css -o #{tmp}/index.html \
              src/site/pandoc/index.md \
              src/site/pandoc/building.md \
              src/site/pandoc/configuring.md \
              src/site/pandoc/running.md
-      cp src/site/pandoc/pandoc.css #{tmp}/target/site/
+      cp src/site/pandoc/pandoc.css #{tmp}/
       cd #{tmp}
+      ls -l
       git add -A
       git commit -am 'updating documentation'
       git push origin gh-pages
