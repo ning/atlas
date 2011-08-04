@@ -43,7 +43,7 @@ task "push-docs" do
     sh <<-EOS
       git clone . #{tmp}
       cd #{tmp}
-      git checkout -b gh-pages gh-pages
+      git checkout gh-pages
       cd -
       pandoc -f markdown -t html -c pandoc.css -o #{tmp}/index.html \
              src/site/pandoc/index.md \
