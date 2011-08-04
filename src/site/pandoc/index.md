@@ -1,4 +1,4 @@
-# Introduction?
+# Introduction
 
 Atlas is a tool to automatically spin up complete environments consisting of multiple machines
 and software installed on them. These environments are described via configuration files which
