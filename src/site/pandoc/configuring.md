@@ -164,9 +164,11 @@ The provisioner needs these environment configuration options:
 * ``pub_key_file``: The exact file path to the public key to allow password-less SSH login.
 * ``intnet_name``: The name of the internal network that VirtualBox will use.
 * ``bridgedif_name``: The name of the host interface the given virtual network interface will use.
-You can get this by running: ``$ VBoxManage list bridgedifs``
+You can find the appropriate values by running the following command in terminal:
 
-It makes use of two additional properties defined in the [base element](#base) (which is explained
+    $ VBoxManage list bridgedifs
+
+It makes use of three additional properties defined in the [base element](#base) (which is explained
 further below):
 
 * ``image``: The exact file path to the virtual appliance in Open Virtualization Format (OVF) or
@@ -400,7 +402,10 @@ server "echo",
 ## System specification
 
 * ``Java`` (of course!)
-* If you are using ``VBoxProvisioner``, ``VirtualBox 4.1.0`` or above is required.
+* If you are using ``VBoxProvisioner``, ``Oracle VirtualBox 4.1.0`` or above is required.
+  The VirtualBox image must also contain [Guest Additions](http://www.virtualbox.org/manual/ch04.html) for Atlas to provision correctly.
+  It is important to note that the ``virtualbox-ose-guest-utils`` Debian package will not work, and you should use the 
+  correct version of the VBoxGuestAdditions ISO provided from the [official site](http://download.virtualbox.org/virtualbox/).
 
 
 
