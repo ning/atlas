@@ -1,8 +1,7 @@
 #!/bin/sh
 
-# WARNING: This script is for Ubuntu
+# Modified from Vagrant's postinstall.sh for Atlas
 
-# Modified from Vagrant's postinstall.sh
 # http://vagrantup.com/license.html
 # ---------------------------------
 # The MIT License
@@ -29,21 +28,16 @@
 # $ chmod +x postinstall_atlas.sh
 # $ sudo ./postinstall_atlas.sh
 
-ATLASUSER="atlasuser"
+# ---------------------------------
+# Variables
 
-# Apt-install various things necessary for Ruby, guest additions,
-# etc., and remove optional things to trim down the machine.
+VBOX_VERSION="4.1.0"
+
+# ---------------------------------
+
 apt-get -y update
-apt-get -y remove apparmor
-apt-get -y install linux-headers-$(uname -r) build-essential
-apt-get -y install zlib1g zlib1g-dev libxml2 libxml2-dev libxslt-dev libssl-dev openssl libreadline5-dev
-apt-get clean
+apt-get -y install openssh-server
 
-apt-get -y install vim emacs-nox git
-apt-get -y install openssh-server openssh-client
-
-# install ruby and gems
-apt-get -y install ruby ruby-dev libopenssl-ruby rdoc ri irb wget ssl-cert rubygems
 
 # Remove this file to avoid dhclient issues with networking
 rm -f /etc/udev/rules.d/70-persistent-net.rules
@@ -61,23 +55,8 @@ sed -i -e 's/%admin ALL=(ALL) ALL/%admin ALL=NOPASSWD:ALL/g' /etc/sudoers
 echo 'UseDNS no' >> /etc/ssh/sshd_config
 
 
-# Install Chef & Puppet
-gem install chef --no-ri --no-rdoc
-gem install puppet --no-ri --no-rdoc
-
-# Setup .ssh folder
-cd
-mkdir ~/.ssh
-chmod 700 ~/.ssh
-cd ~/.ssh
-touch authorized_keys
-cd
-chown -R ${ATLASUSER} ~/.ssh
-
-
 # Install VirtualBox guest additions
-# VBOX_VERSION=$(cat /home/${ATLASUSER}/.vbox_version)
-VBOX_VERSION="4.1.0"
+apt-get -y install linux-headers-$(uname -r) build-essential
 cd /tmp
 wget http://download.virtualbox.org/virtualbox/$VBOX_VERSION/VBoxGuestAdditions_$VBOX_VERSION.iso
 mount -o loop VBoxGuestAdditions_$VBOX_VERSION.iso /mnt
@@ -85,13 +64,10 @@ sh /mnt/VBoxLinuxAdditions.run
 umount /mnt
 rm VBoxGuestAdditions_$VBOX_VERSION.iso
 
-# Remove items used for building, since they aren't needed anymore
-apt-get -y remove linux-headers-$(uname -r) build-essential
-apt-get -y autoremove
 
-# Zero free space to aid VM compression
-dd if=/dev/zero of=/EMPTY bs=1M
-rm -f /EMPTY
+apt-get -y autoremove
+apt-get clean
+
 
 # Removing leftover leases and persistent rules
 echo "cleaning up dhcp leases"
@@ -100,12 +76,11 @@ rm /var/lib/dhcp3/*
 # Make sure Udev doesn't block our network
 # http://6.ptmc.org/?p=164
 echo "cleaning up udev rules"
-rm /etc/udev/rules.d/70-persistent-net.rules
 mkdir /etc/udev/rules.d/70-persistent-net.rules
 rm -rf /dev/.udev/
 rm /lib/udev/rules.d/75-persistent-net-generator.rules
 
-# more networking stuff
+# More networking stuff
 
 echo "Modifying /etc/network/interfaces"
 
@@ -116,29 +91,27 @@ iface lo inet loopback
 
 # The primary network interfaces
 
-# Host-only adapter
 auto eth0
 iface eth0 inet dhcp
 pre-up sleep 2
 
-# Bridged adapter
 auto eth1
 iface eth1 inet dhcp
 pre-up sleep 2
 
-# NAT
-auto eth2
-iface eth2 inet dhcp
-pre-up sleep 2
 " > /etc/network/interfaces
 
 sleep 1
 
 dhclient -r
-sleep 1
 dhclient
-sleep 1
 
-ifconfig
+
+# Zero free space to aid VM compression
+dd if=/dev/zero of=/EMPTY bs=1M
+rm -f /EMPTY
+
+sleep 2
+
 
 exit

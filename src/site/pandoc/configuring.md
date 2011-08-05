@@ -157,7 +157,39 @@ base "oracle", {
 
 ##### com.ning.atlas.virtualbox.VBoxProvisioner
 
-TBD
+The ``VBoxProvisioner`` provisions VirtualBoxes.
+To get VirtualBox, see the [VirtualBox website](http://www.virtualbox.org/).
+The provisioner needs these environment configuration options:
+
+* ``pub_key_file``: The exact file path to the public key to allow password-less SSH login.
+* ``intnet_name``: The name of the internal network that VirtualBox will use.
+* ``bridgedif_name``: The name of the host interface the given virtual network interface will use.
+You can get this by running: ``$ VBoxManage list bridgedifs``
+
+It makes use of two additional properties defined in the [base element](#base) (which is explained
+further below):
+
+* ``image``: The exact file path to the virtual appliance in Open Virtualization Format (OVF) or
+Open Virtualzation Archive (OVA) which will be imported to create the virtual machines.
+* ``username``: The login username of the guest image.
+* ``password``: The login password of the guest image.
+
+Example:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+provisioner com.ning.atlas.aws.EC2Provisioner, {
+  :pub_key_file   => "#{ENV['HOME']}/.atlas/#{rc['keypair_id']}.pub",
+  :intnet_name    => "atlas-intnet",
+  :bridgedif_name => "en0: Ethernet"
+}
+
+base "server", {
+  :image => "#{ENV['HOME']}/atlas-natty32/atlas-natty32.ovf",
+  :username => "atlasuser",
+  :password => "atlasuser"
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 ### Initializers
 
@@ -366,4 +398,9 @@ server "echo",
 
 ## System specification
 
-TBD
+* ``Java`` (of course!)
+* If you are using ``VBoxProvisioner``, ``VirtualBox 4.1.0`` or above is required.
+
+
+
+

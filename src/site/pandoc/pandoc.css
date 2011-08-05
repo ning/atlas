@@ -8,6 +8,11 @@ body {
     font-size: 100%;
     color: #000; 
 }
+
+body ul ul {
+    display: none;
+}
+
 pre {
     font-family: 'Consolas', 'Menlo', 'Deja Vu Sans Mono', 'Bitstream Vera Sans Mono', monospace;
     background: #FAFAFA;
@@ -39,39 +44,44 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0;
 }
 h1 {
-        font-size: 200%;
+    font-size: 200%;
 }
 
 h2 {
-        font-size: 150%;
+    font-size: 150%;
 }
 
 h3 {
-        font-size: 130%;
+    font-size: 130%;
 }
 
 h4 {
-        font-size: 110%;
-        font-style: italic;
-        text-decoration: underline;
+    font-size: 110%;
+    font-style: italic;
+    text-decoration: underline;
 }
 
 h5 {
-        font-size: 100%;
-        font-style: italic;
-        text-decoration: underline;
+    font-size: 100%;
+    font-style: italic;
+    text-decoration: underline;
+}
+
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
+    color: inherit;
+    text-decoration: none;
 }
 
 dt code {
-        font-weight: bold;
+    font-weight: bold;
 }
 dd p {
-        margin-top: 0;
+    margin-top: 0;
 }
 
 #footer {
-        padding-top: 1em;
-        font-size: 70%;
-        color: gray;
-        text-align: center;
+    padding-top: 1em;
+    font-size: 70%;
+    color: gray;
+    text-align: center;
 }

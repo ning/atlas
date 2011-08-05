@@ -2,7 +2,6 @@ package com.ning.atlas.base;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import com.ning.atlas.UnableToProvisionServerException;
@@ -28,10 +27,19 @@ public class DoRuntime {
 		StringBuilder sb = new StringBuilder();
 		try {
 			Process p = runtime.exec(cmdarray);
-			InputStream is = p.getInputStream();
-			InputStreamReader isr = new InputStreamReader(is);
-			BufferedReader br = new BufferedReader(isr);
 			String line, newLine = "\n";
+
+			// stdout
+			InputStreamReader isr = new InputStreamReader(p.getInputStream());
+			BufferedReader br = new BufferedReader(isr);
+
+			while ((line = br.readLine()) != null) {
+				sb.append(line).append(newLine);
+			}
+
+			// stderr
+			isr = new InputStreamReader(p.getErrorStream());
+			br = new BufferedReader(isr);
 
 			while ((line = br.readLine()) != null) {
 				sb.append(line).append(newLine);
@@ -48,14 +56,4 @@ public class DoRuntime {
 		return sb.toString();
 	}
 
-	/**
-	 * Returns the specified string in quotes
-	 * @param s A string
-	 * @return The modified string
-	 */
-	public static String stringify(String s) {
-		s = s.replace("\\", "\\\\");
-		s = s.replace("\"", "\\\"");
-		return "\"" + s + "\"";
-	}
 }

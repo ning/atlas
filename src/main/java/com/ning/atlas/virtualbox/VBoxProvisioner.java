@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,41 +23,27 @@ public class VBoxProvisioner implements Provisioner
 {
 	/*
 	 * Stuff to take note of:
-	 * - Time taken for VM to boot up cannot be > sleep time + SSH timeout
-	 * - Being able to SSH in does not mean that all the NICs are up
+	 * - Time taken for VM to boot up cannot be > BOOTUP_TIME + BOOTUP_ADDITIONAL_TIMEOUT
 	 * - VBoxManage is not multi-process safe, so know what you are doing
 	 */
 
 	private final static Logger logger = LoggerFactory.getLogger(VBoxProvisioner.class);
-	private final static AtomicInteger portCounter = new AtomicInteger(0);
 
-	private final String username;
-	private final String password;
 	private final String public_key;
-	private final int port_start;
-	private final String hostonlyif_name, bridgedif_name;
+	private final String intnet_name, bridgedif_name;
 
 	private final static int BOOTUP_TIME = 20; // seconds
-	private final static int DEFAULT_PORT = 2222;
+	private final static int BOOTUP_ADDITIONAL_TIMEOUT = 5 * 60; // seconds (5 minutes)
 
 	// NIC number of the adapters in our image (NIC numbering starts from 1)
-	private final static int NET_HOSTONLY_ADAPTER = 1;
-	private final static int NET_BRIDGED_ADAPTER = 2;
-	private final static int NET_NAT = 3;
+	private final static int NET_BRIDGED_ADAPTER = 1;
+	private final static int NET_INTNET_ADAPTER = 2;
 
 
 	public VBoxProvisioner(Map<String, String> attributes) throws UnableToProvisionServerException
 	{
-		this.username = attributes.get("username");
-		this.password = attributes.get("password");
-		this.hostonlyif_name = attributes.get("hostonlyif_name");
+		this.intnet_name = attributes.get("intnet_name");
 		this.bridgedif_name = attributes.get("bridgedif_name");
-
-		if (!attributes.containsKey("port")) {
-			this.port_start = VBoxProvisioner.DEFAULT_PORT;
-		} else {
-			this.port_start = Integer.parseInt(attributes.get("port_start"));
-		}
 
 		String pub_key_file = attributes.get("pub_key_file");
 
@@ -77,14 +64,6 @@ public class VBoxProvisioner implements Provisioner
 		} catch (Exception e) {
 			throw new UnableToProvisionServerException("Unable to read public key from " + pub_key_file);
 		}
-
-
-		// Configure the DHCP (Only need to do this once)
-		DoRuntime.exec("VBoxManage", "hostonlyif", "ipconfig", this.hostonlyif_name, "--ip", "192.168.133.0"); // adapter
-		DoRuntime.exec("VBoxManage", "dhcpserver", "modify", "--ifname", this.hostonlyif_name, 
-				"--ip", "192.168.133.7", "--netmask", "255.255.255.0",
-				"--lowerip", "192.168.133.8", "--upperip", "192.168.133.255", "--enable"); // dhcp
-
 	}
 
 
@@ -93,20 +72,21 @@ public class VBoxProvisioner implements Provisioner
 	{
 		/*
 		 * Plan of attack:
-		 * - Setup DHCP
-		 * - Import vm
+		 * - Import VM
 		 * - Configure hardware
-		 * - SSH in to get ip addresses
+		 * - Get ip addresses
 		 * - Start VM
 		 * - Done
 		 *
 		 * Assumptions:
-		 * - The 3 required virtual networks cards are there in the required order
+		 * - The 2 required virtual network interface cards are there in the required order
 		 * - Connected to the WWW
+		 * - VBox Guest Additions are installed
 		 */
 
-		String vmname = null;
-		int sshport;
+		final String username = base.getAttributes().get("username");
+		final String password = base.getAttributes().get("password");
+		final String vmname;
 
 		logger.debug("provisioning server for base {}", base.getName());
 
@@ -115,7 +95,7 @@ public class VBoxProvisioner implements Provisioner
 		String res;
 		// Want to prevent name mangling with import
 		synchronized (this) {
-			res = DoRuntime.exec("VBoxManage", "import", base.getAttributes().get("ovf"));
+			res = DoRuntime.exec("VBoxManage", "import", base.getAttributes().get("image"));
 			logger.trace("Dump from `VBoxManage import`:\n" + res);
 		}
 
@@ -125,33 +105,26 @@ public class VBoxProvisioner implements Provisioner
 		Pattern p = Pattern.compile("VM name.*?\"(.*?)\"");
 
 		Matcher m = p.matcher(res);
-		if (m.find()) vmname = m.group(1);
+		if (m.find())
+			vmname = m.group(1);
+		else
+			throw new UnableToProvisionServerException("Unable to get virtual machine name");
 		logger.info("VM name is {}", vmname);
 
-		sshport = this.port_start + portCounter.getAndIncrement();
-		logger.info("Using port {} for ssh", sshport);
-
-
 
 		logger.trace(DoRuntime.exec("VBoxManage", "modifyvm", vmname,
-				// Update hostonlyif_name
-				"--hostonlyadapter" + VBoxProvisioner.NET_HOSTONLY_ADAPTER, this.hostonlyif_name,
 				// Update bridgedif_name
-				"--bridgeadapter" + VBoxProvisioner.NET_BRIDGED_ADAPTER, this.bridgedif_name)
-		);
-
-		// Change port forwarding (handled separately since this might fail)
-		// If port forwarding mapping already exist, output is:
-		// VBoxManage: error: A NAT rule for this host port and this host IP already exists
-		logger.trace(DoRuntime.exec("VBoxManage", "modifyvm", vmname,
-				"--natpf" + VBoxProvisioner.NET_NAT, "ssh,tcp,," + sshport + ",,22"));
+				"--nic" + NET_BRIDGED_ADAPTER, "bridged", "--bridgeadapter" + NET_BRIDGED_ADAPTER, this.bridgedif_name, "--nicpromisc" + NET_BRIDGED_ADAPTER, "allow-all",
+				// Update hostonlyif_name
+				"--nic" + NET_INTNET_ADAPTER, "intnet", "--intnet" + NET_INTNET_ADAPTER, this.intnet_name, "--nicpromisc" + NET_INTNET_ADAPTER, "allow-vms"
+		));
 
 
 		// DoRuntime.exec("VBoxHeadless", "--vdre", "off", "--startvm", vmname));
 		logger.trace(DoRuntime.exec("VBoxManage", "startvm", vmname));
 
 
-		// wait for virtual machine to boot up
+		// Wait for virtual machine to boot up
 		try {
 			logger.info("Going to sleep for {} seconds while waiting for vm to boot", VBoxProvisioner.BOOTUP_TIME);
 			Thread.sleep(VBoxProvisioner.BOOTUP_TIME * 1000);
@@ -161,21 +134,75 @@ public class VBoxProvisioner implements Provisioner
 		logger.info("Done sleeping");
 
 
-		SSH ssh = null;
-		String ifconfig = "";
+		// Retrieve ifconfig
+		// Poll until we get what we want, else timeout
+		boolean found_ifconfig = false;
+		String output = null, ifconfig = null;
+		long give_up_at = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(BOOTUP_ADDITIONAL_TIMEOUT);
+		do {
+			output = DoRuntime.exec("VBoxManage", "guestcontrol", vmname, "exec", "--image", "/usr/bin/sudo",
+					"--username", username, "--password", password, "--wait-exit", "--wait-stdout", "--", "dhclient");
+			if (!output.contains("VBoxManage: error")) {
+				found_ifconfig = true;
+				logger.trace(output);
+				ifconfig = DoRuntime.exec("VBoxManage", "guestcontrol", vmname, "exec", "--image", "/sbin/ifconfig",
+						"--username", username, "--password", password, "--wait-exit", "--wait-stdout");
+				logger.trace(ifconfig);
+			} else if (System.currentTimeMillis() > give_up_at) {
+				throw new UnableToProvisionServerException("Timeout waiting for VBox guestcontrol");
+			} else {
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					throw new UnableToProvisionServerException("Spurious wakeup from sleep: " + e.toString());
+				}
+			}
+		} while(!found_ifconfig);
+
+
+		// Parse the ifconfig
+		// IP addresses extraction
+		String internalIp = null, externalIp = null;
+		String[] sections = ifconfig.split("\n\n");
+		Pattern pat_ip = Pattern.compile("(eth\\d+).*inet addr:(\\d+\\.\\d+\\.\\d+\\.\\d+)", Pattern.MULTILINE | Pattern.DOTALL);
+		Pattern pat_ip6 = Pattern.compile("(eth\\d+).*inet6 addr: ([0-9a-f:]*)", Pattern.MULTILINE | Pattern.DOTALL);
+
+		for (String section : sections) {
+			// search for ipv4, else try ipv6
+			boolean found_ip = true;
+			Matcher m_ip = pat_ip.matcher(section);
+			if (!m_ip.find()) {
+				m_ip = pat_ip6.matcher(section);
+				if (!m_ip.find()) found_ip = false;
+			}
+
+			if (found_ip) {
+				String ethX = m_ip.group(1);
+				// network interface numbering on *nix starts from 0 instead of 1
+				if (ethX.equals("eth" + (NET_INTNET_ADAPTER - 1))) {
+					internalIp = m_ip.group(2);
+				} else if (ethX.equals("eth" + (NET_BRIDGED_ADAPTER - 1))) {
+					externalIp = m_ip.group(2);
+				}
+			}
+		}
+
+		// IP check
+		if (internalIp == null || externalIp == null) {
+			throw new UnableToProvisionServerException("Cannot get ip addresses from ifconfig");
+		} else {
+			logger.info("Found: internalIp: {}, externalIp: {}", internalIp, externalIp);
+		}
+
+		SSH ssh;
 		try {
-			logger.info("SSH login attempt...");
-			ssh = new SSH(this.password, this.username, "localhost", sshport);
-			logger.info("SSH to localhost on port {} successful", sshport);
+			// Can use VBoxManage guestcontrol, but we want to check that SSH is working
+			logger.info("Provisioning via SSH");
+			ssh = new SSH(password, username, externalIp);
 
 			// ssh into the server and append the public key
+			ssh.exec("mkdir -p ~/.ssh; chmod 700 ~/.ssh; touch ~/.ssh/authorized_key;");
 			ssh.exec("echo \"" + public_key + "\" >> ~/.ssh/authorized_keys");
-
-			// get the ip addresses
-			// time on vm != time on host, so sleep on the vm side
-			ssh.exec("sleep 10; sudo dhclient eth" + (NET_BRIDGED_ADAPTER - 1));
-			ifconfig = ssh.exec("sleep 2; ifconfig");
-			logger.trace("ifconfig output:\n" + ifconfig);
 
 			// check that networking is OK by doing a ping
 			String hostcheck = "www.google.com";
@@ -184,39 +211,13 @@ public class VBoxProvisioner implements Provisioner
 				throw new UnableToProvisionServerException("Ping to " + hostcheck + " failed: " + ping);
 			}
 
-
 			ssh.close();
 		} catch (IOException e) {
 			throw new UnableToProvisionServerException("Provisioning via SSH failed: " + e.toString());
 		}
 
 
-		// IP addresses extraction
-		String internalIp = null, externalIp = null;
-		String[] sections = ifconfig.split("\n\n");
-		Pattern pat_ip = Pattern.compile("(eth\\d+).*inet addr:(\\d+\\.\\d+\\.\\d+\\.\\d+)", Pattern.MULTILINE | Pattern.DOTALL);
-
-		for (String section : sections) {
-			Matcher m_ip = pat_ip.matcher(section);
-			if (m_ip.find()) {
-				String ethX = m_ip.group(1);
-				// network interface numbering on *nix starts from 0 instead of 1
-				if (ethX.equals("eth" + (VBoxProvisioner.NET_HOSTONLY_ADAPTER - 1))) {
-					internalIp = m_ip.group(2);
-				} else if (ethX.equals("eth" + (VBoxProvisioner.NET_BRIDGED_ADAPTER - 1))) {
-					externalIp = m_ip.group(2);
-				}
-			}
-		}
-
-		if (internalIp == null || externalIp == null) {
-			throw new UnableToProvisionServerException("Cannot get ip addresses from ifconfig");
-		} else {
-			logger.info("Found internalIp: {}", internalIp);
-			logger.info("Found externalIp: {}", externalIp);
-		}
-
-		return new VBoxServer(base, vmname, internalIp, externalIp, sshport);
+		return new VBoxServer(base, vmname, internalIp, externalIp);
 	}
 
 	public void destroy(Server server) throws UnableToProvisionServerException {
@@ -228,20 +229,15 @@ public class VBoxProvisioner implements Provisioner
 	public final class VBoxServer extends Server
 	{
 		private final String vmname;
-		private final int sshPort; // port on host used for ssh port forwarding
 
-		public VBoxServer(Base base, String vmname, String internalIp, String externalIp, int sshPort) {
+		public VBoxServer(Base base, String vmname, String internalIp, String externalIp) {
 			super(internalIp, externalIp, base);
 			this.vmname = vmname;
-			this.sshPort = sshPort;
 		}
 
 		public String getVMName() {
 			return this.vmname;
 		}
 
-		public int getSSHPort() {
-			return this.sshPort;
-		}
 	}
 }
