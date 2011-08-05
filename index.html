@@ -58,7 +58,6 @@ code.sourceCode span.er { color: red; font-weight: bold; }
 </ul></li>
 <li><a href="#running">Running</a></li>
 <li><a href="#output">Output</a></li>
-<li><a href="#resources">Resources</a></li>
 </ul>
 </nav>
 <h1 id="introduction"><a href="#TOC">Introduction</a></h1>
@@ -137,10 +136,9 @@ chmod +x target/atlas
 <ul>
 <li><code>pub_key_file</code>: The exact file path to the public key to allow password-less SSH login.</li>
 <li><code>intnet_name</code>: The name of the internal network that VirtualBox will use.</li>
-<li><p><code>bridgedif_name</code>: The name of the host interface the given virtual network interface will use. You can get this by running:</p>
-<p>$ VBoxManage list bridgedifs</p></li>
+<li><code>bridgedif_name</code>: The name of the host interface the given virtual network interface will use. You can get this by running: <code>$ VBoxManage list bridgedifs</code></li>
 </ul>
-<p>It makes use of three additional properties defined in the <a href="#base">base element</a> (which is explained further below):</p>
+<p>It makes use of two additional properties defined in the <a href="#base">base element</a> (which is explained further below):</p>
 <ul>
 <li><code>image</code>: The exact file path to the virtual appliance in Open Virtualization Format (OVF) or Open Virtualzation Archive (OVA) which will be imported to create the virtual machines.</li>
 <li><code>username</code>: The login username of the guest image.</li>
@@ -256,8 +254,6 @@ Option                                  Description
 </code></pre>
 <p>Atlas only needs two arguments on the command line: the path to the <a href="#environment-specification">environment specification</a> and the path to the <a href="#system-specification">system specification</a>. Everything else is configured within those two files.</p>
 <h1 id="output"><a href="#TOC">Output</a></h1>
-<p>TBD</p>
-<h1 id="resources"><a href="#TOC">Resources</a></h1>
 <p>TBD</p>
 </body>
 </html>
