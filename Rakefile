@@ -38,11 +38,6 @@ end
 
 def do_docs tmp
   sh <<-EOS
-      if [ -z $(git branch | grep gh-pages) ]
-        then
-          git branch --track gh-pages origin/gh-pages
-      fi
-      git clone -b gh-pages . #{tmp}
       pandoc --toc --html5 -f markdown -t html -c pandoc.css --template src/site/pandoc/template.html \
          -o #{tmp}/index.html \
          src/site/pandoc/index.md \
@@ -51,10 +46,6 @@ def do_docs tmp
          src/site/pandoc/running.md \
          src/site/pandoc/resources.md
       cp src/site/pandoc/pandoc.css #{tmp}/
-      cd #{tmp}
-      git add -A
-      git commit -am 'updating documentation'
-      git push origin gh-pages
   EOS
 end
 
@@ -68,6 +59,19 @@ desc "generate documenation and check it into gh-pages branch"
 task "gen-docs" do
   require 'tmpdir'
   Dir.mktmpdir do |tmp|
+    sh <<-EOS
+      if [ -z $(git branch | grep gh-pages) ]
+        then
+          git branch --track gh-pages origin/gh-pages
+      fi
+      git clone -b gh-pages . #{tmp}
+    EOS
     do_docs tmp
+    sh <<-EOS
+      cd #{tmp}
+      git add -A
+      git commit -am 'updating documentation'
+      git push origin gh-pages
+    EOS
   end
 end
