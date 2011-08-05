@@ -60,6 +60,7 @@ task "gen-docs" do
   require 'tmpdir'
   Dir.mktmpdir do |tmp|
     sh <<-EOS
+      git fetch origin gh-pages
       if [ -z $(git branch | grep gh-pages) ]
         then
           git branch --track gh-pages origin/gh-pages
