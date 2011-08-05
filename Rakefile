@@ -46,7 +46,8 @@ task "gen-docs" do
           git branch --track gh-pages origin/gh-pages
       fi
       git clone -b gh-pages . #{tmp}
-      pandoc -f markdown -t html -c pandoc.css -o #{tmp}/index.html \
+      pandoc --toc --html5 -f markdown -t html -c pandoc.css --template src/site/pandoc/template.html \
+             -o #{tmp}/index.html \
              src/site/pandoc/index.md \
              src/site/pandoc/building.md \
              src/site/pandoc/configuring.md \
