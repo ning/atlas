@@ -36,3 +36,26 @@ task "kill-ec2" do
 end
 
 
+desc "generate documenation and check it into gh-pages branch"
+task "gen-docs" do
+  require 'tmpdir'
+  Dir.mktmpdir do |tmp|
+    sh <<-EOS
+      if [ -z $(git branch | grep gh-pages) ]
+        then
+          git branch --track gh-pages origin/gh-pages
+      fi
+      git clone -b gh-pages . #{tmp}
+      pandoc -f markdown -t html -c pandoc.css -o #{tmp}/index.html \
+             src/site/pandoc/index.md \
+             src/site/pandoc/building.md \
+             src/site/pandoc/configuring.md \
+             src/site/pandoc/running.md
+      cp src/site/pandoc/pandoc.css #{tmp}/
+      cd #{tmp}
+      git add -A
+      git commit -am 'updating documentation'
+      git push origin gh-pages
+    EOS
+  end
+end

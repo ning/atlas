@@ -336,11 +336,12 @@ The installer needs these environment configuration options:
 * ``ssh_key_file``: The ssh private key file.
 * ``ugx_user``: The user to run uGalaxy as.
 
-It is triggered by an ``install`` url of the form
+To use the micro-galaxy installer, specify a URL of the form
 
-    ugx:http://<bucket>.s3.amazonaws.com/<service name>.tar.gz"
+    ugx:<url>
 
-which will cause it to download and deploy the identified service to the relevant servers.
+in the ``install`` property for the ``server`` element. The url points to the tarball containing the service to
+deploy.
 
 Example:
 
