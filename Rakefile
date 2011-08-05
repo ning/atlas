@@ -27,7 +27,7 @@ namespace :ec2 do
 
   desc "kill all ec2 instances"
   task :kill do
-      sh "ec2din | grep INSTANCE | cut -f 2 | xargs ec2kill"
+    sh "ec2din | grep INSTANCE | cut -f 2 | xargs ec2kill"
     sh "rds-describe-db-instances | grep DBINSTANCE | grep available | awk '{print $2}' | xargs -I@ rds-delete-db-instance @ --skip-final-snapshot -f"
     sh "elb-describe-lbs --show-long --delimiter '|' | cut -f 2 -f 8 -d '|' | grep 'i-' | sed 's/|/ --instances /' | xargs elb-deregister-instances-from-lb"
   end
@@ -45,6 +45,7 @@ desc "clean up build cruft"
 task :clean do
   sh "rm -rf target"
 end
+
 
 ## Tasks and helper function for documentation generation
 namespace :docs do
