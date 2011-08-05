@@ -264,7 +264,7 @@ Option                                  Description
 <h2 id="virtualbox"><a href="#TOC">VirtualBox</a></h2>
 <p>To use the VirtualBox provisioner, a VirtualBox image is required. Typically, such an image can be created using VirtualBox or VMWare, and the appliance is then exported to an <a href="http://en.wikipedia.org/wiki/Open_Virtualization_Format">Open Virtualization Format</a> (OVF) file with the hard disk separate, or an Open Virtualization Archive (OVA) with is a zipped copy of the hard disk and the OVF file.</p>
 <p>Because creating a VirtualBox image can be a hassel, we have written a simple script <a href="https://github.com/ning/atlas/blob/master/src/main/resources/vbox/createvm.sh">createvm.sh</a> that automates the creation of the bare virtual hardware. Note that because the Linux kernel in Ubuntu Server is compiled with PAE, you need enable PAE support on the VM if you are running Ubuntu Server.</p>
-<p>We have also provided a <a href="https://github.com/ning/atlas/blob/master/src/main/resources/vbox/postinstall_atlas.sh">postinstall_atlas.sh</a> script that can be run after installing the guest OS on the virtual machine. The script also installs the</p>
+<p>We have also provided a <a href="https://github.com/ning/atlas/blob/master/src/main/resources/vbox/postinstall_atlas.sh">postinstall_atlas.sh</a> script that can be run after installing the guest OS on the virtual machine. The script also installs the required VirtualBox Guest Additions.</p>
 <h2 id="getting-help"><a href="#TOC">Getting Help</a></h2>
 <p>We have a <a href="http://groups.google.com/group/atlas-dev">development mailing list</a>.</p>
 </body>
