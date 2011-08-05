@@ -10,7 +10,6 @@ task :package do
 
 exec java -jar $0 "$@"
 
-
 EOS
   end
   sh "cat target/atlas-*.jar >> target/atlas"
@@ -23,21 +22,36 @@ task :test do
 end
 
 desc "run tests against ec2"
-task "test-ec2" do
-  sh "mvn -DRUN_EC2_TESTS=true clean test"
 
-  # double check we didn't leak any ec2 instances
-  sh "ec2din | grep INSTANCE | cut -f 2 | xargs ec2kill"
+namespace :ec2 do
+
+  desc "kill all ec2 instances"
+  task :kill do
+      sh "ec2din | grep INSTANCE | cut -f 2 | xargs ec2kill"
+    sh "rds-describe-db-instances | grep DBINSTANCE | grep available | awk '{print $2}' | xargs -I@ rds-delete-db-instance @ --skip-final-snapshot -f"
+    sh "elb-describe-lbs --show-long --delimiter '|' | cut -f 2 -f 8 -d '|' | grep 'i-' | sed 's/|/ --instances /' | xargs elb-deregister-instances-from-lb"
+  end
+
+  desc "run tests which use ec2"
+  task :test do
+    sh "mvn -DRUN_EC2_TESTS=true clean test"
+    Rake::Task['ec2:kill'].execute
+  end
+
 end
 
-desc "kill all ec2 instances"
-task "kill-ec2" do
-   sh "ec2din | grep INSTANCE | cut -f 2 | xargs ec2kill"
+
+desc "clean up build cruft"
+task :clean do
+  sh "rm -rf target"
 end
 
+## Tasks and helper function for documentation generation
+namespace :docs do
 
-def do_docs tmp
-  sh <<-EOS
+  # Actually generate the docs into tmp
+  def do_docs tmp
+    sh <<-EOS
       pandoc --toc --html5 -f markdown -t html -c pandoc.css --template src/site/pandoc/template.html \
          -o #{tmp}/index.html \
          src/site/pandoc/index.md \
@@ -46,33 +60,34 @@ def do_docs tmp
          src/site/pandoc/running.md \
          src/site/pandoc/resources.md
       cp src/site/pandoc/pandoc.css #{tmp}/
-  EOS
-end
-
-desc "generate documentation locally"
-task "local-docs" do
-  sh "mkdir -p target/site"
-  do_docs "target/site"
-end
-
-desc "generate documenation and check it into gh-pages branch"
-task "gen-docs" do
-  require 'tmpdir'
-  Dir.mktmpdir do |tmp|
-    sh <<-EOS
-      git fetch origin gh-pages
-      if [ -z $(git branch | grep gh-pages) ]
-        then
-          git branch --track gh-pages origin/gh-pages
-      fi
-      git clone -b gh-pages . #{tmp}
     EOS
-    do_docs tmp
-    sh <<-EOS
-      cd #{tmp}
-      git add -A
-      git commit -am 'updating documentation'
-      git push origin gh-pages
-    EOS
+  end
+
+  desc "generate documentation locally"
+  task :local do
+    sh "mkdir -p target/site"
+    do_docs "target/site"
+  end
+
+  desc "generate documenation and check it into gh-pages branch"
+  task :github do
+    require 'tmpdir'
+    Dir.mktmpdir do |tmp|
+      sh <<-EOS
+        git fetch origin gh-pages
+        if [ -z $(git branch | grep gh-pages) ]
+          then
+            git branch --track gh-pages origin/gh-pages
+        fi
+        git clone -b gh-pages . #{tmp}
+      EOS
+      do_docs tmp
+      sh <<-EOS
+        cd #{tmp}
+        git add -A
+        git commit -am 'updating documentation'
+        git push origin gh-pages
+      EOS
+    end
   end
 end
