@@ -5,6 +5,7 @@
   <meta name="generator" content="pandoc" />
   <title></title>
   <style type="text/css">
+/*<![CDATA[*/
 table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode, table.sourceCode pre 
    { margin: 0; padding: 0; border: 0; vertical-align: baseline; border: none; }
 td.lineNumbers { border-right: 1px solid #AAAAAA; text-align: right; color: #AAAAAA; padding-right: 5px; padding-left: 5px; }
@@ -22,6 +23,7 @@ code.sourceCode span.al { color: red; font-weight: bold; }
 code.sourceCode span.fu { color: #06287e; }
 code.sourceCode span.re { }
 code.sourceCode span.er { color: red; font-weight: bold; }
+/*]]>*/
   </style>
   <link rel="stylesheet" href="pandoc.css" type="text/css" />
 </head>
@@ -98,7 +100,20 @@ chmod +x target/atlas
 </ul>
 <pre class="sourceCode"><code class="sourceCode ruby">provisioner com.ning.atlas.aws.<span class="dt">RDSProvisioner</span>, {<br />  <span class="st">:access_key</span> =&gt; ec2_access_key,<br />  <span class="st">:secret_key</span> =&gt; ec2_secret_key<br />}<br /><br />base <span class="st">&quot;oracle&quot;</span>, {<br />  <span class="st">:storage_size</span> =&gt; <span class="dv">10</span>,<br />  <span class="st">:instance_class</span> =&gt; <span class="st">&quot;db.m1.small&quot;</span>,<br />  <span class="st">:engine</span> =&gt; <span class="st">&quot;oracle-se1&quot;</span>,<br />  <span class="st">:username</span> =&gt; <span class="st">&quot;user&quot;</span>,<br />  <span class="st">:password</span> =&gt; <span class="st">&quot;password&quot;</span>,<br />  <span class="st">:license_model</span> =&gt; <span class="st">&quot;bring-your-own-license&quot;</span><br />}</code></pre>
 <h5 id="com.ning.atlas.virtualbox.vboxprovisioner">com.ning.atlas.virtualbox.VBoxProvisioner</h5>
-<p>TBD</p>
+<p>The <code>VBoxProvisioner</code> provisions VirtualBoxes. To get VirtualBox, see the <a href="http://www.virtualbox.org/">VirtualBox website</a>. The provisioner needs these environment configuration options:</p>
+<ul>
+<li><code>pub_key_file</code>: The exact file path to the public key to allow password-less SSH login.</li>
+<li><code>intnet_name</code>: The name of the internal network that VirtualBox will use.</li>
+<li><code>bridgedif_name</code>: The name of the host interface the given virtual network interface will use. You can get this by running: <code>$ VBoxManage list bridgedifs</code></li>
+</ul>
+<p>It makes use of two additional properties defined in the <a href="#base">base element</a> (which is explained further below):</p>
+<ul>
+<li><code>image</code>: The exact file path to the virtual appliance in Open Virtualization Format (OVF) or Open Virtualzation Archive (OVA) which will be imported to create the virtual machines.</li>
+<li><code>username</code>: The login username of the guest image.</li>
+<li><code>password</code>: The login password of the guest image.</li>
+</ul>
+<p>Example:</p>
+<pre class="sourceCode"><code class="sourceCode ruby">provisioner com.ning.atlas.aws.<span class="dt">EC2Provisioner</span>, {<br />  <span class="st">:pub_key_file</span>   =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.atlas/</span><span class="ot">#{</span>rc[<span class="st">'keypair_id'</span>]<span class="ot">}</span><span class="st">.pub&quot;</span>,<br />  <span class="st">:intnet_name</span>    =&gt; <span class="st">&quot;atlas-intnet&quot;</span>,<br />  <span class="st">:bridgedif_name</span> =&gt; <span class="st">&quot;en0: Ethernet&quot;</span><br />}<br /><br />base <span class="st">&quot;server&quot;</span>, {<br />  <span class="st">:image</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/atlas-natty32/atlas-natty32.ovf&quot;</span>,<br />  <span class="st">:username</span> =&gt; <span class="st">&quot;atlasuser&quot;</span>,<br />  <span class="st">:password</span> =&gt; <span class="st">&quot;atlasuser&quot;</span><br />}</code></pre>
 <h3 id="initializers">Initializers</h3>
 <p>Initializers are used to configure the provisioned instances so that they can actually run services. Think of them as the part of the tool that deploys all that base software that is needed to run your software, but is not actually part of your software. Things like ruby, java, ...</p>
 <p>Atlas defines two initializers at the moment, <code>com.ning.atlas.AtlasInitializer</code> and <code>com.ning.atlas.chef.UbuntuChefSoloInitializer</code>.</p>
@@ -191,7 +206,10 @@ chmod +x target/atlas
 <pre class="sourceCode"><code class="sourceCode ruby">installer <span class="st">&quot;galaxy&quot;</span>, com.ning.atlas.galaxy.<span class="dt">GalaxyInstaller</span>, {<br />  <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />  <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span>,<br />}</code></pre>
 <pre class="sourceCode"><code class="sourceCode ruby">server <span class="st">&quot;echo&quot;</span>,<br />  <span class="st">:base</span> =&gt; <span class="st">&quot;ruby-server&quot;</span>,<br />  <span class="st">:install</span> =&gt; [<span class="st">&quot;galaxy:myenv/v1/echo&quot;</span>]</code></pre>
 <h2 id="system-specification">System specification</h2>
-<p>TBD</p>
+<ul>
+<li><code>Java</code> (of course!)</li>
+<li>If you are using <code>VBoxProvisioner</code>, <code>VirtualBox 4.1.0</code> or above is required.</li>
+</ul>
 <h1 id="running">Running</h1>
 <p>Invoking atlas without any arguments will show the basic help</p>
 <pre><code>$ atlas
