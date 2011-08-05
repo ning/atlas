@@ -50,10 +50,11 @@ end
 ## Tasks and helper function for documentation generation
 namespace :docs do
 
-  # Actually generate the docs into tmp
+  desc "build docs, into target/site by default, or override with [<dir>]"
   task :build, [:dir] do |t, args|
     args.with_defaults(:dir => File.join("target", "site"))
     sh <<-EOS
+      mkdir -p #{args.dir}
       pandoc --toc --html5 -f markdown -t html -c pandoc.css --template src/site/pandoc/template.html \
          -o #{args.dir}/index.html \
          src/site/pandoc/index.md \
@@ -63,12 +64,6 @@ namespace :docs do
          src/site/pandoc/resources.md
       cp src/site/pandoc/pandoc.css #{args.dir}/
     EOS
-  end
-
-  desc "generate documentation locally"
-  task :local do
-    sh "mkdir -p target/site"
-    Rake::Task["docs:build"].invoke
   end
 
   desc "generate documenation and check it into gh-pages branch"
