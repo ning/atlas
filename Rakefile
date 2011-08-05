@@ -51,23 +51,24 @@ end
 namespace :docs do
 
   # Actually generate the docs into tmp
-  def do_docs tmp
+  task :build, [:dir] do |t, args|
+    args.with_defaults(:dir => File.join("target", "site"))
     sh <<-EOS
       pandoc --toc --html5 -f markdown -t html -c pandoc.css --template src/site/pandoc/template.html \
-         -o #{tmp}/index.html \
+         -o #{args.dir}/index.html \
          src/site/pandoc/index.md \
          src/site/pandoc/building.md \
          src/site/pandoc/configuring.md \
          src/site/pandoc/running.md \
          src/site/pandoc/resources.md
-      cp src/site/pandoc/pandoc.css #{tmp}/
+      cp src/site/pandoc/pandoc.css #{args.dir}/
     EOS
   end
 
   desc "generate documentation locally"
   task :local do
     sh "mkdir -p target/site"
-    do_docs "target/site"
+    Rake::Task["docs:build"].invoke
   end
 
   desc "generate documenation and check it into gh-pages branch"
@@ -82,7 +83,7 @@ namespace :docs do
         fi
         git clone -b gh-pages . #{tmp}
       EOS
-      do_docs tmp
+      Rake::Task["docs:build"].invoke(tmp)
       sh <<-EOS
         cd #{tmp}
         git add -A
