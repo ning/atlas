@@ -16,7 +16,7 @@ if you are running Ubuntu Server.
 
 We have also provided a [postinstall_atlas.sh](https://github.com/ning/atlas/blob/master/src/main/resources/vbox/postinstall_atlas.sh)
 script that can be run after installing the guest OS on the virtual machine.
-The script also installs the 
+The script also installs the required VirtualBox Guest Additions.
 
 ## Getting Help
 
