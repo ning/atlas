@@ -9,7 +9,7 @@ body {
     color: #000; 
 }
 
-body ul ul {
+nav#TOC ul ul {
     display: none;
 }
 
