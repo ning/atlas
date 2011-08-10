@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.util.Iterator;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -57,12 +58,18 @@ public class GalaxyInstaller implements Installer
         InitializedServerTemplate shell = Iterables.getFirst(shells, null);
         assert shell != null;
 
+
+        Iterator<String> top_parts = Splitter.on(':').split(fragment).iterator();
+        String config_path = top_parts.next();
+//        String service_type = parts.next();
+//        String service_version = parts.next();
+
         SSH ssh = new SSH(new File(sshKeyFile), sshUser, shell.getServer().getExternalAddress());
         try {
             log.debug("installing {} on {}", fragment, server.getInternalAddress());
 
 
-            String[] parts = fragment.split("/");
+            String[] parts = config_path.split("/");
             String env = parts[0];
             String version = parts[1];
             String type = parts[2];
