@@ -1,0 +1,16 @@
+# basics
+
+\#*\#
+.\#*
+*.iml
+.idea
+target
+tmp
+.awscreds
+*.swp
+
+# build stuff
+
+.classpath
+.project
+.settings
