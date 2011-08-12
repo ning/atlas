@@ -65,7 +65,9 @@ code.sourceCode span.er { color: red; font-weight: bold; }
 </ul>
 </nav>
 <h1 id="introduction"><a href="#TOC">Introduction</a></h1>
-<p>Atlas is a tool to automatically spin up complete environments consisting of multiple machines and software installed on them. These environments are described via configuration files which are fed to Atlas, and Atlas then automatically procures the necessary resources and installs the base machines and the software running on them. Atlas is currently able to spin up environments on EC2 and VirtualBox.</p>
+<p>Atlas is a tool to automatically spin up complete environments consisting of multiple machines and software installed on them. These environments are described via configuration files which are fed to Atlas, and Atlas then automatically procures the necessary resources and installs the base machines and the software running on them.</p>
+<p>Atlas is currently able to spin up environments on EC2 and VirtualBox.</p>
+<p>Atlas is being built by various folks, mostly from <a href="http://www.ning.com">Ning</a>, and is made available under the <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache License, 2.0</a>.</p>
 <h1 id="where-to-get-it"><a href="#TOC">Where to get it</a></h1>
 <p>Atlas is on github: <a href="https://github.com/ning/atlas">https://github.com/ning/atlas</a>.</p>
 <h1 id="minute-quick-start"><a href="#TOC">5 minute quick start</a></h1>
@@ -262,9 +264,22 @@ Option                                  Description
 <p>TBD</p>
 <h1 id="resources"><a href="#TOC">Resources</a></h1>
 <h2 id="virtualbox"><a href="#TOC">VirtualBox</a></h2>
-<p>To use the VirtualBox provisioner, a VirtualBox image is required. Typically, such an image can be created using VirtualBox or VMWare, and the appliance is then exported to an <a href="http://en.wikipedia.org/wiki/Open_Virtualization_Format">Open Virtualization Format</a> (OVF) file with the hard disk separate, or an Open Virtualization Archive (OVA) with is a zipped copy of the hard disk and the OVF file.</p>
+<p>To use the VirtualBox provisioner, a VirtualBox image is required. Typically, such an image can be created using VirtualBox or VMWare, and the appliance is then exported to an <a href="http://en.wikipedia.org/wiki/Open_Virtualization_Format">Open Virtualization Format</a> (OVF) file with the hard disk separate, or an Open Virtualization Archive (OVA) which is a zipped copy of the hard disk and the OVF file.</p>
 <p>Because creating a VirtualBox image can be a hassel, we have written a simple script <a href="https://github.com/ning/atlas/blob/master/src/main/resources/vbox/createvm.sh">createvm.sh</a> that automates the creation of the bare virtual hardware. Note that because the Linux kernel in Ubuntu Server is compiled with PAE, you need enable PAE support on the VM if you are running Ubuntu Server.</p>
 <p>We have also provided a <a href="https://github.com/ning/atlas/blob/master/src/main/resources/vbox/postinstall_atlas.sh">postinstall_atlas.sh</a> script that can be run after installing the guest OS on the virtual machine. The script also installs the required VirtualBox Guest Additions.</p>
+<p>Currently, we have provided the following images to help you get started:</p>
+<ul>
+<li><a href="https://atlas-resources.s3.amazonaws.com/atlas-natty32.ova">Ubuntu Server 11.04 Natty 32</a></li>
+</ul>
+<p>They have the following specifications:</p>
+<ul>
+<li>Default username/password: atlasuser/atlasuser</li>
+<li>Base Memory: 384 MB</li>
+<li>80 GB HDD</li>
+<li>Uses VT-x, PAE/NX</li>
+<li>NIC 1: Bridged Adapter</li>
+<li>NIC 2: Internal Network Adapter</li>
+</ul>
 <h2 id="getting-help"><a href="#TOC">Getting Help</a></h2>
 <p>We have a <a href="http://groups.google.com/group/atlas-dev">development mailing list</a>.</p>
 </body>
