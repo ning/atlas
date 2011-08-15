@@ -21,6 +21,7 @@ The script also installs the required VirtualBox Guest Additions.
 Currently, we have provided the following images to help you get started:
 
 * [Ubuntu Server 11.04 Natty 32](https://atlas-resources.s3.amazonaws.com/atlas-natty32.ova)
+* [Ubuntu Server 11.04 Natty 64](https://atlas-resources.s3.amazonaws.com/atlas-natty64.ova)
 
 They have the following specifications:
 
