@@ -1,7 +1,7 @@
 package com.ning.atlas.galaxy;
 
 import com.ning.atlas.Environment;
-import com.ning.atlas.InstalledServerTemplate;
+import com.ning.atlas.InstalledServer;
 import com.ning.atlas.InstalledTemplate;
 import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.Template;
@@ -11,7 +11,6 @@ import com.ning.atlas.tree.Trees;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
 
@@ -70,12 +69,12 @@ public class TestMicroGalaxyInstaller
         mapper.writeValue(System.out, installed);
 
 
-        List<InstalledServerTemplate> nodes = Trees.findInstancesOf(installed, InstalledServerTemplate.class);
+        List<InstalledServer> nodes = Trees.findInstancesOf(installed, InstalledServer.class);
         try {
             assertThat(nodes.size(), equalTo(1));
         }
         finally {
-            for (InstalledServerTemplate node : nodes) {
+            for (InstalledServer node : nodes) {
                 ec2.destroy(node.getServer());
             }
         }

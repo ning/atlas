@@ -6,8 +6,8 @@ import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.ning.atlas.Initializer;
-import com.ning.atlas.ProvisionedServerTemplate;
-import com.ning.atlas.ProvisionedTemplate;
+import com.ning.atlas.ProvisionedServer;
+import com.ning.atlas.ProvisionedElement;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
 import com.ning.atlas.base.Maybe;
@@ -93,8 +93,8 @@ public class UbuntuChefSoloInitializer implements Initializer
     @Override
     public Server initialize(final Server server,
                              final String arg,
-                             ProvisionedTemplate root,
-                             ProvisionedServerTemplate node) throws Exception
+                             ProvisionedElement root,
+                             ProvisionedServer node) throws Exception
     {
         boolean done = true;
         do {

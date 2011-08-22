@@ -11,8 +11,8 @@ public class ErrorInitializer implements Initializer
     }
 
     @Override
-    public Server initialize(Server server, String arg, ProvisionedTemplate root,
-                      ProvisionedServerTemplate node)
+    public Server initialize(Server server, String arg, ProvisionedElement root,
+                      ProvisionedServer node)
     {
         throw new UnsupportedOperationException("Not Yet Implemented!");
     }

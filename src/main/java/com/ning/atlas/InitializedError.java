@@ -8,11 +8,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-public class InitializedErrorTemplate extends InitializedTemplate
+public class InitializedError extends InitializedTemplate
 {
     private final String message;
 
-    public InitializedErrorTemplate(String type, String name, My my, String message)
+    public InitializedError(String type, String name, My my, String message)
     {
         super(type, name, my);
         this.message = message;

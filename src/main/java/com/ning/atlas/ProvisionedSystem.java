@@ -10,28 +10,28 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ProvisionedSystemTemplate extends ProvisionedTemplate
+public class ProvisionedSystem extends ProvisionedElement
 {
-    private List<? extends ProvisionedTemplate> children;
+    private List<? extends ProvisionedElement> children;
 
-    public ProvisionedSystemTemplate(String type, String name, My my, List<? extends ProvisionedTemplate> children)
+    public ProvisionedSystem(String type, String name, My my, List<? extends ProvisionedElement> children)
     {
         super(type, name, my);
-        this.children = new ArrayList<ProvisionedTemplate>(children);
+        this.children = new ArrayList<ProvisionedElement>(children);
     }
 
-    public List<? extends ProvisionedTemplate> getChildren()
+    public List<? extends ProvisionedElement> getChildren()
     {
         return children;
     }
 
     @Override
-    protected ListenableFuture<InitializedTemplate> initialize(Executor ex, ProvisionedTemplate root)
+    protected ListenableFuture<InitializedTemplate> initialize(Executor ex, ProvisionedElement root)
     {
         final AtomicInteger remaining = new AtomicInteger(getChildren().size());
         final List<InitializedTemplate> init_children = new CopyOnWriteArrayList<InitializedTemplate>();
         final SettableFuture<InitializedTemplate> rs = SettableFuture.create();
-        for (ProvisionedTemplate template : getChildren()) {
+        for (ProvisionedElement template : getChildren()) {
             final ListenableFuture<? extends InitializedTemplate> child = template.initialize(ex, root);
             child.addListener(new Runnable()
                               {
@@ -42,7 +42,7 @@ public class ProvisionedSystemTemplate extends ProvisionedTemplate
                                           final InitializedTemplate ct = child.get();
                                           init_children.add(ct);
                                           if (remaining.decrementAndGet() == 0) {
-                                              rs.set(new InitializedSystemTemplate(getType(),
+                                              rs.set(new InitializedSystem(getType(),
                                                                                    getName(),
                                                                                    getMy(),
                                                                                    init_children));

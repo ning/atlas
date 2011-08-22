@@ -11,13 +11,13 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
-public class InitializedServerTemplate extends InitializedTemplate
+public class InitializedServer extends InitializedTemplate
 {
     @JsonIgnore
     private final Server server;
     private final List<String> installations;
 
-    public InitializedServerTemplate(String type, String name, My my, Server server, List<String> installations)
+    public InitializedServer(String type, String name, My my, Server server, List<String> installations)
     {
         super(type, name, my);
         this.server = server;
@@ -50,7 +50,7 @@ public class InitializedServerTemplate extends InitializedTemplate
                             installer.install(server, fragment, root);
                         }
 
-                        return new InstalledServerTemplate(getType(), getName(), getMy(), server);
+                        return new InstalledServer(getType(), getName(), getMy(), server);
                     }
                     catch (Exception e) {
                         return new InstalledErrorTemplate(getType(),  getName(), getMy(), e);

@@ -6,13 +6,13 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.Base;
 import com.ning.atlas.BoundTemplate;
 import com.ning.atlas.Environment;
-import com.ning.atlas.InitializedServerTemplate;
+import com.ning.atlas.InitializedServer;
 import com.ning.atlas.InitializedTemplate;
 import com.ning.atlas.Initializer;
 import com.ning.atlas.My;
-import com.ning.atlas.ProvisionedServerTemplate;
-import com.ning.atlas.ProvisionedSystemTemplate;
-import com.ning.atlas.ProvisionedTemplate;
+import com.ning.atlas.ProvisionedServer;
+import com.ning.atlas.ProvisionedSystem;
+import com.ning.atlas.ProvisionedElement;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
 import com.ning.atlas.ServerTemplate;
@@ -77,9 +77,9 @@ public class TestUbuntuChefSoloInitializer
 
         try {
             Server init_server = initializer.initialize(s, "role[server]",
-                                                        new ProvisionedSystemTemplate("root", "0", new My(),
-                                                                                      Lists.<ProvisionedTemplate>newArrayList()),
-                                                        new ProvisionedServerTemplate("woof", "meow", new My(), s, Collections.<String>emptyList()));
+                                                        new ProvisionedSystem("root", "0", new My(),
+                                                                                      Lists.<ProvisionedElement>newArrayList()),
+                                                        new ProvisionedServer("woof", "meow", new My(), s, Collections.<String>emptyList()));
 
 
             SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
@@ -163,10 +163,10 @@ public class TestUbuntuChefSoloInitializer
 
         BoundTemplate bt = st.normalize(env);
         ExecutorService ex = Executors.newCachedThreadPool();
-        ProvisionedTemplate pt = bt.provision(ex).get();
+        ProvisionedElement pt = bt.provision(ex).get();
         InitializedTemplate it = pt.initialize(ex).get();
-        assertThat(it, instanceOf(InitializedServerTemplate.class));
-        InitializedServerTemplate ist = (InitializedServerTemplate) it;
+        assertThat(it, instanceOf(InitializedServer.class));
+        InitializedServer ist = (InitializedServer) it;
 
         Server s = ist.getServer();
         SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
@@ -202,10 +202,10 @@ public class TestUbuntuChefSoloInitializer
 
         BoundTemplate bt = st.normalize(env);
         ExecutorService ex = Executors.newCachedThreadPool();
-        ProvisionedTemplate pt = bt.provision(ex).get();
+        ProvisionedElement pt = bt.provision(ex).get();
         InitializedTemplate it = pt.initialize(ex).get();
-        assertThat(it, instanceOf(InitializedServerTemplate.class));
-        InitializedServerTemplate ist = (InitializedServerTemplate) it;
+        assertThat(it, instanceOf(InitializedServer.class));
+        InitializedServer ist = (InitializedServer) it;
 
         Server s = ist.getServer();
         SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
@@ -246,10 +246,10 @@ public class TestUbuntuChefSoloInitializer
         st.setCardinality(asList("eshell"));
 
         BoundTemplate bt = st.normalize(env);
-        ProvisionedTemplate pt = bt.provision(MoreExecutors.sameThreadExecutor()).get();
+        ProvisionedElement pt = bt.provision(MoreExecutors.sameThreadExecutor()).get();
         InitializedTemplate it = pt.initialize(MoreExecutors.sameThreadExecutor()).get();
 
-        InitializedServerTemplate ist = (InitializedServerTemplate) it;
+        InitializedServer ist = (InitializedServer) it;
         ec2.destroy(ist.getServer());
     }
 

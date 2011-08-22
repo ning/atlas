@@ -6,13 +6,13 @@ import com.ning.atlas.tree.Tree;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-public abstract class ProvisionedTemplate implements Tree<ProvisionedTemplate>
+public abstract class ProvisionedElement implements Tree<ProvisionedElement>
 {
     private final String type;
     private final String name;
     private final My     my;
 
-    public ProvisionedTemplate(String type, String name, My my)
+    public ProvisionedElement(String type, String name, My my)
     {
         this.type = type;
         this.name = name;
@@ -34,9 +34,9 @@ public abstract class ProvisionedTemplate implements Tree<ProvisionedTemplate>
         return type;
     }
 
-    public abstract List<? extends ProvisionedTemplate> getChildren();
+    public abstract List<? extends ProvisionedElement> getChildren();
 
-    protected abstract ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, ProvisionedTemplate root);
+    protected abstract ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, ProvisionedElement root);
 
     public ListenableFuture<? extends InitializedTemplate> initialize(Executor exec) {
         return initialize(exec, this);

@@ -8,26 +8,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-public class ProvisionedErrorTemplate extends ProvisionedTemplate
+public class ProvisionedError extends ProvisionedElement
 {
     private final String message;
 
-    public ProvisionedErrorTemplate(String type, String name, My my, String message)
+    public ProvisionedError(String type, String name, My my, String message)
     {
         super(type, name, my);
         this.message = message;
     }
 
     @Override
-    public List<? extends ProvisionedTemplate> getChildren()
+    public List<? extends ProvisionedElement> getChildren()
     {
         return Collections.emptyList();
     }
 
     @Override
-    protected ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, ProvisionedTemplate root)
+    protected ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, ProvisionedElement root)
     {
-        return Futures.immediateFuture(new InitializedErrorTemplate(getType(), getType(), getMy(),
+        return Futures.immediateFuture(new InitializedError(getType(), getType(), getMy(),
                                                                     "Unable to initialize server because " +
                                                                     "of previous provisioning error, '" +
                                                                     message + "'"));

@@ -2,7 +2,6 @@ package com.ning.atlas.chef;
 
 import com.ning.atlas.Base;
 import com.ning.atlas.Environment;
-import com.ning.atlas.ProvisionedTemplate;
 import com.ning.atlas.Server;
 
 public class StubServer extends Server

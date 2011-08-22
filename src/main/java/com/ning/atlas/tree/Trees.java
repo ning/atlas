@@ -2,8 +2,6 @@ package com.ning.atlas.tree;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
-import com.ning.atlas.InstalledServerTemplate;
-import com.ning.atlas.InstalledTemplate;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -22,8 +22,8 @@ public class TestInitialization
         Initializer initializer = new Initializer()
         {
             @Override
-            public Server initialize(Server server, String arg, ProvisionedTemplate root,
-                      ProvisionedServerTemplate node)
+            public Server initialize(Server server, String arg, ProvisionedElement root,
+                      ProvisionedServer node)
             {
                 initialized.set(true);
                 assertThat(arg, equalTo("meow"));
@@ -37,11 +37,11 @@ public class TestInitialization
         Base base = new Base("server", env);
         base.addInit("woof:meow");
 
-        List<? extends ProvisionedTemplate> children = asList(
-            new ProvisionedServerTemplate("server", "0", new My(),
+        List<? extends ProvisionedElement> children = asList(
+            new ProvisionedServer("server", "0", new My(),
                                           new StubServer("10.0.0.1", base), Collections.<String>emptyList()));
 
-        ProvisionedSystemTemplate root = new ProvisionedSystemTemplate("root", "0", new My(), children);
+        ProvisionedSystem root = new ProvisionedSystem("root", "0", new My(), children);
         InitializedTemplate initialized_root = root.initialize(MoreExecutors.sameThreadExecutor()).get();
 
         assertThat(initialized.get(), equalTo(true));

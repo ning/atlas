@@ -2,6 +2,7 @@ package com.ning.atlas;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.ning.atlas.tree.Tree;
+import com.ning.atlas.upgrade.UpgradePlan;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -36,5 +37,7 @@ public abstract class BoundTemplate implements Tree<BoundTemplate>
 
     public abstract List<BoundTemplate> getChildren();
 
-    public abstract ListenableFuture<? extends ProvisionedTemplate> provision(Executor exec);
+    public abstract ListenableFuture<? extends ProvisionedElement> provision(Executor exec);
+
+    public abstract UpgradePlan upgradeFrom(InstalledTemplate initialState);
 }

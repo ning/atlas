@@ -24,13 +24,13 @@ public class TestStaticTaggedServerProvisioner
 
         BoundTemplate bt = root.normalize(e);
 
-        ProvisionedTemplate pt = bt.provision(MoreExecutors.sameThreadExecutor()).get();
+        ProvisionedElement pt = bt.provision(MoreExecutors.sameThreadExecutor()).get();
 
-        List<ProvisionedTemplate> leaves = Trees.leaves(pt);
+        List<ProvisionedElement> leaves = Trees.leaves(pt);
         assertThat(leaves.size(), equalTo(4));
 
-        assertThat(leaves.get(0), instanceOf(ProvisionedServerTemplate.class));
-        ProvisionedServerTemplate pst = (ProvisionedServerTemplate) leaves.get(0);
+        assertThat(leaves.get(0), instanceOf(ProvisionedServer.class));
+        ProvisionedServer pst = (ProvisionedServer) leaves.get(0);
         assertThat(pst.getServer().getExternalAddress(), equalTo("10.0.0.1"));
 
     }

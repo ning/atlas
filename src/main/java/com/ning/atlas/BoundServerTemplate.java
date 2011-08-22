@@ -1,11 +1,15 @@
 package com.ning.atlas;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.ning.atlas.base.Maybe;
+import com.ning.atlas.upgrade.UpgradePlan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
@@ -14,7 +18,7 @@ import java.util.concurrent.Executor;
 
 public class BoundServerTemplate extends BoundTemplate
 {
-    private final Logger log = LoggerFactory.getLogger(BoundServerTemplate.class);
+    private static final Logger log = LoggerFactory.getLogger(BoundServerTemplate.class);
 
     private final Base base;
     private final List<String> installations;
@@ -37,6 +41,11 @@ public class BoundServerTemplate extends BoundTemplate
              serverTemplate.getMy(),
              extractBase(serverTemplate, env, names),
              installations);
+    }
+
+    public List<String> getInstallations()
+    {
+        return installations;
     }
 
     private static Base extractBase(ServerTemplate serverTemplate, Environment env, Stack<String> names)
@@ -63,24 +72,48 @@ public class BoundServerTemplate extends BoundTemplate
     }
 
     @Override
-    public ListenableFuture<ProvisionedTemplate> provision(Executor e)
+    public ListenableFuture<ProvisionedElement> provision(Executor e)
     {
-        final ListenableFutureTask<ProvisionedTemplate> f =
-            new ListenableFutureTask<ProvisionedTemplate>(new Callable<ProvisionedTemplate>()
+        final ListenableFutureTask<ProvisionedElement> f =
+            new ListenableFutureTask<ProvisionedElement>(new Callable<ProvisionedElement>()
             {
-                public ProvisionedTemplate call() throws Exception
+                public ProvisionedElement call() throws Exception
                 {
                     try {
                         Server server = base.getProvisioner().provision(base);
-                        return new ProvisionedServerTemplate(BoundServerTemplate.this, server, installations);
+                        return new ProvisionedServer(BoundServerTemplate.this, server, installations);
                     }
                     catch (Exception e) {
                         log.warn("unable to provision server {}", getType() + "." + getName(), e);
-                        return new ProvisionedErrorTemplate(getType(), getName(), getMy(), e.getMessage());
+                        return new ProvisionedError(getType(), getName(), getMy(), e.getMessage());
                     }
                 }
             });
         e.execute(f);
         return f;
+    }
+
+    @Override
+    public UpgradePlan upgradeFrom(InstalledTemplate initialState)
+    {
+
+        List<String> id = Lists.newArrayList(getType(), getName());
+
+        BoundServerTemplate prior = findPrior(id);
+
+        List<String> prior_inits = prior.getBase().getInits();
+        List<String> my_inits = new ArrayList<String>(this.getBase().getInits());
+         // find inititializations to add and ones to remove
+
+        // find installations to add and to remove
+
+
+
+        return null;
+    }
+
+    private BoundServerTemplate findPrior(List<String> id)
+    {
+        return null;
     }
 }

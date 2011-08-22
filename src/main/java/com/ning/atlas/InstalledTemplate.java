@@ -1,6 +1,8 @@
 package com.ning.atlas;
 
 import com.ning.atlas.tree.Tree;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
@@ -53,12 +55,21 @@ public class InstalledTemplate implements Tree<InstalledTemplate>
     {
 
         if (server != null) {
-            return new InstalledServerTemplate(type, name, new My(my), server);
+            return new InstalledServer(type, name, new My(my), server);
         }
         else {
-            return new InstalledSystemTemplate(type, name, new My(my), children);
+            return new InstalledSystem(type, name, new My(my), children);
         }
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        return EqualsBuilder.reflectionEquals(this, o, true, Object.class);
+    }
 
+    @Override
+    public int hashCode()
+    {
+        return HashCodeBuilder.reflectionHashCode(this, true);
     }
 }

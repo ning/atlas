@@ -21,7 +21,7 @@ public class TestReinflation
         Template t = p.parseSystem(new File("src/test/ruby/test_reinflation_sys.rb"));
 
         BoundTemplate bt = t.normalize(e);
-        ProvisionedTemplate pt = bt.provision(sameThreadExecutor()).get();
+        ProvisionedElement pt = bt.provision(sameThreadExecutor()).get();
         InitializedTemplate it = pt.initialize(sameThreadExecutor()).get();
         InstalledTemplate inst = it.install(sameThreadExecutor()).get();
 

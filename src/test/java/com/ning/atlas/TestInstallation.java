@@ -1,13 +1,11 @@
 package com.ning.atlas;
 
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.chef.StubServer;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Arrays.asList;
@@ -36,13 +34,13 @@ public class TestInstallation
         env.addInstaller("ugx", installer);
         Base base = new Base("server", env);
 
-        InitializedServerTemplate child = new InitializedServerTemplate("server",
+        InitializedServer child = new InitializedServer("server",
                                                                         "0",
                                                                         new My(),
                                                                         new StubServer("10.0.0.1", base),
                                                                         Arrays.asList("ugx:waffles-1.2"));
 
-        InitializedSystemTemplate root = new InitializedSystemTemplate("top", "0", new My(), asList(child));
+        InitializedSystem root = new InitializedSystem("top", "0", new My(), asList(child));
 
         ListenableFuture<? extends InstalledTemplate> f = root.install(MoreExecutors.sameThreadExecutor());
         InstalledTemplate it = f.get();
