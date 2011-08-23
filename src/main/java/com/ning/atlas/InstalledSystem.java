@@ -5,18 +5,18 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.List;
 
-public class InstalledSystem extends InstalledTemplate
+public class InstalledSystem extends InstalledElement
 {
-    private final List<InstalledTemplate> children;
+    private final List<InstalledElement> children;
 
-    public InstalledSystem(String type, String name, My my, List<InstalledTemplate> children)
+    public InstalledSystem(String type, String name, My my, List<InstalledElement> children)
     {
         super(type, name, my);
         this.children = children;
     }
 
     @Override
-    public List<InstalledTemplate> getChildren() {
+    public List<InstalledElement> getChildren() {
         return this.children;
     }
 

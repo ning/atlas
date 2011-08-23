@@ -1,0 +1,22 @@
+upgrade:
+
+BoundTemplate.upgradeFrom(InstalledElement root): UpgradePlan
+
+UpgradePlan is a recursive thing, like the elements.
+
+General gist: 
+** New Servers
+   - Provision new instances
+   - Initialize new instances
+   - Install new instances
+** Changed Servers
+   - apply new initializations
+   - uninstall changed installations
+   - install changed installations
+** Removed Servers
+   - uninstall installations
+   - unintialize initializers
+   - destroy hosts
+
+ End result needs to be an InstalledSystem, just like the intiial
+ state.

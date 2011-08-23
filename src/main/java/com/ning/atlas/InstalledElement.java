@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Map;
 
 @JsonPropertyOrder({"type", "name", "my", "children"})
-public class InstalledTemplate implements Tree<InstalledTemplate>
+public class InstalledElement implements Tree<InstalledElement>
 {
     private final String type;
     private final String name;
     private final My my;
 
-    public InstalledTemplate(String type, String name, My my)
+    public InstalledElement(String type, String name, My my)
     {
         this.type = type;
         this.name = name;
@@ -26,7 +26,7 @@ public class InstalledTemplate implements Tree<InstalledTemplate>
     }
 
     @Override
-    public List<? extends InstalledTemplate> getChildren()
+    public List<? extends InstalledElement> getChildren()
     {
         return Collections.emptyList();
     }
@@ -47,10 +47,10 @@ public class InstalledTemplate implements Tree<InstalledTemplate>
     }
 
     @JsonCreator
-    public static InstalledTemplate create(@JsonProperty("name") String name,
+    public static InstalledElement create(@JsonProperty("name") String name,
                                            @JsonProperty("type") String type,
                                            @JsonProperty("my") Map<String, Object> my,
-                                           @JsonProperty("children") List<InstalledTemplate> children,
+                                           @JsonProperty("children") List<InstalledElement> children,
                                            @JsonProperty("server") Server server)
     {
 

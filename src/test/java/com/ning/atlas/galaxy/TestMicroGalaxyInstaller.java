@@ -2,7 +2,7 @@ package com.ning.atlas.galaxy;
 
 import com.ning.atlas.Environment;
 import com.ning.atlas.InstalledServer;
-import com.ning.atlas.InstalledTemplate;
+import com.ning.atlas.InstalledElement;
 import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.Template;
 import com.ning.atlas.aws.AWSConfig;
@@ -58,7 +58,7 @@ public class TestMicroGalaxyInstaller
         Template root = parser.parseSystem(new File("src/test/ruby/test_micro_galaxy_installer.rb"));
         Environment env = parser.parseEnvironment(new File("src/test/ruby/test_micro_galaxy_installer.rb"));
 
-        InstalledTemplate installed = root.normalize(env)
+        InstalledElement installed = root.normalize(env)
                                           .provision(exec).get()
                                           .initialize(exec).get()
                                           .install(exec).get();

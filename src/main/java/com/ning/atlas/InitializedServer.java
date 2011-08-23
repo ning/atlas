@@ -32,13 +32,13 @@ public class InitializedServer extends InitializedTemplate
     }
 
     @Override
-    public ListenableFuture<? extends InstalledTemplate> install(Executor exec, final InitializedTemplate root)
+    public ListenableFuture<? extends InstalledElement> install(Executor exec, final InitializedTemplate root)
     {
-        ListenableFutureTask<InstalledTemplate> f =
-            new ListenableFutureTask<InstalledTemplate>(new Callable<InstalledTemplate>()
+        ListenableFutureTask<InstalledElement> f =
+            new ListenableFutureTask<InstalledElement>(new Callable<InstalledElement>()
             {
                 @Override
-                public InstalledTemplate call() throws Exception
+                public InstalledElement call() throws Exception
                 {
                     try {
                         for (String installation : installations) {
@@ -53,7 +53,7 @@ public class InitializedServer extends InitializedTemplate
                         return new InstalledServer(getType(), getName(), getMy(), server);
                     }
                     catch (Exception e) {
-                        return new InstalledErrorTemplate(getType(),  getName(), getMy(), e);
+                        return new InstalledError(getType(),  getName(), getMy(), e);
                     }
                 }
             });

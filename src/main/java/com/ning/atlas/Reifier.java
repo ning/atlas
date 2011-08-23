@@ -1,6 +1,5 @@
 package com.ning.atlas;
 
-import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 
@@ -12,16 +11,16 @@ public class Reifier
 
     static { mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true); }
 
-    public static String jsonify(InstalledTemplate template ) throws IOException
+    public static String jsonify(InstalledElement template ) throws IOException
     {
         return mapper.writeValueAsString(template);
     }
 
-    public static InstalledTemplate reify(Environment e, String json) throws IOException
+    public static InstalledElement reify(Environment e, String json) throws IOException
     {
         Base.DESERIALIZATION_HACK.set(e);
         try {
-            return mapper.readValue(json, InstalledTemplate.class);
+            return mapper.readValue(json, InstalledElement.class);
         }
         finally {
             Base.DESERIALIZATION_HACK.set(null);

@@ -95,7 +95,7 @@ public class BoundSystemTemplate extends BoundTemplate
     }
 
     @Override
-    public UpgradePlan upgradeFrom(InstalledTemplate initialState)
+    public UpgradePlan upgradeFrom(InstalledElement initialState)
     {
         List<UpgradePlan> plan_children = Lists.newArrayList();
         for (BoundTemplate child : children) {

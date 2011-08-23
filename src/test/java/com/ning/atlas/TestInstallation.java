@@ -42,8 +42,8 @@ public class TestInstallation
 
         InitializedSystem root = new InitializedSystem("top", "0", new My(), asList(child));
 
-        ListenableFuture<? extends InstalledTemplate> f = root.install(MoreExecutors.sameThreadExecutor());
-        InstalledTemplate it = f.get();
+        ListenableFuture<? extends InstalledElement> f = root.install(MoreExecutors.sameThreadExecutor());
+        InstalledElement it = f.get();
         assertThat(it, notNullValue());
         assertThat(installed.get(), equalTo(true));
     }

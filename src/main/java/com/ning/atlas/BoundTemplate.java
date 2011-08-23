@@ -39,5 +39,5 @@ public abstract class BoundTemplate implements Tree<BoundTemplate>
 
     public abstract ListenableFuture<? extends ProvisionedElement> provision(Executor exec);
 
-    public abstract UpgradePlan upgradeFrom(InstalledTemplate initialState);
+    public abstract UpgradePlan upgradeFrom(InstalledElement initialState);
 }

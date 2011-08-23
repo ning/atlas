@@ -3,7 +3,7 @@ package com.ning.atlas.main;
 import com.ning.atlas.BoundTemplate;
 import com.ning.atlas.Environment;
 import com.ning.atlas.InitializedTemplate;
-import com.ning.atlas.InstalledTemplate;
+import com.ning.atlas.InstalledElement;
 import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.ProvisionedElement;
 import com.ning.atlas.Template;
@@ -43,7 +43,7 @@ public class InstallCommand implements Runnable
 
             InitializedTemplate it = pt.initialize(ex).get();
 
-            InstalledTemplate installed = it.install(ex).get();
+            InstalledElement installed = it.install(ex).get();
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);

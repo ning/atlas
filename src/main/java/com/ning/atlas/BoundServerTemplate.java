@@ -1,6 +1,5 @@
 package com.ning.atlas;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
@@ -94,7 +93,7 @@ public class BoundServerTemplate extends BoundTemplate
     }
 
     @Override
-    public UpgradePlan upgradeFrom(InstalledTemplate initialState)
+    public UpgradePlan upgradeFrom(InstalledElement initialState)
     {
 
         List<String> id = Lists.newArrayList(getType(), getName());
@@ -103,7 +102,8 @@ public class BoundServerTemplate extends BoundTemplate
 
         List<String> prior_inits = prior.getBase().getInits();
         List<String> my_inits = new ArrayList<String>(this.getBase().getInits());
-         // find inititializations to add and ones to remove
+        // find inititializations to add and ones to remove
+
 
         // find installations to add and to remove
 

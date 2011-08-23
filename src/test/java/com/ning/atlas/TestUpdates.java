@@ -32,14 +32,14 @@ public class TestUpdates
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
         Environment e = p.parseEnvironment(new File("src/test/ruby/test_updates_env.rb"));
-        InstalledTemplate one = p.parseSystem(new File("src/test/ruby/test_updates_sys_1.rb"))
+        InstalledElement one = p.parseSystem(new File("src/test/ruby/test_updates_sys_1.rb"))
                                  .normalize(e)
                                  .provision(sameThreadExecutor()).get()
                                  .initialize(sameThreadExecutor()).get()
                                  .install(sameThreadExecutor()).get();
 
         assertThat(jsonify(reify(e, jsonify(one))), equalTo(jsonify(one)));
-        InstalledTemplate reified = reify(e, jsonify(one));
+        InstalledElement reified = reify(e, jsonify(one));
 
         BoundTemplate two = p.parseSystem(new File("src/test/ruby/test_updates_sys_2.rb"))
                              .normalize(e);

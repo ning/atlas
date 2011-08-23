@@ -23,7 +23,7 @@ public class TestReinflation
         BoundTemplate bt = t.normalize(e);
         ProvisionedElement pt = bt.provision(sameThreadExecutor()).get();
         InitializedTemplate it = pt.initialize(sameThreadExecutor()).get();
-        InstalledTemplate inst = it.install(sameThreadExecutor()).get();
+        InstalledElement inst = it.install(sameThreadExecutor()).get();
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
@@ -32,7 +32,7 @@ public class TestReinflation
 
         Base.DESERIALIZATION_HACK.set(e);
 
-        InstalledTemplate inst2 = mapper.readValue(json, InstalledTemplate.class);
+        InstalledElement inst2 = mapper.readValue(json, InstalledElement.class);
 
 
         String json2 = mapper.writeValueAsString(inst2);

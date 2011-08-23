@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 @JsonPropertyOrder({"type", "name", "server"})
-public class InstalledServer extends InstalledTemplate
+public class InstalledServer extends InstalledElement
 {
     private final Server server;
 
@@ -27,7 +27,7 @@ public class InstalledServer extends InstalledTemplate
 
     @Override
     @JsonIgnore
-    public List<? extends InstalledTemplate> getChildren()
+    public List<? extends InstalledElement> getChildren()
     {
         return super.getChildren();
     }
