@@ -1,5 +1,7 @@
 package com.ning.atlas;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.JsonSerializer;
@@ -55,4 +57,16 @@ public class My
             jgen.writeEndObject();
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return EqualsBuilder.reflectionEquals(this, o);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return HashCodeBuilder.reflectionHashCode(this, true);
+    }
+
 }

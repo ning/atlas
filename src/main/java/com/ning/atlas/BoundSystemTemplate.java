@@ -5,6 +5,8 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
+import com.ning.atlas.upgrade.UpgradePlan;
+import com.ning.atlas.upgrade.UpgradeSystemPlan;
 
 import java.util.Collections;
 import java.util.List;
@@ -54,24 +56,24 @@ public class BoundSystemTemplate extends BoundTemplate
     }
 
     @Override
-    public ListenableFuture<? extends ProvisionedTemplate> provision(Executor exec)
+    public ListenableFuture<? extends ProvisionedElement> provision(Executor exec)
     {
-        final SettableFuture<ProvisionedTemplate> f = SettableFuture.create();
+        final SettableFuture<ProvisionedElement> f = SettableFuture.create();
 
-        final CopyOnWriteArrayList<ProvisionedTemplate> p_children = new CopyOnWriteArrayList<ProvisionedTemplate>();
+        final CopyOnWriteArrayList<ProvisionedElement> p_children = new CopyOnWriteArrayList<ProvisionedElement>();
         final AtomicInteger remaining = new AtomicInteger(children.size());
 
         for (BoundTemplate child : children) {
-            final ListenableFuture<? extends ProvisionedTemplate> cf = child.provision(exec);
+            final ListenableFuture<? extends ProvisionedElement> cf = child.provision(exec);
             cf.addListener(new Runnable()
                            {
                                public void run()
                                {
                                    try {
-                                       ProvisionedTemplate pt = cf.get();
+                                       ProvisionedElement pt = cf.get();
                                        p_children.add(pt);
                                        if (remaining.decrementAndGet() == 0) {
-                                           f.set(new ProvisionedSystemTemplate(getType(),
+                                           f.set(new ProvisionedSystem(getType(),
                                                                                getName(),
                                                                                getMy(),
                                                                                p_children));
@@ -90,5 +92,15 @@ public class BoundSystemTemplate extends BoundTemplate
         }
 
         return f;
+    }
+
+    @Override
+    public UpgradePlan upgradeFrom(InstalledElement initialState)
+    {
+        List<UpgradePlan> plan_children = Lists.newArrayList();
+        for (BoundTemplate child : children) {
+            plan_children.add(child.upgradeFrom(initialState));
+        }
+        return new UpgradeSystemPlan(plan_children);
     }
 }

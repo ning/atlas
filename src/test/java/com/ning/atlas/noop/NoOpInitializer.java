@@ -1,14 +1,14 @@
 package com.ning.atlas.noop;
 
 import com.ning.atlas.Initializer;
-import com.ning.atlas.ProvisionedServerTemplate;
-import com.ning.atlas.ProvisionedTemplate;
+import com.ning.atlas.ProvisionedServer;
+import com.ning.atlas.ProvisionedElement;
 import com.ning.atlas.Server;
 
 public class NoOpInitializer implements Initializer
 {
     @Override
-    public Server initialize(Server server, String arg, ProvisionedTemplate root, ProvisionedServerTemplate node) throws Exception
+    public Server initialize(Server server, String arg, ProvisionedElement root, ProvisionedServer node) throws Exception
     {
         return server;
     }

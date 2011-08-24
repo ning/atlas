@@ -3,7 +3,7 @@ package com.ning.atlas.main;
 import com.ning.atlas.BoundTemplate;
 import com.ning.atlas.Environment;
 import com.ning.atlas.JRubyTemplateParser;
-import com.ning.atlas.ProvisionedTemplate;
+import com.ning.atlas.ProvisionedElement;
 import com.ning.atlas.Template;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
@@ -31,7 +31,7 @@ public class ProvisionCommand implements Runnable
 
         ExecutorService ex = Executors.newCachedThreadPool();
         try {
-            ProvisionedTemplate t = bound.provision(ex).get();
+            ProvisionedElement t = bound.provision(ex).get();
             if (t.getType().equals("__ROOT__") && t.getChildren().size() == 1) {
                 // lop off the fake root
                 t = t.getChildren().get(0);

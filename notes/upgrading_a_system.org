@@ -1,0 +1,33 @@
+upgrade:
+
+BoundTemplate.upgradeFrom(InstalledElement root): UpgradePlan
+
+UpgradePlan is a recursive thing, like the elements.
+
+* General gist
+** New Servers
+   - Provision new instances
+   - Initialize new instances
+   - Install new instances
+** Changed Servers
+   - apply new initializations
+   - uninstall changed installations
+   - install changed installations
+*** Open Questions
+    - Should we fully reinitialize and re-install? Can we
+      re-initialize even? Should we take a chef-like approach of
+      additive-only?
+    - Should initializers receive an update() or just re-apply them?
+    - initializer.update(from, to) ?
+    - installer.update(from, to) ?
+** Removed Servers
+   Exactly reverse order of what was done initially. We may want
+   concept of uninstallers, but for now will wrap into installers.
+   - uninstall installations
+   - unintialize initializers
+   - destroy hosts
+
+ End result needs to be an InstalledSystem, just like the intial
+ state.
+
+Is new system creation merely a special case up upgrading from an empty system? It looks like it is, which would be nice.

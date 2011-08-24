@@ -1,9 +1,10 @@
 package com.ning.atlas.galaxy;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
-import com.ning.atlas.InitializedServerTemplate;
+import com.ning.atlas.InitializedServer;
 import com.ning.atlas.InitializedTemplate;
 import com.ning.atlas.Installer;
 import com.ning.atlas.SSH;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -40,10 +42,10 @@ public class GalaxyInstaller implements Installer
     @Override
     public Server install(Server server, String fragment, InitializedTemplate root) throws Exception
     {
-        Iterable<InitializedServerTemplate> shells = filter(findInstancesOf(root, InitializedServerTemplate.class), new Predicate<InitializedServerTemplate>()
+        Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()
         {
             @Override
-            public boolean apply(@Nullable InitializedServerTemplate input)
+            public boolean apply(@Nullable InitializedServer input)
             {
                 log.debug("looking at {}", input.getMy().toJson());
                 return "shell".equals(input.getMy().get("galaxy"));
@@ -55,7 +57,7 @@ public class GalaxyInstaller implements Installer
             throw new IllegalStateException("no galaxy shell defined in the deploy tree, unable to continue");
         }
 
-        InitializedServerTemplate shell = Iterables.getFirst(shells, null);
+        InitializedServer shell = Iterables.getFirst(shells, null);
         assert shell != null;
 
 
@@ -72,7 +74,7 @@ public class GalaxyInstaller implements Installer
             String[] parts = config_path.split("/");
             String env = parts[0];
             String version = parts[1];
-            String type = parts[2];
+            String type = Joiner.on('/').join(Arrays.asList(parts).subList(2, parts.length));
 
             String internal_first_part = Splitter.on('.').split(server.getInternalAddress()).iterator().next();
 

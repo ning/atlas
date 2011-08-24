@@ -1,10 +1,8 @@
 package com.ning.atlas.galaxy;
 
-import com.ning.atlas.InitializedTemplate;
 import com.ning.atlas.Initializer;
-import com.ning.atlas.Installer;
-import com.ning.atlas.ProvisionedServerTemplate;
-import com.ning.atlas.ProvisionedTemplate;
+import com.ning.atlas.ProvisionedServer;
+import com.ning.atlas.ProvisionedElement;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
 import org.slf4j.Logger;
@@ -58,7 +56,7 @@ public class MicroGalaxyInitializer implements Initializer
     }
 
     @Override
-    public Server initialize(Server server, String fragment, ProvisionedTemplate root, ProvisionedServerTemplate node) throws Exception
+    public Server initialize(Server server, String fragment, ProvisionedElement root, ProvisionedServer node) throws Exception
     {
         SSH ssh = null;
         try {

@@ -52,10 +52,10 @@ public class TestAtlasInitializer
 
         InitializedTemplate it = t.normalize(e).provision(exec).get().initialize(exec).get();
 
-        List<InitializedServerTemplate> leaves = Trees.findInstancesOf(it, InitializedServerTemplate.class);
+        List<InitializedServer> leaves = Trees.findInstancesOf(it, InitializedServer.class);
         assertThat(leaves.size(), equalTo(1));
 
-        InitializedServerTemplate ist = leaves.get(0);
+        InitializedServer ist = leaves.get(0);
         SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
                           "ubuntu",
                           ist.getServer().getExternalAddress());
@@ -64,7 +64,7 @@ public class TestAtlasInitializer
         assertThat(node_info, containsString("\"name\" : \"eshell\""));
         assertThat(node_info, containsString("\"instanceId\""));
 
-        for (InitializedServerTemplate leave : leaves) {
+        for (InitializedServer leave : leaves) {
             ec2.destroy(leave.getServer());
         }
     }

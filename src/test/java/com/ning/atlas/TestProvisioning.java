@@ -36,14 +36,14 @@ public class TestProvisioning
 
         BoundTemplate root = new BoundSystemTemplate("root", "1", new My(), Arrays.<BoundTemplate>asList(child));
 
-        ListenableFuture<? extends ProvisionedTemplate> rs = root.provision(Executors.newFixedThreadPool(2));
-        ProvisionedTemplate proot = rs.get();
+        ListenableFuture<? extends ProvisionedElement> rs = root.provision(Executors.newFixedThreadPool(2));
+        ProvisionedElement proot = rs.get();
 
-        List<ProvisionedTemplate> leaves = Trees.leaves(proot);
+        List<ProvisionedElement> leaves = Trees.leaves(proot);
         assertThat(leaves.size(), equalTo(1));
-        assertThat(leaves.get(0), instanceOf(ProvisionedServerTemplate.class));
+        assertThat(leaves.get(0), instanceOf(ProvisionedServer.class));
 
-        ProvisionedServerTemplate pst = (ProvisionedServerTemplate) leaves.get(0);
+        ProvisionedServer pst = (ProvisionedServer) leaves.get(0);
         assertThat(pst.getServer().getExternalAddress(), equalTo("10.0.0.1"));
     }
 
@@ -67,14 +67,14 @@ public class TestProvisioning
         BoundTemplate root = new BoundSystemTemplate("root", "0", new My(), Arrays.<BoundTemplate>asList(child, child2));
 
         ExecutorService ex = Executors.newFixedThreadPool(2);
-        ListenableFuture<? extends ProvisionedTemplate> rs = root.provision(ex);
-        ProvisionedTemplate proot = rs.get();
+        ListenableFuture<? extends ProvisionedElement> rs = root.provision(ex);
+        ProvisionedElement proot = rs.get();
 
-        List<ProvisionedTemplate> leaves = Trees.leaves(proot);
+        List<ProvisionedElement> leaves = Trees.leaves(proot);
         assertThat(leaves.size(), equalTo(2));
 
-        assertThat(leaves, containsInstanceOf(ProvisionedServerTemplate.class));
-        assertThat(leaves, containsInstanceOf(ProvisionedErrorTemplate.class));
+        assertThat(leaves, containsInstanceOf(ProvisionedServer.class));
+        assertThat(leaves, containsInstanceOf(ProvisionedError.class));
         ex.shutdown();
     }
 }

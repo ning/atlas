@@ -1,48 +1,49 @@
 package com.ning.atlas;
 
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class ProvisionedSystemTemplate extends ProvisionedTemplate
+public class InitializedSystem extends InitializedTemplate
 {
-    private List<? extends ProvisionedTemplate> children;
+    private final List<? extends InitializedTemplate> children;
 
-    public ProvisionedSystemTemplate(String type, String name, My my, List<? extends ProvisionedTemplate> children)
+    public InitializedSystem(String type, String name, My my, List<? extends InitializedTemplate> children)
     {
         super(type, name, my);
-        this.children = new ArrayList<ProvisionedTemplate>(children);
+        this.children = Lists.newArrayList(children);
     }
 
-    public List<? extends ProvisionedTemplate> getChildren()
+    @Override
+    public List<? extends InitializedTemplate> getChildren()
     {
         return children;
     }
 
     @Override
-    protected ListenableFuture<InitializedTemplate> initialize(Executor ex, ProvisionedTemplate root)
+    public ListenableFuture<? extends InstalledElement> install(Executor ex, InitializedTemplate root)
     {
         final AtomicInteger remaining = new AtomicInteger(getChildren().size());
-        final List<InitializedTemplate> init_children = new CopyOnWriteArrayList<InitializedTemplate>();
-        final SettableFuture<InitializedTemplate> rs = SettableFuture.create();
-        for (ProvisionedTemplate template : getChildren()) {
-            final ListenableFuture<? extends InitializedTemplate> child = template.initialize(ex, root);
+        final List<InstalledElement> init_children = new CopyOnWriteArrayList<InstalledElement>();
+        final SettableFuture<InstalledElement> rs = SettableFuture.create();
+        for (InitializedTemplate template : getChildren()) {
+            final ListenableFuture<? extends InstalledElement> child = template.install(ex, root);
             child.addListener(new Runnable()
                               {
                                   @Override
                                   public void run()
                                   {
                                       try {
-                                          final InitializedTemplate ct = child.get();
+                                          final InstalledElement ct = child.get();
                                           init_children.add(ct);
                                           if (remaining.decrementAndGet() == 0) {
-                                              rs.set(new InitializedSystemTemplate(getType(),
+                                              rs.set(new InstalledSystem(getType(),
                                                                                    getName(),
                                                                                    getMy(),
                                                                                    init_children));
