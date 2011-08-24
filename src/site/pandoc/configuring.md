@@ -76,6 +76,37 @@ end
 This configuration defines one ec2 provisionier, two initializers and one installer, and it
 declares two bases that then can be used in the system configuration.
 
+### Reading configuration values from a file
+
+Atlas comes with a helper class to read e.g. EC2 keys and related info from a file. If you
+put this at the top of your environment configuration:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+require 'atlas/tools/rc'
+
+rc = Atlas::Tools::RC.read_rc['aws']
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+then that will read from a file ``$HOME/.atlasrc`` by default, which is assumed to be a YAML
+file with this structure:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+aws:
+   secret_key: <EC2 secret key>
+   access_key: <EC2 access key>
+   keypair_id: <name of the ssh key>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The configuration values can then be used like this in the environment configuration file:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+provisioner com.ning.atlas.aws.EC2Provisioner, {
+  :access_key => rc['access_key'],
+  :secret_key => rc['secret_key'],
+  :keypair_id => rc['keypair_id']
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ### Provisioners
 
 A provisioner is responsible for provisioning bare machines/instances. Atlas currently has
