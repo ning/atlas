@@ -77,9 +77,11 @@ public class OracleLoaderInstaller implements Installer
             }
             String sql_url = sql_url_t.toString();
 
-            ssh.exec("s3cmd get %s do_it.sql", sql_url);
+            String s3_fetch = String.format("s3cmd get %s do_it.sql", sql_url);
+            log.info(s3_fetch);
+            ssh.exec(s3_fetch);
 
-            String out = ssh.exec(format("sqlplus %s/%s@\"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=%s)(PORT=%d))(CONNECT_DATA=(SID=%s))) @do_it.sql",
+            String out = ssh.exec(format("sqlplus %s/%s@\"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=%s)(PORT=%d))(CONNECT_DATA=(SID=%s)))\" @do_it.sql",
                                          server.getUsername(),
                                          server.getPassword(),
                                          server.getInternalAddress(),
