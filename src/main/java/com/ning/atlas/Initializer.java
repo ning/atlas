@@ -4,6 +4,6 @@ public interface Initializer
 {
     Server initialize(Server server,
                       String arg,
-                      ProvisionedTemplate root,
-                      ProvisionedServerTemplate node) throws Exception;
+                      ProvisionedElement root,
+                      ProvisionedServer node) throws Exception;
 }

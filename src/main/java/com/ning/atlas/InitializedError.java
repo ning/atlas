@@ -8,11 +8,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-public class InitializedErrorTemplate extends InitializedTemplate
+public class InitializedError extends InitializedTemplate
 {
     private final String message;
 
-    public InitializedErrorTemplate(String type, String name, My my, String message)
+    public InitializedError(String type, String name, My my, String message)
     {
         super(type, name, my);
         this.message = message;
@@ -25,9 +25,9 @@ public class InitializedErrorTemplate extends InitializedTemplate
     }
 
     @Override
-    public ListenableFuture<InstalledErrorTemplate> install(Executor exec, InitializedTemplate root)
+    public ListenableFuture<InstalledError> install(Executor exec, InitializedTemplate root)
     {
-        return Futures.immediateFuture(new InstalledErrorTemplate(getType(),
+        return Futures.immediateFuture(new InstalledError(getType(),
                                                                   getName(),
                                                                   getMy(),
                                                                   message));

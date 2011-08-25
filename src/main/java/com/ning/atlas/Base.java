@@ -2,7 +2,6 @@ package com.ning.atlas;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
-import org.bouncycastle.jce.provider.JDKAlgorithmParameterGenerator;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
@@ -102,8 +101,8 @@ public class Base
     }
 
     public Server initialize(Server server,
-                             ProvisionedTemplate root,
-                             ProvisionedServerTemplate node) throws Exception
+                             ProvisionedElement root,
+                             ProvisionedServer node) throws Exception
     {
         Server next = server;
         for (String init : inits) {

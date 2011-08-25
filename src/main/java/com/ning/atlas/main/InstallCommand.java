@@ -1,16 +1,14 @@
 package com.ning.atlas.main;
 
-import com.google.common.util.concurrent.ListenableFuture;
 import com.ning.atlas.BoundTemplate;
 import com.ning.atlas.Environment;
 import com.ning.atlas.InitializedTemplate;
-import com.ning.atlas.InstalledTemplate;
+import com.ning.atlas.InstalledElement;
 import com.ning.atlas.JRubyTemplateParser;
-import com.ning.atlas.ProvisionedTemplate;
+import com.ning.atlas.ProvisionedElement;
 import com.ning.atlas.Template;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
-import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.util.concurrent.ExecutorService;
@@ -36,7 +34,7 @@ public class InstallCommand implements Runnable
 
         ExecutorService ex = Executors.newCachedThreadPool();
         try {
-            ProvisionedTemplate pt = bound.provision(ex).get();
+            ProvisionedElement pt = bound.provision(ex).get();
             if (pt.getType().equals("__ROOT__") && pt.getChildren().size() == 1) {
                 // lop off the fake root
                 pt = pt.getChildren().get(0);
@@ -45,7 +43,7 @@ public class InstallCommand implements Runnable
 
             InitializedTemplate it = pt.initialize(ex).get();
 
-            InstalledTemplate installed = it.install(ex).get();
+            InstalledElement installed = it.install(ex).get();
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);

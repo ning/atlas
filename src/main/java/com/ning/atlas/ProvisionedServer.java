@@ -11,21 +11,21 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
-public class ProvisionedServerTemplate extends ProvisionedTemplate
+public class ProvisionedServer extends ProvisionedElement
 {
     @JsonIgnore
     private final Server server;
     private final List<String> installations;
 
 
-    public ProvisionedServerTemplate(String type, String name, My my, Server server, List<String> installations)
+    public ProvisionedServer(String type, String name, My my, Server server, List<String> installations)
     {
         super(type, name, my);
         this.server = server;
         this.installations = installations;
     }
 
-    public ProvisionedServerTemplate(BoundServerTemplate boundServerTemplate, Server server, List<String> installations)
+    public ProvisionedServer(BoundServerTemplate boundServerTemplate, Server server, List<String> installations)
     {
         this(boundServerTemplate.getType(),
              boundServerTemplate.getName(),
@@ -35,13 +35,13 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
     }
 
     @JsonIgnore
-    public List<? extends ProvisionedTemplate> getChildren()
+    public List<? extends ProvisionedElement> getChildren()
     {
         return Collections.emptyList();
     }
 
     @Override
-    protected ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, final ProvisionedTemplate root)
+    protected ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, final ProvisionedElement root)
     {
         ListenableFutureTask<InitializedTemplate> f =
             new ListenableFutureTask<InitializedTemplate>(new Callable<InitializedTemplate>()
@@ -51,15 +51,15 @@ public class ProvisionedServerTemplate extends ProvisionedTemplate
                 {
 
                     try {
-                        final Server rs = server.getBase().initialize(server, root, ProvisionedServerTemplate.this);
-                        return new InitializedServerTemplate(getType(),
+                        final Server rs = server.getBase().initialize(server, root, ProvisionedServer.this);
+                        return new InitializedServer(getType(),
                                                              getName(),
                                                              getMy(),
                                                              rs,
                                                              installations);
                     }
                     catch (Exception e) {
-                        return new InitializedErrorTemplate(getType(), getName(), getMy(), e.getMessage());
+                        return new InitializedError(getType(), getName(), getMy(), e.getMessage());
                     }
                 }
             });
