@@ -40,10 +40,12 @@ code.sourceCode span.er { color: red; font-weight: bold; }
 <li><a href="#building">Building</a></li>
 <li><a href="#configuration">Configuration</a><ul>
 <li><a href="#environment-specification">Environment specification</a><ul>
+<li><a href="#reading-configuration-values-from-a-file">Reading configuration values from a file</a></li>
 <li><a href="#provisioners">Provisioners</a><ul>
 <li><a href="#com.ning.atlas.aws.ec2provisioner">com.ning.atlas.aws.EC2Provisioner</a></li>
 <li><a href="#com.ning.atlas.aws.rdsprovisioner">com.ning.atlas.aws.RDSProvisioner</a></li>
 <li><a href="#com.ning.atlas.virtualbox.vboxprovisioner">com.ning.atlas.virtualbox.VBoxProvisioner</a></li>
+<li><a href="#com.ning.atlas.statictaggedserverprovisioner">com.ning.atlas.StaticTaggedServerProvisioner</a></li>
 </ul></li>
 <li><a href="#initializers">Initializers</a><ul>
 <li><a href="#com.ning.atlas.atlasinitializer">com.ning.atlas.AtlasInitializer</a></li>
@@ -105,8 +107,21 @@ chmod +x target/atlas
 <p>A simple environment configuration for EC2 might look like this:</p>
 <pre class="sourceCode"><code class="sourceCode ruby"><span class="co"># EC2 access configuration, could also be read from a file</span><br />ec2_access_key = <span class="st">&quot;...&quot;</span> <span class="co"># EC2 access key</span><br />ec2_secret_key = <span class="st">&quot;...&quot;</span> <span class="co"># EC2 secret key</span><br />ec2_keypair_id = <span class="st">&quot;...&quot;</span> <span class="co"># name of the .pem file used for ssh'ing into the EC2 machines</span><br />s3_access_key  = <span class="st">&quot;...&quot;</span> <span class="co"># S3 access key</span><br />s3_secret_key  = <span class="st">&quot;...&quot;</span> <span class="co"># S3 secret key</span><br /><br />environment <span class="st">&quot;ec2&quot;</span> <span class="kw">do</span><br />  set <span class="st">&quot;xn.base-domain&quot;</span> =&gt; <span class="st">&quot;echo.xn.io&quot;</span><br /><br />  set <span class="st">&quot;aws.shared.access_key&quot;</span> =&gt; s3_access_key,<br />      <span class="st">&quot;aws.shared.secret_key&quot;</span> =&gt; s3_secret_key<br /><br />  provisioner com.ning.atlas.aws.<span class="dt">EC2Provisioner</span>, {<br />    <span class="st">:access_key</span> =&gt; ec2_access_key,<br />    <span class="st">:secret_key</span> =&gt; ec2_secret_key,<br />    <span class="st">:keypair_id</span> =&gt; ec2_keypair_id<br />  }<br /><br />  initializer <span class="st">&quot;atlas&quot;</span>, com.ning.atlas.<span class="dt">AtlasInitializer</span>, {<br />    <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />    <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span><br />  }<br /><br />  initializer <span class="st">&quot;chef&quot;</span>, com.ning.atlas.chef.<span class="dt">UbuntuChefSoloInitializer</span>, {<br />    <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />    <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span>,<br />    <span class="st">:recipe_url</span>   =&gt; <span class="st">&quot;s3://my-atlas-resources/chef-solo.tar.gz&quot;</span>,<br />    <span class="st">:s3_access_key</span> =&gt; s3_access_key,<br />    <span class="st">:s3_secret_key</span> =&gt; s3_secret_key<br />  }<br /><br />  installer <span class="st">&quot;ugx&quot;</span>, com.ning.atlas.galaxy.<span class="dt">MicroGalaxyInstaller</span>, {<br />    <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />    <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span>,<br />    <span class="st">:ugx_user</span>     =&gt; <span class="st">&quot;user&quot;</span><br />  }<br /><br />  base <span class="st">&quot;ruby-server&quot;</span>, <span class="st">:ami</span> =&gt; <span class="st">&quot;ami-e2af508b&quot;</span>, <span class="st">:init</span> =&gt; [<span class="st">'atlas'</span>, <span class="st">'chef:role[ruby_server]'</span>]<br />  base <span class="st">&quot;shell&quot;</span>,       <span class="st">:ami</span> =&gt; <span class="st">&quot;ami-e2af508b&quot;</span>, <span class="st">:init</span> =&gt; [<span class="st">'atlas'</span>, <span class="st">'chef:role[shell]'</span>]<br /><span class="kw">end</span></code></pre>
 <p>This configuration defines one ec2 provisionier, two initializers and one installer, and it declares two bases that then can be used in the system configuration.</p>
+<h3 id="reading-configuration-values-from-a-file"><a href="#TOC">Reading configuration values from a file</a></h3>
+<p>Atlas comes with a helper class to read e.g. EC2 keys and related info from a file. If you put this at the top of your environment configuration:</p>
+<pre class="sourceCode"><code class="sourceCode ruby">require <span class="st">'atlas/tools/rc'</span><br /><br />rc = <span class="dt">Atlas</span>::<span class="dt">Tools</span>::<span class="dt">RC</span>.read_rc[<span class="st">'aws'</span>]</code></pre>
+<p>then that will read from a file <code>$HOME/.atlasrc</code> by default, which is assumed to be a YAML file with this structure:</p>
+<pre class="sourceCode"><code class="sourceCode ruby">aws:<br />   secret_key: &lt;<span class="dt">EC2</span> secret key&gt;<br />   access_key: &lt;<span class="dt">EC2</span> access key&gt;<br />   keypair_id: &lt;name of the ssh key&gt;</code></pre>
+<p>The configuration values can then be used like this in the environment configuration file:</p>
+<pre class="sourceCode"><code class="sourceCode ruby">provisioner com.ning.atlas.aws.<span class="dt">EC2Provisioner</span>, {<br />  <span class="st">:access_key</span> =&gt; rc[<span class="st">'access_key'</span>],<br />  <span class="st">:secret_key</span> =&gt; rc[<span class="st">'secret_key'</span>],<br />  <span class="st">:keypair_id</span> =&gt; rc[<span class="st">'keypair_id'</span>]<br />}</code></pre>
 <h3 id="provisioners"><a href="#TOC">Provisioners</a></h3>
-<p>A provisioner is responsible for provisioning bare machines/instances. Atlas currently has three provisioners: <code>com.ning.atlas.aws.EC2Provisioner</code>, <code>com.ning.atlas.aws.RDSProvisioner</code> and <code>com.ning.atlas.virtualbox.VBoxProvisioner</code>.</p>
+<p>A provisioner is responsible for provisioning bare machines/instances. Atlas currently has these provisioners:</p>
+<ul>
+<li><code>com.ning.atlas.aws.EC2Provisioner</code> for provisioning on Amazon EC2</li>
+<li><code>com.ning.atlas.aws.RDSProvisioner</code> for provisioning on Amazon RDS</li>
+<li><code>com.ning.atlas.virtualbox.VBoxProvisioner</code> for provisioning VirtualBox instances.</li>
+<li><code>com.ning.atlas.StaticTaggedServerProvisioner</code> for incorporating already provisioned machines.</li>
+</ul>
 <h5 id="com.ning.atlas.aws.ec2provisioner"><a href="#TOC">com.ning.atlas.aws.EC2Provisioner</a></h5>
 <p>The <code>EC2Provisioner</code> brings up EC2 instances. It needs to be provided with three environment configuration options (see <a href="http://alestic.com/2009/11/ec2-credentials">this post</a> for an explanation of what these mean):</p>
 <ul>
@@ -138,21 +153,28 @@ chmod +x target/atlas
 </ul>
 <pre class="sourceCode"><code class="sourceCode ruby">provisioner com.ning.atlas.aws.<span class="dt">RDSProvisioner</span>, {<br />  <span class="st">:access_key</span> =&gt; ec2_access_key,<br />  <span class="st">:secret_key</span> =&gt; ec2_secret_key<br />}<br /><br />base <span class="st">&quot;oracle&quot;</span>, {<br />  <span class="st">:storage_size</span> =&gt; <span class="dv">10</span>,<br />  <span class="st">:instance_class</span> =&gt; <span class="st">&quot;db.m1.small&quot;</span>,<br />  <span class="st">:engine</span> =&gt; <span class="st">&quot;oracle-se1&quot;</span>,<br />  <span class="st">:username</span> =&gt; <span class="st">&quot;user&quot;</span>,<br />  <span class="st">:password</span> =&gt; <span class="st">&quot;password&quot;</span>,<br />  <span class="st">:license_model</span> =&gt; <span class="st">&quot;bring-your-own-license&quot;</span><br />}</code></pre>
 <h5 id="com.ning.atlas.virtualbox.vboxprovisioner"><a href="#TOC">com.ning.atlas.virtualbox.VBoxProvisioner</a></h5>
-<p>The <code>VBoxProvisioner</code> provisions VirtualBoxes. To get VirtualBox, see the <a href="http://www.virtualbox.org/">VirtualBox website</a>. The provisioner needs these environment configuration options:</p>
+<p>The <code>VBoxProvisioner</code> provisions <a href="http://www.virtualbox.org/">VirtualBox</a> instances. For more information about VirtualBox see the <a href="http://www.virtualbox.org/manual/UserManual.html">VirtualBox user documentation</a>.</p>
+<p>The provisioner needs these environment configuration options:</p>
 <ul>
-<li><code>pub_key_file</code>: The exact file path to the public key to allow password-less SSH login.</li>
+<li><code>pub_key_file</code>: The file path to the public key to allow password-less SSH login into the instances.</li>
 <li><code>intnet_name</code>: The name of the internal network that VirtualBox will use.</li>
-<li><p><code>bridgedif_name</code>: The name of the host interface the given virtual network interface will use. You can find the appropriate values by running the following command in terminal:</p>
-<p>$ VBoxManage list bridgedifs</p></li>
+<li><code>bridgedif_name</code>: The name of the host interface the given virtual network interface will use.</li>
 </ul>
-<p>It makes use of three additional properties defined in the <a href="#base">base element</a> (which is explained further below):</p>
+<p>You can find the appropriate values by running the following command in terminal:</p>
+<pre><code>$ VBoxManage list bridgedifs
+</code></pre>
+<p>It makes use of these additional properties defined in the <a href="#base">base element</a>:</p>
 <ul>
-<li><code>image</code>: The exact file path to the virtual appliance in Open Virtualization Format (OVF) or Open Virtualzation Archive (OVA) which will be imported to create the virtual machines.</li>
+<li><code>image</code>: The file path to the virtual appliance in Open Virtualization Format (OVF) or Open Virtualization Archive (OVA) which will be imported to create the virtual machines. This is explained in more detail in the <a href="http://www.virtualbox.org/manual/ch05.html#vdidetails">VirtualBox user documentation</a>.</li>
 <li><code>username</code>: The login username of the guest image.</li>
 <li><code>password</code>: The login password of the guest image.</li>
 </ul>
 <p>Example:</p>
-<pre class="sourceCode"><code class="sourceCode ruby">provisioner com.ning.atlas.aws.<span class="dt">EC2Provisioner</span>, {<br />  <span class="st">:pub_key_file</span>   =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.atlas/</span><span class="ot">#{</span>rc[<span class="st">'keypair_id'</span>]<span class="ot">}</span><span class="st">.pub&quot;</span>,<br />  <span class="st">:intnet_name</span>    =&gt; <span class="st">&quot;atlas-intnet&quot;</span>,<br />  <span class="st">:bridgedif_name</span> =&gt; <span class="st">&quot;en0: Ethernet&quot;</span><br />}<br /><br />base <span class="st">&quot;server&quot;</span>, {<br />  <span class="st">:image</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/atlas-natty32/atlas-natty32.ovf&quot;</span>,<br />  <span class="st">:username</span> =&gt; <span class="st">&quot;atlasuser&quot;</span>,<br />  <span class="st">:password</span> =&gt; <span class="st">&quot;atlasuser&quot;</span><br />}</code></pre>
+<pre class="sourceCode"><code class="sourceCode ruby">provisioner com.ning.atlas.virtualbox.<span class="dt">VBoxProvisioner</span>, {<br />  <span class="st">:pub_key_file</span>   =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.atlas/</span><span class="ot">#{</span>rc[<span class="st">'keypair_id'</span>]<span class="ot">}</span><span class="st">.pub&quot;</span>,<br />  <span class="st">:intnet_name</span>    =&gt; <span class="st">&quot;atlas-intnet&quot;</span>,<br />  <span class="st">:bridgedif_name</span> =&gt; <span class="st">&quot;en0: Ethernet&quot;</span><br />}<br /><br />base <span class="st">&quot;server&quot;</span>, {<br />  <span class="st">:image</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/atlas-natty32/atlas-natty32.ovf&quot;</span>,<br />  <span class="st">:username</span> =&gt; <span class="st">&quot;atlasuser&quot;</span>,<br />  <span class="st">:password</span> =&gt; <span class="st">&quot;atlasuser&quot;</span><br />}</code></pre>
+<h5 id="com.ning.atlas.statictaggedserverprovisioner"><a href="#TOC">com.ning.atlas.StaticTaggedServerProvisioner</a></h5>
+<p>This provider can be used to incorporate fixed, already provisioned servers into the environment. The provider itself is used to specify the available servers, keyed by tags that can then be used in the <a href="#base">base element</a> to retrieve a server for initializer/installer use.</p>
+<p>Eample:</p>
+<pre class="sourceCode"><code class="sourceCode ruby">provisioner com.ning.atlas.<span class="dt">StaticTaggedServerProvisioner</span>, {<br />  <span class="st">:tag1</span>  =&gt; [<span class="st">&quot;server1&quot;</span>, <span class="st">&quot;server2&quot;</span>]<br />  <span class="st">:tag2</span>  =&gt; [<span class="st">&quot;server3&quot;</span>]<br />}<br /><br />base <span class="st">&quot;server&quot;</span>, {<br />  <span class="st">:tag</span> =&gt; <span class="st">&quot;tag1&quot;</span><br />}</code></pre>
 <h3 id="initializers"><a href="#TOC">Initializers</a></h3>
 <p>Initializers are used to configure the provisioned instances so that they can actually run services. Think of them as the part of the tool that deploys all that base software that is needed to run your software, but is not actually part of your software. Things like ruby, java, ...</p>
 <p>Atlas defines two initializers at the moment, <code>com.ning.atlas.AtlasInitializer</code> and <code>com.ning.atlas.chef.UbuntuChefSoloInitializer</code>.</p>
@@ -260,6 +282,9 @@ Option                                  Description
 -s, --sys, --system                     System specification file
 </code></pre>
 <p>Atlas only needs two arguments on the command line: the path to the <a href="#environment-specification">environment specification</a> and the path to the <a href="#system-specification">system specification</a>. Everything else is configured within those two files.</p>
+<p>When running against EC2, you should also make sure that before invoking atlas, the ssh key is registered, e.g.:</p>
+<pre><code>$ ssh-add my-ec2-keypair.pem
+</code></pre>
 <h1 id="output"><a href="#TOC">Output</a></h1>
 <p>TBD</p>
 <h1 id="resources"><a href="#TOC">Resources</a></h1>
