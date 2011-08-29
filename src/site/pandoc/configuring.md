@@ -110,8 +110,12 @@ provisioner com.ning.atlas.aws.EC2Provisioner, {
 ### Provisioners
 
 A provisioner is responsible for provisioning bare machines/instances. Atlas currently has
-three provisioners: ``com.ning.atlas.aws.EC2Provisioner``, ``com.ning.atlas.aws.RDSProvisioner``
-and ``com.ning.atlas.virtualbox.VBoxProvisioner``.
+these provisioners:
+
+* ``com.ning.atlas.aws.EC2Provisioner`` for provisioning on Amazon EC2
+* ``com.ning.atlas.aws.RDSProvisioner`` for provisioning on Amazon RDS 
+* ``com.ning.atlas.virtualbox.VBoxProvisioner`` for provisioning VirtualBox instances.
+* ``com.ning.atlas.StaticTaggedServerProvisioner`` for incorporating already provisioned machines.
 
 ##### com.ning.atlas.aws.EC2Provisioner
 
@@ -188,29 +192,33 @@ base "oracle", {
 
 ##### com.ning.atlas.virtualbox.VBoxProvisioner
 
-The ``VBoxProvisioner`` provisions VirtualBoxes.
-To get VirtualBox, see the [VirtualBox website](http://www.virtualbox.org/).
+The ``VBoxProvisioner`` provisions [VirtualBox](http://www.virtualbox.org/) instances. For more information about VirtualBox 
+see the [VirtualBox user documentation](http://www.virtualbox.org/manual/UserManual.html).
+
 The provisioner needs these environment configuration options:
 
-* ``pub_key_file``: The exact file path to the public key to allow password-less SSH login.
+* ``pub_key_file``: The file path to the public key to allow password-less SSH login into the instances.
 * ``intnet_name``: The name of the internal network that VirtualBox will use.
 * ``bridgedif_name``: The name of the host interface the given virtual network interface will use.
+
 You can find the appropriate values by running the following command in terminal:
 
-    $ VBoxManage list bridgedifs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+$ VBoxManage list bridgedifs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-It makes use of three additional properties defined in the [base element](#base) (which is explained
-further below):
+It makes use of these additional properties defined in the [base element](#base):
 
-* ``image``: The exact file path to the virtual appliance in Open Virtualization Format (OVF) or
-Open Virtualzation Archive (OVA) which will be imported to create the virtual machines.
+* ``image``: The file path to the virtual appliance in Open Virtualization Format (OVF) or Open Virtualization Archive (OVA)
+which will be imported to create the virtual machines. This is explained in more detail in the
+[VirtualBox user documentation](http://www.virtualbox.org/manual/ch05.html#vdidetails).
 * ``username``: The login username of the guest image.
 * ``password``: The login password of the guest image.
 
 Example:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
-provisioner com.ning.atlas.aws.EC2Provisioner, {
+provisioner com.ning.atlas.virtualbox.VBoxProvisioner, {
   :pub_key_file   => "#{ENV['HOME']}/.atlas/#{rc['keypair_id']}.pub",
   :intnet_name    => "atlas-intnet",
   :bridgedif_name => "en0: Ethernet"
@@ -220,6 +228,25 @@ base "server", {
   :image => "#{ENV['HOME']}/atlas-natty32/atlas-natty32.ovf",
   :username => "atlasuser",
   :password => "atlasuser"
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+##### com.ning.atlas.StaticTaggedServerProvisioner
+
+This provider can be used to incorporate fixed, already provisioned servers into the environment. The provider itself
+is used to specify the available servers, keyed by tags that can then be used in the [base element](#base) to
+retrieve a server for initializer/installer use.
+
+Eample:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+provisioner com.ning.atlas.StaticTaggedServerProvisioner, {
+  :tag1  => ["server1", "server2"]
+  :tag2  => ["server3"]
+}
+
+base "server", {
+  :tag => "tag1"
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
