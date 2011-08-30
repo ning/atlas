@@ -195,6 +195,11 @@ base "oracle", {
 The ``VBoxProvisioner`` provisions [VirtualBox](http://www.virtualbox.org/) instances. For more information about VirtualBox 
 see the [VirtualBox user documentation](http://www.virtualbox.org/manual/UserManual.html).
 
+For this provisioner to work, Oracle VirtualBox 4.1.0 or newer is required. The VirtualBox image must also contain the
+[Guest Additions](http://www.virtualbox.org/manual/ch04.html) for Atlas to work correctly. It is important to note that
+the ``virtualbox-ose-guest-utils`` Debian package will not work for this. Instead, use the correct version of the
+VBoxGuestAdditions ISO provided from the [official site](http://download.virtualbox.org/virtualbox/).
+
 The provisioner needs these environment configuration options:
 
 * ``pub_key_file``: The file path to the public key to allow password-less SSH login into the instances.
@@ -257,11 +262,24 @@ Initializers are used to configure the provisioned instances so that they can ac
 as the part of the tool that deploys all that base software that is needed to run your software, but is not
 actually part of your software. Things like ruby, java, ...
 
-Atlas defines two initializers at the moment, ``com.ning.atlas.AtlasInitializer`` and
-``com.ning.atlas.chef.UbuntuChefSoloInitializer``.
+Atlas defines these initializers at the moment:
+* ``com.ning.atlas.AtlasInitializer`` for initializing a provisioned system with Atlas-related info such as the system map.
+* ``com.ning.atlas.galaxy.MicroGalaxyInitializer`` for deploying software with [uGalaxy](https://github.com/brianm/ugalaxy).
+* ``com.ning.atlas.chef.UbuntuChefSoloInitializer`` for deploying software with [Chef Solo](http://wiki.opscode.com/display/chef/Chef+Solo).
 
-Initializers are triggered via a URN in the ``init`` attribute of the ``base`` element. For instance this ``base``
-element:
+Initializers are triggered via a URN in the ``init`` attribute of the ``base`` element which reference previously
+declared initializers. For instance given these initializer definitions:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+initializer "atlas", com.ning.atlas.AtlasInitializer, {
+	...
+}
+initializer "chef", com.ning.atlas.chef.UbuntuChefSoloInitializer, {
+	...
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+this ``base``	element:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
 base "ruby-server", {
@@ -270,8 +288,8 @@ base "ruby-server", {
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-will trigger two initializers, ``atlas`` and ``chef``. For every server that is deployed with this base system,
-these two initializers will run in the specified order.
+will trigger the two named initializers, ``atlas`` and ``chef``. For every server that is deployed with this base system
+``ruby-server``, these two initializers will run in the specified order.
 
 ##### com.ning.atlas.AtlasInitializer
 
@@ -289,7 +307,7 @@ The initializer needs these environment configuration options:
 Both of these depends on the how the instance is setup. For EC2 for instance, the ssh user is defined by the AMI
 and the private key file can be retrieved from AWS.
 
-This initializer is triggered by specifying ``atlas`` in the ``init`` property of the ``base`` element.
+This initializer is triggered by specifying the atlas initializer's name in the ``init`` property of the ``base`` element.
 
 Example:
 
@@ -303,6 +321,45 @@ base "ruby-server", {
   :init => ['atlas', 'chef:role[ruby_server]']
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+##### com.ning.atlas.galaxy.MicroGalaxyInitializer
+
+This initializer uses a standalone version of [Galaxy](https://github.com/ning/galaxy) called
+[uGalaxy](https://github.com/brianm/ugalaxy) to deploy software. It is basically the same as the
+[com.ning.atlas.galaxy.MicroGalaxyInstaller](#com.ning.atlas.galaxy.MicroGalaxyInstaller) explained
+further below except that it can be run in the initializer phase and thus can be used to install software
+required for Galaxy or uGalaxy.
+
+The initializer needs these environment configuration options:
+
+* ``ssh_user``: The ssh user name for the instance.
+* ``ssh_key_file``: The ssh private key file.
+* ``ugx_user``: The user to run uGalaxy as.
+
+The uGalaxy initializer is triggered by using 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<uGalaxy initializer name>:<url>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+in the ``init`` property of the ``base`` element where the url points to the tarball containing the software to
+deploy.
+
+Example:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+installer "ugx", com.ning.atlas.galaxy.MicroGalaxyInstaller, {
+  :ssh_user     => "ubuntu",
+  :ssh_key_file => "#{ENV['HOME']}/.ec2/#{rc['keypair_id']}.pem",
+  :ugx_user     => "ugx"
+}
+
+base "ruby-server", {
+  :ami => "ami-e2af508b",
+  :init => ["ugx:http://my-atlas-resources.s3.amazonaws.com/ruby-server.tar.gz"]
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 ##### com.ning.atlas.chef.UbuntuChefSoloInitializer
 
@@ -326,18 +383,25 @@ uses them to download the resource from S3.
 
 This initializer is triggered by using a URN of the form
 
-    chef:<spec>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<chef initializer name>:<spec>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 in the ``init`` property of the ``base`` element. The ``spec`` part can either contain a complete chef
 [run_list](http://wiki.opscode.com/display/chef/Setting+the+run_list+in+JSON+during+run+time):
 
-    chef:{"run_list":["role[base]","role[master]","recipe[nagios::server]"]}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+chef:{"run_list":["role[base]","role[master]","recipe[nagios::server]"]}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 or a simplified form where Atlas builds the run list out of specified rols and recipes
 
-    chef:role[base],role[master],recipe[nagios::server]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+chef:role[base],role[master],recipe[nagios::server]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-What this initializer actually does, is explained below in the [system specification](#system-specification) section.
+The initializer will then use Chef Solo to apply all recipes (found at the specified recipe url) necessary to
+put the machine/instance into these roles.
 
 Example:
 
@@ -349,11 +413,15 @@ initializer "chef", com.ning.atlas.chef.UbuntuChefSoloInitializer, {
   :s3_access_key => s3_access_key,
   :s3_secret_key => s3_secret_key
 }
+
 base "ruby-server", {
   :ami => "ami-e2af508b",
   :init => ['atlas', 'chef:role[ruby_server]']
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This will provision an EC2 instance (provisioner not shown) using the Ubuntu AMI ami-e2af508b, and then use Chef Solo
+to apply the ``ruby-server`` role as defined in the corresponding recipse in ``s3://my-atlas-resources/chef-solo.tar.gz``.
 
 ### Installers
 
@@ -362,8 +430,8 @@ and installers is a bit arbitrary. You can perfectly well only use initializers 
 instance can be installed with Chef Solo.
 
 The main difference between initializers and installers is that installers are designed in a way that they
-can be run multiple times against the same machine/instance. Initializers don't have this as an explicit
-feature (though they might support it).
+can be run multiple times against the same machine/instance. Initializers don't require this explicitly (though depending
+on the initializer, they might support it).
 
 You would use installers if a distinction between base packages (such as Ruby or Apache Httpd) and your service
 (e.g. a Rails app or some web pages served by Apache Httpd) makes sense. You can usually tell by the frequency
@@ -388,7 +456,9 @@ services, e.g. setup a schema and data in a database or configure the load balan
 ##### com.ning.atlas.galaxy.MicroGalaxyInstaller
 
 This installer uses a standalone version of [Galaxy](https://github.com/ning/galaxy) called
-[uGalaxy](https://github.com/brianm/ugalaxy) to deploy services.
+[uGalaxy](https://github.com/brianm/ugalaxy) to deploy services. It is basically the same as the
+[com.ning.atlas.galaxy.MicroGalaxyInitializer](#com.ning.atlas.galaxy.MicroGalaxyInitializer) explained
+further above except that it is run in the installer phase.
 
 The installer needs these environment configuration options:
 
@@ -396,9 +466,11 @@ The installer needs these environment configuration options:
 * ``ssh_key_file``: The ssh private key file.
 * ``ugx_user``: The user to run uGalaxy as.
 
-To use the micro-galaxy installer, specify a URL of the form
+To use the uGalaxy installer, specify a URL of the form
 
-    ugx:<url>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<uGalaxy installer name>:<url>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 in the ``install`` property for the ``server`` element. The url points to the tarball containing the service to
 deploy.
@@ -431,15 +503,19 @@ There are two ways to trigger the galaxy installer:
 * Specify a galaxy role via the ``galaxy`` property on the ``server`` element.
 * Use an ``install`` url of the form 
 
-    galaxy:env/version/type
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<galaxy installer name>:<env>/<version>/<type>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The first form is used to deploy parts of galaxy itself. The ``galaxy`` property has three possible values:
+where ``env`` specifies the environment, ``version`` the version of the service, and ``type`` the type of the service.
+
+The galaxy role form is used to deploy parts of galaxy itself. The ``galaxy`` property has three possible values:
 
 * ``shell``: A generic shell server including the galaxy commandline tool.
 * ``console``: The galaxy console.
 * ``repository``: The file repository containing the deployable artifacts.
 
-The latter two are required or galaxy can't deploy anything else (``install`` properties). A shell is not strictly
+The ``console`` and ``repository`` are required or galaxy won't be able to deploy anything else. A shell is not strictly
 required but useful if you want to interact with galaxy manually.
 
 Example:
@@ -457,14 +533,79 @@ server "echo",
   :install => ["galaxy:myenv/v1/echo"]
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+##### com.ning.atlas.oracle.OracleLoaderInstaller
+
+The Oracle installer provides a way to initialize the schema and data in an Amazon RDS Oracle database instance by
+passing specified text files containing DDL/DML statements to Oracle's
+[SQL*Plus](http://download.oracle.com/docs/cd/B28359_01/server.111/b31189/toc.htm).
+
+It needs these environment configuration options:
+
+* ``ssh_user``: The ssh user name for the instance.
+* ``ssh_key_file``: The ssh private key file.
+* ``sql_url_template``: This is a [StringTemplate](http://www.stringtemplate.org/) to generate the S3 urls for the schema files.
+  This is explained further below.
+
+The installer is triggered by using an URN of the form
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<oracle installer name>:<data>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+in the ``install`` property for the ``server`` element. The data part of the URN contains key value pairs of the form
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<oracle installer name>:key1=value1;key2=value2;...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These keys can then be referenced in the url template. E.g. typically you template the file name like so:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+installer "oracle", com.ning.atlas.oracle.OracleLoaderInstaller, {
+  :sql_url_template => "s3://my-atlas-resources/$file$",
+  :ssh_user     => "ubuntu",
+  :ssh_key_file => "#{ENV['HOME']}/.ec2/#{rc['keypair_id']}.pem"
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+server "userdb",
+  :base => "oracle",
+  :install => ["oracle:file=userdb-ddl.sql"],
+  :db_role => ['user']
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This will make the oracle installer look for a file ``s3://my-atlas-resources/userdb-ddl.sql`` when initializing a server ``userdb``.
+
+##### com.ning.atlas.aws.ELBInstaller
+
+This installer allows to register servers with Amazon's [Elastic Load Balancer](https://aws.amazon.com/elasticloadbalancing/).
+
+For this, it needs these environment configuration options:
+
+* ``access_key``: The EC2 access key.
+* ``secret_key``: The EC2 secret key.
+
+The installer is triggered by specifying the name of the installer in the ``install`` property for the ``server`` element.
+
+Example:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+installer "ugx", com.ning.atlas.galaxy.MicroGalaxyInstaller, {
+	...
+}
+
+installer "elb", com.ning.atlas.aws.ELBInstaller, {
+  :access_key => rc['access_key'],
+  :secret_key => rc['secret_key']
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+server "echo",
+  :base => "ruby-server",
+  :install => ["ugx:http://my-atlas-resources.s3.amazonaws.com/echo.tar.gz", "elb"]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ## System specification
-
-* ``Java`` (of course!)
-* If you are using ``VBoxProvisioner``, ``Oracle VirtualBox 4.1.0`` or above is required.
-  The VirtualBox image must also contain [Guest Additions](http://www.virtualbox.org/manual/ch04.html) for Atlas to provision correctly.
-  It is important to note that the ``virtualbox-ose-guest-utils`` Debian package will not work, and you should use the 
-  correct version of the VBoxGuestAdditions ISO provided from the [official site](http://download.virtualbox.org/virtualbox/).
-
-
-
 
