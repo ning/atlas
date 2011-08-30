@@ -1,23 +1,22 @@
 package com.ning.atlas.virtualbox;
 
+import com.google.common.collect.ImmutableMap;
+import com.ning.atlas.Base;
+import com.ning.atlas.Provisioner;
+import com.ning.atlas.SSH;
+import com.ning.atlas.Server;
+import com.ning.atlas.UnableToProvisionServerException;
+import com.ning.atlas.base.DoRuntime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import com.ning.atlas.SSH;
-
-import com.ning.atlas.Base;
-import com.ning.atlas.base.DoRuntime;
-import com.ning.atlas.Provisioner;
-import com.ning.atlas.Server;
-import com.ning.atlas.UnableToProvisionServerException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class VBoxProvisioner implements Provisioner
 {
@@ -52,7 +51,7 @@ public class VBoxProvisioner implements Provisioner
 			FileReader input = null;
 			input = new FileReader(pub_key_file);
 			BufferedReader bufRead = new BufferedReader(input);
-			String line;	
+			String line;
 			StringBuilder sb = new StringBuilder();
 			String newLine = "\n";
 			while ((line = bufRead.readLine()) != null) {
@@ -217,27 +216,30 @@ public class VBoxProvisioner implements Provisioner
 		}
 
 
-		return new VBoxServer(base, vmname, internalIp, externalIp);
+		return vboxServer(base, vmname, internalIp, externalIp);
 	}
 
 	public void destroy(Server server) throws UnableToProvisionServerException {
-		VBoxServer vb = VBoxServer.class.cast(server);
-		DoRuntime.exec("VBoxManage", "controlvm", vb.vmname, "poweroff");
-		DoRuntime.exec("VBoxManage", "unregistervm", vb.vmname, "--delete");
+		DoRuntime.exec("VBoxManage", "controlvm", server.getAttributes().get("vmname"), "poweroff");
+		DoRuntime.exec("VBoxManage", "unregistervm", server.getAttributes().get("vmname"), "--delete");
 	}
 
-	public final class VBoxServer extends Server
-	{
-		private final String vmname;
+    private static Server vboxServer(Base base, String vmname, String internalIp, String externalIp) {
+        return new Server(internalIp, externalIp, ImmutableMap.<String, String>of("vmname", vmname));
+    }
 
-		public VBoxServer(Base base, String vmname, String internalIp, String externalIp) {
-			super(internalIp, externalIp, base);
-			this.vmname = vmname;
-		}
-
-		public String getVMName() {
-			return this.vmname;
-		}
-
-	}
+//	public final class VBoxServer extends Server
+//	{
+//		private final String vmname;
+//
+//		public VBoxServer(Base base, String vmname, String internalIp, String externalIp) {
+//			super(internalIp, externalIp, base);
+//			this.vmname = vmname;
+//		}
+//
+//		public String getVMName() {
+//			return this.vmname;
+//		}
+//
+//	}
 }

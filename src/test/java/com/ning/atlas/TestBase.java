@@ -1,7 +1,7 @@
 package com.ning.atlas;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.ning.atlas.chef.StubServer;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -39,14 +39,15 @@ public class TestBase
             }
         });
 
-        Base base = new Base("test", env);
-        base.addInit("waffle:hut");
-        base.addInit("pancake:house");
+        Base base = new Base("test", env, "hello",
+                             ImmutableList.<Initialization>of(Initialization.parseUriForm("waffle:hut"),
+                                                              Initialization.parseUriForm("pancake:house")),
+                             Collections.<String, String>emptyMap());
 
-        Server s = new StubServer("10.0.0.1");
+        Server s = new Server("10.0.0.1", "10.0.0.1");
         base.initialize(s,
                         new ProvisionedSystem("root", "0", new My(), Lists.<ProvisionedElement>newArrayList()),
-                        new ProvisionedServer("server", "waffle", new My(), s, Collections.<String>emptyList()));
+                        new ProvisionedServer("server", "waffle", new My(), s, Collections.<String>emptyList(), base));
 
         assertThat(inits, equalTo(asList("waffle+hut", "pancake+house")));
 

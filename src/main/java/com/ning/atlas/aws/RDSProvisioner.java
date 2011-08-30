@@ -9,6 +9,7 @@ import com.amazonaws.services.rds.model.DeleteDBInstanceRequest;
 import com.amazonaws.services.rds.model.DescribeDBInstancesRequest;
 import com.amazonaws.services.rds.model.DescribeDBInstancesResult;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Maps;
 import com.ning.atlas.Base;
 import com.ning.atlas.Provisioner;
 import com.ning.atlas.Server;
@@ -42,7 +43,7 @@ public class RDSProvisioner implements Provisioner
     }
 
     @Override
-    public RDSServer provision(Base b) throws UnableToProvisionServerException
+    public Server provision(Base b) throws UnableToProvisionServerException
     {
         RDSConfig cfg = new ConfigurationObjectFactory(new MapConfigSource(b.getAttributes())).build(RDSConfig.class);
 
@@ -55,7 +56,7 @@ public class RDSProvisioner implements Provisioner
                                                                   cfg.getPassword());
         String license_model = b.getAttributes().containsKey("license_model")
                                ? b.getAttributes().get("license_model")
-                               : "general_public_license";
+                               : "general-public-license";
 
         req.setLicenseModel(license_model);
         DBInstance db = rds.createDBInstance(req);
@@ -90,89 +91,26 @@ public class RDSProvisioner implements Provisioner
                  && instance.getDBInstanceStatus().equals("available")
                  && instance.getEndpoint() != null));
 
-        return new RDSServer(instance,
-                             cfg,
-                             b);
+        Map<String, String> attrs = Maps.newHashMap();
+        attrs.put("port", instance.getEndpoint().getPort().toString());
+        attrs.put("instanceId", instance.getDBInstanceIdentifier());
+        attrs.put("instanceClass", instance.getDBInstanceClass());
+        attrs.put("name", instance.getDBName());
+        attrs.put("engine", instance.getEngine());
+        attrs.put("engineVersion", instance.getEngineVersion());
+        attrs.put("password", cfg.getPassword());
+        attrs.put("username", cfg.getUsername());
+        attrs.put("storageSize", String.valueOf(cfg.getStorageSize()));
+
+        return new Server(instance.getEndpoint().getAddress(), instance.getEndpoint().getAddress(), attrs);
     }
 
 
-    public void destroy(RDSServer server)
+    public void destroy(Server server)
     {
-        DeleteDBInstanceRequest req = new DeleteDBInstanceRequest(server.getInstanceId());
+        DeleteDBInstanceRequest req = new DeleteDBInstanceRequest(server.getAttributes().get("instanceId"));
         req.setSkipFinalSnapshot(true);
         rds.deleteDBInstance(req);
-    }
-
-    public static class RDSServer extends Server
-    {
-        private final Integer port;
-        private final String  instanceId;
-        private final String name;
-        private final String  engine;
-        private final String  instanceClass;
-        private final String password;
-        private final int storageSize;
-        private final String username;
-        private final String engineVersion;
-
-        public RDSServer(DBInstance instance, RDSConfig cfg, Base b)
-        {
-            super(instance.getEndpoint().getAddress(), instance.getEndpoint().getAddress(), b);
-            this.port = instance.getEndpoint().getPort();
-            this.instanceId = instance.getDBInstanceIdentifier();
-            this.instanceClass = instance.getDBInstanceClass();
-            this.name = instance.getDBName();
-            this.engine = instance.getEngine();
-            this.engineVersion = instance.getEngineVersion();
-            this.password = cfg.getPassword();
-            this.username = cfg.getUsername();
-            this.storageSize = cfg.getStorageSize();
-        }
-
-        public String getEngineVersion()
-        {
-            return engineVersion;
-        }
-
-        public String getName()
-        {
-            return name;
-        }
-
-        public Integer getPort()
-        {
-            return port;
-        }
-
-        public String getInstanceId()
-        {
-            return instanceId;
-        }
-
-        public String getEngine()
-        {
-            return engine;
-        }
-
-        public String getInstanceClass()
-        {
-            return instanceClass;
-        }
-
-        public String getPassword()
-        {
-            return password;
-        }
-
-        public int getStorageSize()
-        {
-            return storageSize;
-        }
-
-        public String getUsername()
-        {
-            return username;
-        }
     }
 
     public interface RDSConfig

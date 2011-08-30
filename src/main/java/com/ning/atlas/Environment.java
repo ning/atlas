@@ -6,55 +6,57 @@ import com.google.common.collect.Maps;
 import com.ning.atlas.base.Maybe;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Environment
 {
-    private final List<Base> bases = new CopyOnWriteArrayList<Base>();
+    private final List<Base>               bases        = new CopyOnWriteArrayList<Base>();
+    private final List<Environment>        children     = new CopyOnWriteArrayList<Environment>();
+    private final Map<String, Provisioner> provisioners = Maps.newConcurrentMap();
+    private final Map<String, Initializer> initializers = Maps.newConcurrentMap();
+    private final Map<String, Installer>   installers   = Maps.newConcurrentMap();
+    private final Map<String, String>      properties   = Maps.newConcurrentMap();
 
-    private final List<Environment>            children     = new CopyOnWriteArrayList<Environment>();
-    private final AtomicReference<Provisioner> provisioner  = new AtomicReference<Provisioner>(new ErrorProvisioner());
-    private final Map<String, Initializer>     initializers = Maps.newConcurrentMap();
-    private final Map<String, Installer>       installers   = Maps.newConcurrentMap();
-    private final Map<String, String>          properties   = Maps.newConcurrentMap();
-
-    private final String name;
-
+    private final String             name;
     private final Maybe<Environment> parent;
 
     public Environment(String name)
     {
-        this(name, new ErrorProvisioner());
-    }
-
-    public Environment(String name, Provisioner provisioner)
-    {
-        this(name, provisioner, Collections.<String, Initializer>emptyMap(), null);
+        this(name, Collections.<String, Provisioner>emptyMap(), Collections.<String, Initializer>emptyMap(), null);
     }
 
     public Environment(String name,
-                       Provisioner provisioner,
+                       Map<String, Provisioner> provisioners,
+                       Map<String, Initializer> initializers)
+    {
+        this(name, provisioners, initializers, null);
+    }
+
+    public Environment(String name,
+                       Map<String, Provisioner> provisioners,
                        Map<String, Initializer> initializers,
                        @Nullable Environment parent)
     {
         this.name = name;
         this.parent = Maybe.elideNull(parent);
-        this.setProvisioner(provisioner);
+        this.provisioners.putAll(provisioners);
         this.initializers.putAll(initializers);
     }
 
+    public void addProvisioner(String name, Provisioner p) {
+        this.provisioners.put(name, p);
+    }
 
     @Override
     public String toString()
     {
         return Objects.toStringHelper(this)
                       .add("name", name)
-                      .add("provisioner", provisioner.get())
+                      .add("provisioners", provisioners)
                       .add("initializers", initializers)
                       .add("children", children)
                       .add("bases", bases)
@@ -66,14 +68,9 @@ public class Environment
         this.children.add(e);
     }
 
-    public void setProvisioner(Provisioner provisioner)
+    public Provisioner getProvisioner(String name)
     {
-        this.provisioner.set(provisioner);
-    }
-
-    public Provisioner getProvisioner()
-    {
-        return provisioner.get();
+        return provisioners.get(name);
     }
 
     public void addInitializer(String name, Initializer init)
@@ -86,7 +83,7 @@ public class Environment
         installers.put(name, installer);
     }
 
-    public Maybe<Base> findBase(final String base, final Stack<String> names)
+    public Maybe<Base> findBase(final String base)
     {
         for (Base candidate : bases) {
             if (candidate.getName().equals(base)) {
@@ -95,7 +92,7 @@ public class Environment
         }
 
         for (Environment child : children) {
-            Maybe<Base> rs = child.findBase(base, names);
+            Maybe<Base> rs = child.findBase(base);
             if (rs.isKnown()) {
                 return rs;
             }
@@ -144,5 +141,10 @@ public class Environment
         // override parent props with ours
         rs.putAll(this.properties);
         return rs;
+    }
+
+    public Map<String, Provisioner> getProvisioners()
+    {
+        return provisioners;
     }
 }

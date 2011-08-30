@@ -38,15 +38,7 @@ public class StaticTaggedServerProvisioner implements Provisioner
             throw new UnableToProvisionServerException("No server matching tag '" + tag + "' available");
         }
         this.availables.remove(tag, host);
-        return new MyServer(host, base);
+        return new Server(host, host);
 
-    }
-
-    private static class MyServer extends Server
-    {
-        public MyServer(String host, Base base)
-        {
-            super(host, host, base);
-        }
     }
 }

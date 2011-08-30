@@ -2,12 +2,14 @@ package com.ning.atlas.aws;
 
 import com.ning.atlas.Base;
 import com.ning.atlas.Environment;
+import com.ning.atlas.Initialization;
 import com.ning.atlas.Server;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -46,9 +48,10 @@ public class TestRDSProvisioner
 
         Base base = new Base("databases",
                              new Environment("ec2"),
+                             "rds", Collections.<Initialization>emptyList(),
                              props);
 
-        RDSProvisioner.RDSServer db_server = rds.provision(base);
+        Server db_server = rds.provision(base);
 
         System.out.println(db_server);
 

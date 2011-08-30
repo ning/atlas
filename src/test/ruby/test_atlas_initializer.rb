@@ -9,7 +9,7 @@ end
 
 
 environment "ec2" do
-  provisioner com.ning.atlas.aws.EC2Provisioner, {
+  provisioner "ec2", com.ning.atlas.aws.EC2Provisioner, {
       :access_key => creds['aws.access-key'],
       :secret_key => creds['aws.secret-key'],
       :keypair_id => creds['aws.key-name']
@@ -27,6 +27,7 @@ environment "ec2" do
   }
 
   base "server", {
+      :provisioner => "ec2",
       :ami  => "ami-e2af508b",
       :init => ['atlas', 'chef:role[server]']
   }

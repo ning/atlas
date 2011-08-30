@@ -86,7 +86,7 @@ public class TestJRubyTemplateParser
         JRubyTemplateParser p = new JRubyTemplateParser();
         Environment e = p.parseEnvironment(new File("src/test/ruby/ex1/simple-environment.rb"));
 
-        Maybe<Base> cs = e.findBase("concrete", new Stack<String>());
+        Maybe<Base> cs = e.findBase("concrete");
         assertThat(cs.getValue(), notNullValue());
         Base b = cs.getValue();
         assertThat(b.getInits(), equalTo(asList("chef-solo:{ \"run_list\": \"role[java-core]\" }")));

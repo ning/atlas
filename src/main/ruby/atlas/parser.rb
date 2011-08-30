@@ -45,7 +45,7 @@ module Atlas
 
     def __parse
       @env = com.ning.atlas.Environment.new @name,
-                                            @parent.provisioner,
+                                            @parent.provisioners,
                                             @parent.initializers,
                                             @env
       instance_eval &@block
@@ -58,23 +58,19 @@ module Atlas
 
     def base name, args={}
       attr = args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v.to_s; a }
-      base = com.ning.atlas.Base.new(name, @env, attr)
-
-      if args[:init]
-        args[:init].each { |v| base.addInit(v) }
-      end
-
+      inits = Array(args[:init]).map { |s| com.ning.atlas.Initialization.parse_uri_form s }
+      base = com.ning.atlas.Base.new(name, @env, attr["provisioner"], inits, attr)
       @env.addBase(base)
     end
 
-    def provisioner clazz, args={}
+    def provisioner name, clazz, args={}
       attr = args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v.to_s; a }
       p    = com.ning.atlas.Instantiator.create(clazz, attr)
       args.each do |k, v|
         sym = "#{k}=".to_sym
         p.send(sym, v) if p.respond_to? sym
       end
-      @env.provisioner = p
+      @env.add_provisioner name, p
     end
 
     def initializer name, clazz, args={}

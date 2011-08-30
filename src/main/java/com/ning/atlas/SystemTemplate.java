@@ -17,16 +17,15 @@ public class SystemTemplate extends Template
     }
 
     @Override
-    protected List<BoundTemplate> normalize(Environment env, Stack<String> names)
+    public List<BoundTemplate> _normalize(Environment env)
     {
-        names.push(getType());
+
         List<BoundTemplate> rs = new ArrayList<BoundTemplate>();
         List<String> node_names = getCardinality();
         for (String node_name : node_names) {
-            BoundSystemTemplate dup = new BoundSystemTemplate(this, node_name, env, names);
+            BoundSystemTemplate dup = new BoundSystemTemplate(this, node_name, env);
             rs.add(dup);
         }
-        names.pop();
         return rs;
     }
 

@@ -45,9 +45,8 @@ public class OracleLoaderInstaller implements Installer
     }
 
     @Override
-    public Server install(Server sserver, String fragment, InitializedTemplate root) throws Exception
+    public Server install(Server server, String fragment, InitializedTemplate root) throws Exception
     {
-        RDSProvisioner.RDSServer server = (RDSProvisioner.RDSServer) sserver;
         Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()
         {
             @Override
@@ -82,11 +81,11 @@ public class OracleLoaderInstaller implements Installer
             ssh.exec(s3_fetch);
 
             String out = ssh.exec(format("sqlplus %s/%s@\"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=%s)(PORT=%d))(CONNECT_DATA=(SID=%s)))\" @do_it.sql",
-                                         server.getUsername(),
-                                         server.getPassword(),
+                                         server.getAttributes().get("username"),
+                                         server.getAttributes().get("password"),
                                          server.getInternalAddress(),
-                                         server.getPort(),
-                                         server.getName()));
+                                         server.getAttributes().get("port"),
+                                         server.getAttributes().get("name")));
             log.debug(out);
 
             return server;

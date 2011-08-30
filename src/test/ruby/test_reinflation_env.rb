@@ -1,10 +1,10 @@
 
 
 environment "reinflation" do
-  provisioner com.ning.atlas.noop.NoOpProvisioner
+  provisioner "noop", com.ning.atlas.noop.NoOpProvisioner
 
   installer "galaxy", com.ning.atlas.noop.NoOpInstaller
   initializer "chef", com.ning.atlas.noop.NoOpInitializer
 
-  base "server", :init => ["chef:role[wombatypus]"]
+  base "server", :provisioner => "noop", :init => ["chef:role[wombatypus]"]
 end

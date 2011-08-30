@@ -1,5 +1,6 @@
 package com.ning.atlas.main;
 
+import com.google.common.collect.Iterables;
 import com.ning.atlas.BoundTemplate;
 import com.ning.atlas.Environment;
 import com.ning.atlas.JRubyTemplateParser;

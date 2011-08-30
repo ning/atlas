@@ -11,34 +11,32 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Stack;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
-public class BoundServerTemplate extends BoundTemplate
+public class BoundServer extends BoundTemplate
 {
-    private static final Logger log = LoggerFactory.getLogger(BoundServerTemplate.class);
+    private static final Logger log = LoggerFactory.getLogger(BoundServer.class);
 
     private final Base base;
     private final List<String> installations;
 
-    public BoundServerTemplate(String type, String name, My my, Base base, List<String> installations)
+    public BoundServer(String type, String name, My my, Base base, List<String> installations)
     {
         super(type, name, my);
         this.base = base;
         this.installations = installations;
     }
 
-    public BoundServerTemplate(ServerTemplate serverTemplate,
-                               String name,
-                               Environment env,
-                               Stack<String> names,
-                               List<String> installations)
+    public BoundServer(ServerTemplate serverTemplate,
+                       String name,
+                       Environment env,
+                       List<String> installations)
     {
         this(serverTemplate.getType(),
              name,
              serverTemplate.getMy(),
-             extractBase(serverTemplate, env, names),
+             extractBase(serverTemplate, env),
              installations);
     }
 
@@ -47,9 +45,9 @@ public class BoundServerTemplate extends BoundTemplate
         return installations;
     }
 
-    private static Base extractBase(ServerTemplate serverTemplate, Environment env, Stack<String> names)
+    private static Base extractBase(ServerTemplate serverTemplate, Environment env)
     {
-        Maybe<Base> mb = env.findBase(serverTemplate.getBase(), names);
+        Maybe<Base> mb = env.findBase(serverTemplate.getBase());
         if (mb.isKnown()) {
             return mb.getValue();
         }
@@ -80,7 +78,7 @@ public class BoundServerTemplate extends BoundTemplate
                 {
                     try {
                         Server server = base.getProvisioner().provision(base);
-                        return new ProvisionedServer(BoundServerTemplate.this, server, installations);
+                        return new ProvisionedServer(BoundServer.this, base, server, installations);
                     }
                     catch (Exception e) {
                         log.warn("unable to provision server {}", getType() + "." + getName(), e);
@@ -98,7 +96,7 @@ public class BoundServerTemplate extends BoundTemplate
 
         List<String> id = Lists.newArrayList(getType(), getName());
 
-        BoundServerTemplate prior = findPrior(id);
+        BoundServer prior = findPrior(id);
 
         List<String> prior_inits = prior.getBase().getInits();
         List<String> my_inits = new ArrayList<String>(this.getBase().getInits());
@@ -112,7 +110,7 @@ public class BoundServerTemplate extends BoundTemplate
         return null;
     }
 
-    private BoundServerTemplate findPrior(List<String> id)
+    private BoundServer findPrior(List<String> id)
     {
         return null;
     }

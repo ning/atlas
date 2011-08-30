@@ -1,11 +1,13 @@
 package com.ning.atlas.chef;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.Base;
 import com.ning.atlas.BoundTemplate;
 import com.ning.atlas.Environment;
+import com.ning.atlas.Initialization;
 import com.ning.atlas.InitializedServer;
 import com.ning.atlas.InitializedTemplate;
 import com.ning.atlas.Initializer;
@@ -13,6 +15,7 @@ import com.ning.atlas.My;
 import com.ning.atlas.ProvisionedServer;
 import com.ning.atlas.ProvisionedSystem;
 import com.ning.atlas.ProvisionedElement;
+import com.ning.atlas.Provisioner;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
 import com.ning.atlas.ServerTemplate;
@@ -73,13 +76,16 @@ public class TestUbuntuChefSoloInitializer
 
         Initializer initializer = new UbuntuChefSoloInitializer(attributes);
 
-        Server s = ec2.provision(new Base("ubuntu", env, ImmutableMap.<String, String>of("ami", "ami-e2af508b")));
+        final Base base = new Base("ubuntu", env, "ec2",
+                                   Collections.<Initialization>emptyList(),
+                                   ImmutableMap.<String, String>of("ami", "ami-e2af508b"));
+        Server s = ec2.provision(base);
 
         try {
             Server init_server = initializer.initialize(s, "role[server]",
                                                         new ProvisionedSystem("root", "0", new My(),
-                                                                                      Lists.<ProvisionedElement>newArrayList()),
-                                                        new ProvisionedServer("woof", "meow", new My(), s, Collections.<String>emptyList()));
+                                                                              Lists.<ProvisionedElement>newArrayList()),
+                                                        new ProvisionedServer("woof", "meow", new My(), s, Collections.<String>emptyList(), base));
 
 
             SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
@@ -143,23 +149,24 @@ public class TestUbuntuChefSoloInitializer
     public void testWithEC2Provisioner() throws Exception
     {
         assumeThat(System.getProperty("RUN_EC2_TESTS"), notNullValue());
-
-        Environment env = new Environment("ec2");
-        env.setProvisioner(ec2);
-
-        ServerTemplate st = new ServerTemplate("server");
-        st.setBase("java-core");
-
-        Base java_core = new Base("java-core", env, ImmutableMap.<String, String>of("ami", "ami-e2af508b"));
-        java_core.addInit("chef-solo:role[server]");
-        env.addBase(java_core);
-
+        Provisioner p = ec2;
         Map<String, String> attributes =
             ImmutableMap.of("ssh_user", "ubuntu",
                             "ssh_key_file", new File(props.getProperty("aws.key-file-path")).getAbsolutePath(),
                             "recipe_url", "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz");
-        env.addInitializer("chef-solo", new UbuntuChefSoloInitializer(attributes));
+        Environment env = new Environment("ec2",
+                                          ImmutableMap.<String, Provisioner>of("ec2", p),
+                                          ImmutableMap.<String, Initializer>of("chef-solo", new UbuntuChefSoloInitializer(attributes)));
 
+
+        ServerTemplate st = new ServerTemplate("server");
+        st.setBase("java-core");
+
+        Base java_core = new Base("java-core", env, "ec2",
+                                  ImmutableList.<Initialization>of(Initialization.parseUriForm("atlas"),
+                                                                   Initialization.parseUriForm("chef-solo:role[java-core]")),
+                                  ImmutableMap.<String, String>of("ami", "ami-e2af508b"));
+        env.addBase(java_core);
 
         BoundTemplate bt = st.normalize(env);
         ExecutorService ex = Executors.newCachedThreadPool();
@@ -183,22 +190,19 @@ public class TestUbuntuChefSoloInitializer
     {
         assumeThat(System.getProperty("RUN_EC2_TESTS"), notNullValue());
 
-        Environment env = new Environment("ec2");
-        env.setProvisioner(ec2);
-
-        ServerTemplate st = new ServerTemplate("server");
-        st.setBase("java-core");
-
-        Base java_core = new Base("java-core", env, ImmutableMap.<String, String>of("ami", "ami-e2af508b"));
-        java_core.addInit("chef-solo:{\"run_list\":[\"role[server]\"]}");
-        env.addBase(java_core);
-
         Map<String, String> attributes =
             ImmutableMap.of("ssh_user", "ubuntu",
                             "ssh_key_file", new File(props.getProperty("aws.key-file-path")).getAbsolutePath(),
                             "recipe_url", "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz");
-        env.addInitializer("chef-solo", new UbuntuChefSoloInitializer(attributes));
+        Environment env = new Environment("ec2", ImmutableMap.<String, Provisioner>of("ec2", ec2), ImmutableMap.<String, Initializer>of("chef-solo", new UbuntuChefSoloInitializer(attributes)), null);
 
+        ServerTemplate st = new ServerTemplate("server");
+        st.setBase("java-core");
+
+        Base java_core = new Base("java-core", env, "ec2",
+                                  ImmutableList.<Initialization>of(Initialization.parseUriForm("chef-solo:{\"run_list\":[\"role[server]\"]}")),
+                                  ImmutableMap.<String, String>of("ami", "ami-e2af508b"));
+        env.addBase(java_core);
 
         BoundTemplate bt = st.normalize(env);
         ExecutorService ex = Executors.newCachedThreadPool();
@@ -226,18 +230,21 @@ public class TestUbuntuChefSoloInitializer
     public void testEndToEndOnEC2() throws Exception
     {
         assumeThat(System.getProperty("RUN_EC2_TESTS"), notNullValue());
-
-        Environment env = new Environment("ec2");
-        env.setProvisioner(ec2);
-
-        Base java_core = new Base("server", env, ImmutableMap.<String, String>of("ami", "ami-e2af508b"));
-        java_core.addInit("chef-solo:role[server]");
-        env.addBase(java_core);
-
         Map<String, String> attributes =
             ImmutableMap.of("ssh_user", "ubuntu",
                             "ssh_key_file", new File(props.getProperty("aws.key-file-path")).getAbsolutePath(),
                             "recipe_url", "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz");
+        Environment env = new Environment("ec2",
+                                          ImmutableMap.<String, Provisioner>of("ec2", ec2),
+                                          ImmutableMap.<String, Initializer>of("chef-solo", new UbuntuChefSoloInitializer(attributes)),
+                                          null);
+
+        Base java_core = new Base("server", env, "ec2",
+                                  ImmutableList.<Initialization>of(Initialization.parseUriForm("chef-solo:role[server]")),
+                                  ImmutableMap.<String, String>of("ami", "ami-e2af508b"));
+        env.addBase(java_core);
+
+
         env.addInitializer("chef-solo", new UbuntuChefSoloInitializer(attributes));
 
 

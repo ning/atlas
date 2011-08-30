@@ -13,10 +13,12 @@ import java.util.Map;
 public class InstalledServer extends InstalledElement
 {
     private final Server server;
+    private final Map<String, String> environmentProperties;
 
-    public InstalledServer(String type, String name, My my, Server installed)
+    public InstalledServer(String type, String name, My my, Server installed, Map<String, String> environmentProperties)
     {
         super(type, name, my);
+        this.environmentProperties = environmentProperties;
         this.server = installed;
     }
 
@@ -34,7 +36,7 @@ public class InstalledServer extends InstalledElement
 
     @JsonProperty("environment")
     public Map<String, String> getEnvironmentProperties() {
-        return this.server.getEnvironmentProperties();
+        return environmentProperties;
     }
 
     @Override

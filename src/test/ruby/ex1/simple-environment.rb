@@ -9,7 +9,7 @@ environment "test" do
       :ugx_path     => "/home/ugx/deploy"
   }
 
-  provisioner com.ning.atlas.aws.EC2Provisioner, {
+  provisioner "ec2", com.ning.atlas.aws.EC2Provisioner, {
       :access_key => "",
       :secret_key => "",
       :keypair_id => "brianm-ning",
@@ -21,5 +21,7 @@ environment "test" do
       :recipe_url   => "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz"
   }
 
-  base "concrete", :tag => "ami-1234", :init => ['chef-solo:{ "run_list": "role[java-core]" }']
+  base "concrete", :provisioner => "ec2",
+                   :tag => "ami-1234",
+                   :init => ['chef-solo:{ "run_list": "role[java-core]" }']
 end
