@@ -49,11 +49,14 @@ code.sourceCode span.er { color: red; font-weight: bold; }
 </ul></li>
 <li><a href="#initializers">Initializers</a><ul>
 <li><a href="#com.ning.atlas.atlasinitializer">com.ning.atlas.AtlasInitializer</a></li>
+<li><a href="#com.ning.atlas.galaxy.microgalaxyinitializer">com.ning.atlas.galaxy.MicroGalaxyInitializer</a></li>
 <li><a href="#com.ning.atlas.chef.ubuntuchefsoloinitializer">com.ning.atlas.chef.UbuntuChefSoloInitializer</a></li>
 </ul></li>
 <li><a href="#installers">Installers</a><ul>
 <li><a href="#com.ning.atlas.galaxy.microgalaxyinstaller">com.ning.atlas.galaxy.MicroGalaxyInstaller</a></li>
 <li><a href="#com.ning.atlas.galaxy.galaxyinstaller">com.ning.atlas.galaxy.GalaxyInstaller</a></li>
+<li><a href="#com.ning.atlas.oracle.oracleloaderinstaller">com.ning.atlas.oracle.OracleLoaderInstaller</a></li>
+<li><a href="#com.ning.atlas.aws.elbinstaller">com.ning.atlas.aws.ELBInstaller</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#system-specification">System specification</a></li>
@@ -154,6 +157,7 @@ chmod +x target/atlas
 <pre class="sourceCode"><code class="sourceCode ruby">provisioner com.ning.atlas.aws.<span class="dt">RDSProvisioner</span>, {<br />  <span class="st">:access_key</span> =&gt; ec2_access_key,<br />  <span class="st">:secret_key</span> =&gt; ec2_secret_key<br />}<br /><br />base <span class="st">&quot;oracle&quot;</span>, {<br />  <span class="st">:storage_size</span> =&gt; <span class="dv">10</span>,<br />  <span class="st">:instance_class</span> =&gt; <span class="st">&quot;db.m1.small&quot;</span>,<br />  <span class="st">:engine</span> =&gt; <span class="st">&quot;oracle-se1&quot;</span>,<br />  <span class="st">:username</span> =&gt; <span class="st">&quot;user&quot;</span>,<br />  <span class="st">:password</span> =&gt; <span class="st">&quot;password&quot;</span>,<br />  <span class="st">:license_model</span> =&gt; <span class="st">&quot;bring-your-own-license&quot;</span><br />}</code></pre>
 <h5 id="com.ning.atlas.virtualbox.vboxprovisioner"><a href="#TOC">com.ning.atlas.virtualbox.VBoxProvisioner</a></h5>
 <p>The <code>VBoxProvisioner</code> provisions <a href="http://www.virtualbox.org/">VirtualBox</a> instances. For more information about VirtualBox see the <a href="http://www.virtualbox.org/manual/UserManual.html">VirtualBox user documentation</a>.</p>
+<p>For this provisioner to work, Oracle VirtualBox 4.1.0 or newer is required. The VirtualBox image must also contain the <a href="http://www.virtualbox.org/manual/ch04.html">Guest Additions</a> for Atlas to work correctly. It is important to note that the <code>virtualbox-ose-guest-utils</code> Debian package will not work for this. Instead, use the correct version of the VBoxGuestAdditions ISO provided from the <a href="http://download.virtualbox.org/virtualbox/">official site</a>.</p>
 <p>The provisioner needs these environment configuration options:</p>
 <ul>
 <li><code>pub_key_file</code>: The file path to the public key to allow password-less SSH login into the instances.</li>
@@ -177,10 +181,12 @@ chmod +x target/atlas
 <pre class="sourceCode"><code class="sourceCode ruby">provisioner com.ning.atlas.<span class="dt">StaticTaggedServerProvisioner</span>, {<br />  <span class="st">:tag1</span>  =&gt; [<span class="st">&quot;server1&quot;</span>, <span class="st">&quot;server2&quot;</span>]<br />  <span class="st">:tag2</span>  =&gt; [<span class="st">&quot;server3&quot;</span>]<br />}<br /><br />base <span class="st">&quot;server&quot;</span>, {<br />  <span class="st">:tag</span> =&gt; <span class="st">&quot;tag1&quot;</span><br />}</code></pre>
 <h3 id="initializers"><a href="#TOC">Initializers</a></h3>
 <p>Initializers are used to configure the provisioned instances so that they can actually run services. Think of them as the part of the tool that deploys all that base software that is needed to run your software, but is not actually part of your software. Things like ruby, java, ...</p>
-<p>Atlas defines two initializers at the moment, <code>com.ning.atlas.AtlasInitializer</code> and <code>com.ning.atlas.chef.UbuntuChefSoloInitializer</code>.</p>
-<p>Initializers are triggered via a URN in the <code>init</code> attribute of the <code>base</code> element. For instance this <code>base</code> element:</p>
+<p>Atlas defines these initializers at the moment: * <code>com.ning.atlas.AtlasInitializer</code> for initializing a provisioned system with Atlas-related info such as the system map. * <code>com.ning.atlas.galaxy.MicroGalaxyInitializer</code> for deploying software with <a href="https://github.com/brianm/ugalaxy">uGalaxy</a>. * <code>com.ning.atlas.chef.UbuntuChefSoloInitializer</code> for deploying software with <a href="http://wiki.opscode.com/display/chef/Chef+Solo">Chef Solo</a>.</p>
+<p>Initializers are triggered via a URN in the <code>init</code> attribute of the <code>base</code> element which reference previously declared initializers. For instance given these initializer definitions:</p>
+<pre class="sourceCode"><code class="sourceCode ruby">initializer <span class="st">&quot;atlas&quot;</span>, com.ning.atlas.<span class="dt">AtlasInitializer</span>, {<br />    ...<br />}<br />initializer <span class="st">&quot;chef&quot;</span>, com.ning.atlas.chef.<span class="dt">UbuntuChefSoloInitializer</span>, {<br />    ...<br />}</code></pre>
+<p>this <code>base</code> element:</p>
 <pre class="sourceCode"><code class="sourceCode ruby">base <span class="st">&quot;ruby-server&quot;</span>, {<br />  <span class="st">:ami</span> =&gt; <span class="st">&quot;ami-e2af508b&quot;</span>,<br />  <span class="st">:init</span> =&gt; [<span class="st">'atlas'</span>, <span class="st">'chef:role[ruby_server]'</span>]<br />}</code></pre>
-<p>will trigger two initializers, <code>atlas</code> and <code>chef</code>. For every server that is deployed with this base system, these two initializers will run in the specified order.</p>
+<p>will trigger the two named initializers, <code>atlas</code> and <code>chef</code>. For every server that is deployed with this base system <code>ruby-server</code>, these two initializers will run in the specified order.</p>
 <h5 id="com.ning.atlas.atlasinitializer"><a href="#TOC">com.ning.atlas.AtlasInitializer</a></h5>
 <p>This initializer is required for proper working of Atlas because other initializers usually depend on the data it puts on the individual instances. It performs two simple functions:</p>
 <ul>
@@ -193,9 +199,23 @@ chmod +x target/atlas
 <li><code>ssh_key_file</code>: The ssh private key file.</li>
 </ul>
 <p>Both of these depends on the how the instance is setup. For EC2 for instance, the ssh user is defined by the AMI and the private key file can be retrieved from AWS.</p>
-<p>This initializer is triggered by specifying <code>atlas</code> in the <code>init</code> property of the <code>base</code> element.</p>
+<p>This initializer is triggered by specifying the atlas initializer's name in the <code>init</code> property of the <code>base</code> element.</p>
 <p>Example:</p>
 <pre class="sourceCode"><code class="sourceCode ruby">initializer <span class="st">&quot;atlas&quot;</span>, com.ning.atlas.<span class="dt">AtlasInitializer</span>, {<br />  <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />  <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span><br />}<br />base <span class="st">&quot;ruby-server&quot;</span>, {<br />  <span class="st">:ami</span> =&gt; <span class="st">&quot;ami-e2af508b&quot;</span>,<br />  <span class="st">:init</span> =&gt; [<span class="st">'atlas'</span>, <span class="st">'chef:role[ruby_server]'</span>]<br />}</code></pre>
+<h5 id="com.ning.atlas.galaxy.microgalaxyinitializer"><a href="#TOC">com.ning.atlas.galaxy.MicroGalaxyInitializer</a></h5>
+<p>This initializer uses a standalone version of <a href="https://github.com/ning/galaxy">Galaxy</a> called <a href="https://github.com/brianm/ugalaxy">uGalaxy</a> to deploy software. It is basically the same as the <a href="#com.ning.atlas.galaxy.MicroGalaxyInstaller">com.ning.atlas.galaxy.MicroGalaxyInstaller</a> explained further below except that it can be run in the initializer phase and thus can be used to install software required for Galaxy or uGalaxy.</p>
+<p>The initializer needs these environment configuration options:</p>
+<ul>
+<li><code>ssh_user</code>: The ssh user name for the instance.</li>
+<li><code>ssh_key_file</code>: The ssh private key file.</li>
+<li><code>ugx_user</code>: The user to run uGalaxy as.</li>
+</ul>
+<p>The uGalaxy initializer is triggered by using</p>
+<pre><code>&lt;uGalaxy initializer name&gt;:&lt;url&gt;
+</code></pre>
+<p>in the <code>init</code> property of the <code>base</code> element where the url points to the tarball containing the software to deploy.</p>
+<p>Example:</p>
+<pre class="sourceCode"><code class="sourceCode ruby">installer <span class="st">&quot;ugx&quot;</span>, com.ning.atlas.galaxy.<span class="dt">MicroGalaxyInstaller</span>, {<br />  <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />  <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>rc[<span class="st">'keypair_id'</span>]<span class="ot">}</span><span class="st">.pem&quot;</span>,<br />  <span class="st">:ugx_user</span>     =&gt; <span class="st">&quot;ugx&quot;</span><br />}<br /><br />base <span class="st">&quot;ruby-server&quot;</span>, {<br />  <span class="st">:ami</span> =&gt; <span class="st">&quot;ami-e2af508b&quot;</span>,<br />  <span class="st">:init</span> =&gt; [<span class="st">&quot;ugx:http://my-atlas-resources.s3.amazonaws.com/ruby-server.tar.gz&quot;</span>]<br />}</code></pre>
 <h5 id="com.ning.atlas.chef.ubuntuchefsoloinitializer"><a href="#TOC">com.ning.atlas.chef.UbuntuChefSoloInitializer</a></h5>
 <p>This initializer uses <a href="http://wiki.opscode.com/display/chef/Chef+Solo">Chef Solo</a> to put bits on the provisioned machines/instances. There are lots of tutorials on chef solo, so we won't go into detail here on what it can do and how it does things.</p>
 <p>The initializer needs these environment configuration options:</p>
@@ -211,7 +231,7 @@ chmod +x target/atlas
 </ul>
 <p>They can be used to access private S3 files. For that, they only need to be read-only as the initializer only uses them to download the resource from S3.</p>
 <p>This initializer is triggered by using a URN of the form</p>
-<pre><code>chef:&lt;spec&gt;
+<pre><code>&lt;chef initializer name&gt;:&lt;spec&gt;
 </code></pre>
 <p>in the <code>init</code> property of the <code>base</code> element. The <code>spec</code> part can either contain a complete chef <a href="http://wiki.opscode.com/display/chef/Setting+the+run_list+in+JSON+during+run+time">run_list</a>:</p>
 <pre><code>chef:{&quot;run_list&quot;:[&quot;role[base]&quot;,&quot;role[master]&quot;,&quot;recipe[nagios::server]&quot;]}
@@ -219,26 +239,27 @@ chmod +x target/atlas
 <p>or a simplified form where Atlas builds the run list out of specified rols and recipes</p>
 <pre><code>chef:role[base],role[master],recipe[nagios::server]
 </code></pre>
-<p>What this initializer actually does, is explained below in the <a href="#system-specification">system specification</a> section.</p>
+<p>The initializer will then use Chef Solo to apply all recipes (found at the specified recipe url) necessary to put the machine/instance into these roles.</p>
 <p>Example:</p>
-<pre class="sourceCode"><code class="sourceCode ruby">initializer <span class="st">&quot;chef&quot;</span>, com.ning.atlas.chef.<span class="dt">UbuntuChefSoloInitializer</span>, {<br />  <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />  <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span>,<br />  <span class="st">:recipe_url</span>   =&gt; <span class="st">&quot;s3://my-atlas-resources/chef-solo.tar.gz&quot;</span>,<br />  <span class="st">:s3_access_key</span> =&gt; s3_access_key,<br />  <span class="st">:s3_secret_key</span> =&gt; s3_secret_key<br />}<br />base <span class="st">&quot;ruby-server&quot;</span>, {<br />  <span class="st">:ami</span> =&gt; <span class="st">&quot;ami-e2af508b&quot;</span>,<br />  <span class="st">:init</span> =&gt; [<span class="st">'atlas'</span>, <span class="st">'chef:role[ruby_server]'</span>]<br />}</code></pre>
+<pre class="sourceCode"><code class="sourceCode ruby">initializer <span class="st">&quot;chef&quot;</span>, com.ning.atlas.chef.<span class="dt">UbuntuChefSoloInitializer</span>, {<br />  <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />  <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span>,<br />  <span class="st">:recipe_url</span>   =&gt; <span class="st">&quot;s3://my-atlas-resources/chef-solo.tar.gz&quot;</span>,<br />  <span class="st">:s3_access_key</span> =&gt; s3_access_key,<br />  <span class="st">:s3_secret_key</span> =&gt; s3_secret_key<br />}<br /><br />base <span class="st">&quot;ruby-server&quot;</span>, {<br />  <span class="st">:ami</span> =&gt; <span class="st">&quot;ami-e2af508b&quot;</span>,<br />  <span class="st">:init</span> =&gt; [<span class="st">'atlas'</span>, <span class="st">'chef:role[ruby_server]'</span>]<br />}</code></pre>
+<p>This will provision an EC2 instance (provisioner not shown) using the Ubuntu AMI ami-e2af508b, and then use Chef Solo to apply the <code>ruby-server</code> role as defined in the corresponding recipse in <code>s3://my-atlas-resources/chef-solo.tar.gz</code>.</p>
 <h3 id="installers"><a href="#TOC">Installers</a></h3>
 <p>Installers are what you use to deploy your services into the environment. The distinction between initializers and installers is a bit arbitrary. You can perfectly well only use initializers if you have packages that for instance can be installed with Chef Solo.</p>
-<p>The main difference between initializers and installers is that installers are designed in a way that they can be run multiple times against the same machine/instance. Initializers don't have this as an explicit feature (though they might support it).</p>
+<p>The main difference between initializers and installers is that installers are designed in a way that they can be run multiple times against the same machine/instance. Initializers don't require this explicitly (though depending on the initializer, they might support it).</p>
 <p>You would use installers if a distinction between base packages (such as Ruby or Apache Httpd) and your service (e.g. a Rails app or some web pages served by Apache Httpd) makes sense. You can usually tell by the frequency of the updates to the component: Ruby updates tend to be rare whereas you might deploy your Rails app several times a week or even more often. In this case, you would use an installer for the rails app.</p>
 <p>Installers are usually tied to a separate tool that manages deployments. Atlas currently only supports <a href="https://github.com/ning/galaxy">Galaxy</a> but adding support for other tools such as <a href="https://github.com/capistrano/capistrano/wiki/">Capistrano</a>, <a href="https://github.com/etsy/deployinator">Deployinator</a> or <a href="http://cast-project.org/">Cast</a> should be straightforward.</p>
 <p>Both the environment and the system specification contain properties used by the installers. The environment specification contains the settings that allow the deployment tool to be used in the environemnt, such as SSH settings. The system specification on the other hand contains the settings that tell the deployment tool what it should actually install. Most installers simply use a URL/URN scheme in the <code>install</code> property of the <code>server</code> element (described below in the system specification).</p>
 <p>Atlas also uses installers to deploy other types of services, such as load balancers (i.e. <a href="http://aws.amazon.com/elasticloadbalancing/">Amazon ELB</a> and databases. This makes it easy to initialize these services, e.g. setup a schema and data in a database or configure the load balancer for a set of services.</p>
 <h5 id="com.ning.atlas.galaxy.microgalaxyinstaller"><a href="#TOC">com.ning.atlas.galaxy.MicroGalaxyInstaller</a></h5>
-<p>This installer uses a standalone version of <a href="https://github.com/ning/galaxy">Galaxy</a> called <a href="https://github.com/brianm/ugalaxy">uGalaxy</a> to deploy services.</p>
+<p>This installer uses a standalone version of <a href="https://github.com/ning/galaxy">Galaxy</a> called <a href="https://github.com/brianm/ugalaxy">uGalaxy</a> to deploy services. It is basically the same as the <a href="#com.ning.atlas.galaxy.MicroGalaxyInitializer">com.ning.atlas.galaxy.MicroGalaxyInitializer</a> explained further above except that it is run in the installer phase.</p>
 <p>The installer needs these environment configuration options:</p>
 <ul>
 <li><code>ssh_user</code>: The ssh user name for the instance.</li>
 <li><code>ssh_key_file</code>: The ssh private key file.</li>
 <li><code>ugx_user</code>: The user to run uGalaxy as.</li>
 </ul>
-<p>To use the micro-galaxy installer, specify a URL of the form</p>
-<pre><code>ugx:&lt;url&gt;
+<p>To use the uGalaxy installer, specify a URL of the form</p>
+<pre><code>&lt;uGalaxy installer name&gt;:&lt;url&gt;
 </code></pre>
 <p>in the <code>install</code> property for the <code>server</code> element. The url points to the tarball containing the service to deploy.</p>
 <p>Example:</p>
@@ -253,24 +274,51 @@ chmod +x target/atlas
 <p>There are two ways to trigger the galaxy installer:</p>
 <ul>
 <li>Specify a galaxy role via the <code>galaxy</code> property on the <code>server</code> element.</li>
-<li><p>Use an <code>install</code> url of the form</p>
-<p>galaxy:env/version/type</p></li>
+<li>Use an <code>install</code> url of the form</li>
 </ul>
-<p>The first form is used to deploy parts of galaxy itself. The <code>galaxy</code> property has three possible values:</p>
+<pre><code>&lt;galaxy installer name&gt;:&lt;env&gt;/&lt;version&gt;/&lt;type&gt;
+</code></pre>
+<p>where <code>env</code> specifies the environment, <code>version</code> the version of the service, and <code>type</code> the type of the service.</p>
+<p>The galaxy role form is used to deploy parts of galaxy itself. The <code>galaxy</code> property has three possible values:</p>
 <ul>
 <li><code>shell</code>: A generic shell server including the galaxy commandline tool.</li>
 <li><code>console</code>: The galaxy console.</li>
 <li><code>repository</code>: The file repository containing the deployable artifacts.</li>
 </ul>
-<p>The latter two are required or galaxy can't deploy anything else (<code>install</code> properties). A shell is not strictly required but useful if you want to interact with galaxy manually.</p>
+<p>The <code>console</code> and <code>repository</code> are required or galaxy won't be able to deploy anything else. A shell is not strictly required but useful if you want to interact with galaxy manually.</p>
 <p>Example:</p>
 <pre class="sourceCode"><code class="sourceCode ruby">installer <span class="st">&quot;galaxy&quot;</span>, com.ning.atlas.galaxy.<span class="dt">GalaxyInstaller</span>, {<br />  <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />  <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span>,<br />}</code></pre>
 <pre class="sourceCode"><code class="sourceCode ruby">server <span class="st">&quot;echo&quot;</span>,<br />  <span class="st">:base</span> =&gt; <span class="st">&quot;ruby-server&quot;</span>,<br />  <span class="st">:install</span> =&gt; [<span class="st">&quot;galaxy:myenv/v1/echo&quot;</span>]</code></pre>
-<h2 id="system-specification"><a href="#TOC">System specification</a></h2>
+<h5 id="com.ning.atlas.oracle.oracleloaderinstaller"><a href="#TOC">com.ning.atlas.oracle.OracleLoaderInstaller</a></h5>
+<p>The Oracle installer provides a way to initialize the schema and data in an Amazon RDS Oracle database instance by passing specified text files containing DDL/DML statements to Oracle's <a href="http://download.oracle.com/docs/cd/B28359_01/server.111/b31189/toc.htm">SQL*Plus</a>.</p>
+<p>It needs these environment configuration options:</p>
 <ul>
-<li><code>Java</code> (of course!)</li>
-<li>If you are using <code>VBoxProvisioner</code>, <code>Oracle VirtualBox 4.1.0</code> or above is required. The VirtualBox image must also contain <a href="http://www.virtualbox.org/manual/ch04.html">Guest Additions</a> for Atlas to provision correctly. It is important to note that the <code>virtualbox-ose-guest-utils</code> Debian package will not work, and you should use the correct version of the VBoxGuestAdditions ISO provided from the <a href="http://download.virtualbox.org/virtualbox/">official site</a>.</li>
+<li><code>ssh_user</code>: The ssh user name for the instance.</li>
+<li><code>ssh_key_file</code>: The ssh private key file.</li>
+<li><code>sql_url_template</code>: This is a <a href="http://www.stringtemplate.org/">StringTemplate</a> to generate the S3 urls for the schema files. This is explained further below.</li>
 </ul>
+<p>The installer is triggered by using an URN of the form</p>
+<pre><code>&lt;oracle installer name&gt;:&lt;data&gt;
+</code></pre>
+<p>in the <code>install</code> property for the <code>server</code> element. The data part of the URN contains key value pairs of the form</p>
+<pre><code>&lt;oracle installer name&gt;:key1=value1;key2=value2;...
+</code></pre>
+<p>These keys can then be referenced in the url template. E.g. typically you template the file name like so:</p>
+<pre class="sourceCode"><code class="sourceCode ruby">installer <span class="st">&quot;oracle&quot;</span>, com.ning.atlas.oracle.<span class="dt">OracleLoaderInstaller</span>, {<br />  <span class="st">:sql_url_template</span> =&gt; <span class="st">&quot;s3://my-atlas-resources/$file$&quot;</span>,<br />  <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />  <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>rc[<span class="st">'keypair_id'</span>]<span class="ot">}</span><span class="st">.pem&quot;</span><br />}</code></pre>
+<pre class="sourceCode"><code class="sourceCode ruby">server <span class="st">&quot;userdb&quot;</span>,<br />  <span class="st">:base</span> =&gt; <span class="st">&quot;oracle&quot;</span>,<br />  <span class="st">:install</span> =&gt; [<span class="st">&quot;oracle:file=userdb-ddl.sql&quot;</span>],<br />  <span class="st">:db_role</span> =&gt; [<span class="st">'user'</span>]</code></pre>
+<p>This will make the oracle installer look for a file <code>s3://my-atlas-resources/userdb-ddl.sql</code> when initializing a server <code>userdb</code>.</p>
+<h5 id="com.ning.atlas.aws.elbinstaller"><a href="#TOC">com.ning.atlas.aws.ELBInstaller</a></h5>
+<p>This installer allows to register servers with Amazon's <a href="https://aws.amazon.com/elasticloadbalancing/">Elastic Load Balancer</a>.</p>
+<p>For this, it needs these environment configuration options:</p>
+<ul>
+<li><code>access_key</code>: The EC2 access key.</li>
+<li><code>secret_key</code>: The EC2 secret key.</li>
+</ul>
+<p>The installer is triggered by specifying the name of the installer in the <code>install</code> property for the <code>server</code> element.</p>
+<p>Example:</p>
+<pre class="sourceCode"><code class="sourceCode ruby">installer <span class="st">&quot;ugx&quot;</span>, com.ning.atlas.galaxy.<span class="dt">MicroGalaxyInstaller</span>, {<br />    ...<br />}<br /><br />installer <span class="st">&quot;elb&quot;</span>, com.ning.atlas.aws.<span class="dt">ELBInstaller</span>, {<br />  <span class="st">:access_key</span> =&gt; rc[<span class="st">'access_key'</span>],<br />  <span class="st">:secret_key</span> =&gt; rc[<span class="st">'secret_key'</span>]<br />}</code></pre>
+<pre class="sourceCode"><code class="sourceCode ruby">server <span class="st">&quot;echo&quot;</span>,<br />  <span class="st">:base</span> =&gt; <span class="st">&quot;ruby-server&quot;</span>,<br />  <span class="st">:install</span> =&gt; [<span class="st">&quot;ugx:http://my-atlas-resources.s3.amazonaws.com/echo.tar.gz&quot;</span>, <span class="st">&quot;elb&quot;</span>]</code></pre>
+<h2 id="system-specification"><a href="#TOC">System specification</a></h2>
 <h1 id="running"><a href="#TOC">Running</a></h1>
 <p>Invoking atlas without any arguments will show the basic help</p>
 <pre><code>$ atlas
