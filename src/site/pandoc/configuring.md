@@ -23,9 +23,16 @@ An environment specification file typically has this structure:
 #   provisioner declarations
 #   initializer declarations
 #   installer declarations
-#   base declarations
+#   base element declarations
 # additional environment definitions as necessary
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The specification consists of these parts:
+
+* Provisioners setup basic machines (bare machine + OS). For example, the EC2 provisioner will setup an instance with a chosen AMI.
+* Initializers put basic system software onto these machines (e.g. ruby, java, ...).
+* Installers deploy the actual software onto these machines. These are primarily used in the system definition.
+* Base elements tie provisioners and initializers together to form blueprints for individual servers.
 
 A simple environment configuration for EC2 might look like this:
 
@@ -478,13 +485,16 @@ to apply the ``ruby-server`` role as defined in the corresponding recipse in ``s
 
 ### Installers
 
-Installers are what you use to deploy your services into the environment. The distinction between initializers
+Installers are what you use to deploy your services onto specific servers. The distinction between initializers
 and installers is a bit arbitrary. You can perfectly well only use initializers if you have packages that for
 instance can be installed with Chef Solo.
 
-The main difference between initializers and installers is that installers are designed in a way that they
-can be run multiple times against the same machine/instance. Initializers don't require this explicitly (though depending
-on the initializer, they might support it).
+There are two main differences between initializers and installers:
+* Initializers are part of the environment specification and used via base elements (blueprints). Installers on the other hand
+  are used to put the actual service onto these provisioned/initialized system when a server is actually created, and are thus
+  part of the system specification.
+* Installers are designed in a way that they can be run multiple times against the same already provisioned/initialized
+  machine/instance. Initializers don't require this explicitly (though depending on the initializer, they might support it).
 
 You would use installers if a distinction between base packages (such as Ruby or Apache Httpd) and your service
 (e.g. a Rails app or some web pages served by Apache Httpd) makes sense. You can usually tell by the frequency
