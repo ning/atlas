@@ -73,8 +73,23 @@ environment "ec2" do
 end
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This configuration defines one ec2 provisionier, two initializers and one installer, and it
+This configuration defines one ec2 provisioner, two initializers and one installer, and it
 declares two bases that then can be used in the system configuration.
+
+Environments can be nested. The inner environment will inherit all definitions from the outer
+environment, but not the other way around. This is mostly useful for providing provisioner
+scoping for [base elements](#base-element) as they automatically use the provisioner defined
+in the environment, and there can only be one provisioner per environment. For instance, for
+an EC2 environment with an RDS database, you'd use a structure like:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+environment "ec2" do
+  ...
+  environment "rds-databases" do
+  ...
+  end
+end
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ### Reading configuration values from a file
 
@@ -107,6 +122,44 @@ provisioner com.ning.atlas.aws.EC2Provisioner, {
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+### Base element
+
+The base element defines blueprints for servers which is provisioned and initialized. The system 
+configuration contains the corresponding server elements which 'instantiates' the base element blueprint
+and deploys services via installers.
+
+The base element consists of a set of attributes to be used by the provisioners and initializers described
+further below, plus the optional special attribute ``init`` that defines any initializers to use for for
+the blueprint.
+
+The base element will automatically use the provisioner defined in the environment in which the base
+element is defined. It is up to provisioners to determine if they should run or not. For instance, the
+EC2 provisioner checks for the presence of the ``ami`` attribute. If it is defined, then it will run
+when a server is created using the base element.
+
+Examples:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+base "ruby-server", {
+  :ami => "ami-e2af508b",
+  :instance_type => "m1.large"
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This defines a blue print called ``ruby-server`` for an EC2 instance using the AMI ``ami-e2af508b`` on
+an ``m1.large`` instance. Both of these attributes are used by the EC2 provisioner described
+[below](com.ning.atlas.aws.EC2Provisioner).
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+base "ruby-server", {
+  :ami => "ami-e2af508b",
+  :init => ['atlas', 'chef:role[ruby_server]']
+}
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is a variation of the above that doesn't specify the instance type for the EC2 provisioner (which
+then will use the default value), and instead it specifies two initializers, ``atlas`` and ``chef``.
+
 ### Provisioners
 
 A provisioner is responsible for provisioning bare machines/instances. Atlas currently has
@@ -116,6 +169,9 @@ these provisioners:
 * ``com.ning.atlas.aws.RDSProvisioner`` for provisioning on Amazon RDS 
 * ``com.ning.atlas.virtualbox.VBoxProvisioner`` for provisioning VirtualBox instances.
 * ``com.ning.atlas.StaticTaggedServerProvisioner`` for incorporating already provisioned machines.
+
+A given environment can have only one provisioner defined which will then automatically be used
+by all base elements defined in that environment.
 
 ##### com.ning.atlas.aws.EC2Provisioner
 
@@ -128,8 +184,7 @@ explanation of what these mean):
 * ``keypair_id``: The name of the private key ``.pem`` file which is used to ssh to EC2 machines,
   without the ``.pem`` file extension.
 
-It makes use of two additional properties defined in the [base element](#base) (which is explained
-further below):
+It makes use of two additional properties defined in the [base element](#base-element):
 
 * ``ami``: The AMI identifier, e.g. ``ami-e2af508b``.
 * ``instance_type``: The [type of the instance](http://aws.amazon.com/ec2/instance-types/), e.g. ``m1.large``.
@@ -159,7 +214,7 @@ The provisioner needs these environment configuration options:
 * ``access_key``: The EC2 access key.
 * ``secret_key``: The EC2 secret key.
 
-In addition, it makes use of these [base element](#base) properties:
+In addition, it makes use of these [base element](#base-element) properties:
 
 * ``license_model``: The license model for the database instance. One of ``license-included``, ``bring-your-own-license``,
   ``general-public-license``. Default is ``general-public-license``. For MySQL, this is the only valid option.
@@ -189,7 +244,6 @@ base "oracle", {
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 ##### com.ning.atlas.virtualbox.VBoxProvisioner
 
 The ``VBoxProvisioner`` provisions [VirtualBox](http://www.virtualbox.org/) instances. For more information about VirtualBox 
@@ -212,7 +266,7 @@ You can find the appropriate values by running the following command in terminal
 $ VBoxManage list bridgedifs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-It makes use of these additional properties defined in the [base element](#base):
+It makes use of these additional properties defined in the [base element](#base-element):
 
 * ``image``: The file path to the virtual appliance in Open Virtualization Format (OVF) or Open Virtualization Archive (OVA)
 which will be imported to create the virtual machines. This is explained in more detail in the
@@ -239,7 +293,7 @@ base "server", {
 ##### com.ning.atlas.StaticTaggedServerProvisioner
 
 This provider can be used to incorporate fixed, already provisioned servers into the environment. The provider itself
-is used to specify the available servers, keyed by tags that can then be used in the [base element](#base) to
+is used to specify the available servers, keyed by tags that can then be used in the [base element](#base-element) to
 retrieve a server for initializer/installer use.
 
 Eample:
@@ -254,7 +308,6 @@ base "server", {
   :tag => "tag1"
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 ### Initializers
 
