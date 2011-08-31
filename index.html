@@ -37,7 +37,10 @@ code.sourceCode span.er { color: red; font-weight: bold; }
 <li><a href="#introduction">Introduction</a></li>
 <li><a href="#where-to-get-it">Where to get it</a></li>
 <li><a href="#minute-quick-start">5 minute quick start</a></li>
+<li><a href="#mailing-list">Mailing list</a></li>
 <li><a href="#building">Building</a></li>
+<li><a href="#running">Running</a></li>
+<li><a href="#output">Output</a></li>
 <li><a href="#configuration">Configuration</a><ul>
 <li><a href="#environment-specification">Environment specification</a><ul>
 <li><a href="#reading-configuration-values-from-a-file">Reading configuration values from a file</a></li>
@@ -60,13 +63,10 @@ code.sourceCode span.er { color: red; font-weight: bold; }
 <li><a href="#com.ning.atlas.aws.elbinstaller">com.ning.atlas.aws.ELBInstaller</a></li>
 </ul></li>
 </ul></li>
-<li><a href="#system-specification">System specification</a></li>
+<li><a href="#system-specification">System specification</a><ul>
+<li><a href="#system-element">System element</a></li>
+<li><a href="#server-element">Server element</a></li>
 </ul></li>
-<li><a href="#running">Running</a></li>
-<li><a href="#output">Output</a></li>
-<li><a href="#resources">Resources</a><ul>
-<li><a href="#virtualbox">VirtualBox</a></li>
-<li><a href="#getting-help">Getting Help</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -90,6 +90,8 @@ code.sourceCode span.er { color: red; font-weight: bold; }
 <p>Start stuff:</p>
 <pre><code>./target/atlas -e &lt;environment specification file&gt; -s &lt;system specification file&gt; start
 </code></pre>
+<h1 id="mailing-list"><a href="#TOC">Mailing list</a></h1>
+<p>We have a <a href="http://groups.google.com/group/atlas-dev">developer mailing list</a>.</p>
 <h1 id="building"><a href="#TOC">Building</a></h1>
 <p>The easiest way to build atlas, is to use <a href="http://rake.rubyforge.org/">rake</a> which usually comes with any decent ruby installation:</p>
 <pre><code>rake package
@@ -100,6 +102,22 @@ code.sourceCode span.er { color: red; font-weight: bold; }
 cat target/atlas-*.jar &gt;&gt; target/atlas
 chmod +x target/atlas
 </code></pre>
+<h1 id="running"><a href="#TOC">Running</a></h1>
+<p>Invoking atlas without any arguments will show the basic help</p>
+<pre><code>$ atlas
+
+Missing one or both of environment or system specification paths
+Option                                  Description
+------                                  -----------
+-e, --env, --environment                Environment specification file
+-s, --sys, --system                     System specification file
+</code></pre>
+<p>Atlas only needs two arguments on the command line: the path to the <a href="#environment-specification">environment specification</a> and the path to the <a href="#system-specification">system specification</a>. Everything else is configured within those two files.</p>
+<p>When running against EC2, you should also make sure that before invoking atlas, the ssh key is registered, e.g.:</p>
+<pre><code>$ ssh-add my-ec2-keypair.pem
+</code></pre>
+<h1 id="output"><a href="#TOC">Output</a></h1>
+<p>TBD</p>
 <h1 id="configuration"><a href="#TOC">Configuration</a></h1>
 <p>Atlas distinguishes between environment and system when it comes to configuration.</p>
 <p>The environment configuration specifies the &quot;how&quot;: how to provision machines, how to deploy services onto those machines, and so forth.</p>
@@ -107,7 +125,14 @@ chmod +x target/atlas
 <p>Both files are basically ruby files that get executed. The configuration is specified in a DSL that gets executed as normal ruby code. Thus, you can basically do whatever you want in these files as long as you can express it in ruby.</p>
 <h2 id="environment-specification"><a href="#TOC">Environment specification</a></h2>
 <p>An environment specification file typically has this structure:</p>
-<pre class="sourceCode"><code class="sourceCode ruby"><span class="co"># require statements etc.</span><br /><span class="co"># constants</span><br /><span class="co"># first environment definition</span><br /><span class="co">#   provisioner declarations</span><br /><span class="co">#   initializer declarations</span><br /><span class="co">#   installer declarations</span><br /><span class="co">#   base declarations</span><br /><span class="co"># additional environment definitions as necessary</span></code></pre>
+<pre class="sourceCode"><code class="sourceCode ruby"><span class="co"># require statements etc.</span><br /><span class="co"># constants</span><br /><span class="co"># first environment definition</span><br /><span class="co">#   provisioner declarations</span><br /><span class="co">#   initializer declarations</span><br /><span class="co">#   installer declarations</span><br /><span class="co">#   base element declarations</span><br /><span class="co"># additional environment definitions as necessary</span></code></pre>
+<p>The specification consists of these parts:</p>
+<ul>
+<li>Provisioners setup basic machines (bare machine + OS). For example, the EC2 provisioner will setup an instance with a chosen AMI.</li>
+<li>Initializers put basic system software onto these machines (e.g. ruby, java, ...).</li>
+<li>Installers deploy the actual software onto these machines. These are primarily used in the system definition.</li>
+<li>Base elements tie provisioners and initializers together to form blueprints for individual servers.</li>
+</ul>
 <p>A simple environment configuration for EC2 might look like this:</p>
 <pre class="sourceCode"><code class="sourceCode ruby"><span class="co"># EC2 access configuration, could also be read from a file</span><br />ec2_access_key = <span class="st">&quot;...&quot;</span> <span class="co"># EC2 access key</span><br />ec2_secret_key = <span class="st">&quot;...&quot;</span> <span class="co"># EC2 secret key</span><br />ec2_keypair_id = <span class="st">&quot;...&quot;</span> <span class="co"># name of the .pem file used for ssh'ing into the EC2 machines</span><br />s3_access_key  = <span class="st">&quot;...&quot;</span> <span class="co"># S3 access key</span><br />s3_secret_key  = <span class="st">&quot;...&quot;</span> <span class="co"># S3 secret key</span><br /><br />environment <span class="st">&quot;ec2&quot;</span> <span class="kw">do</span><br />  set <span class="st">&quot;xn.base-domain&quot;</span> =&gt; <span class="st">&quot;echo.xn.io&quot;</span><br /><br />  set <span class="st">&quot;aws.shared.access_key&quot;</span> =&gt; s3_access_key,<br />      <span class="st">&quot;aws.shared.secret_key&quot;</span> =&gt; s3_secret_key<br /><br />  provisioner com.ning.atlas.aws.<span class="dt">EC2Provisioner</span>, {<br />    <span class="st">:access_key</span> =&gt; ec2_access_key,<br />    <span class="st">:secret_key</span> =&gt; ec2_secret_key,<br />    <span class="st">:keypair_id</span> =&gt; ec2_keypair_id<br />  }<br /><br />  initializer <span class="st">&quot;atlas&quot;</span>, com.ning.atlas.<span class="dt">AtlasInitializer</span>, {<br />    <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />    <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span><br />  }<br /><br />  initializer <span class="st">&quot;chef&quot;</span>, com.ning.atlas.chef.<span class="dt">UbuntuChefSoloInitializer</span>, {<br />    <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />    <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span>,<br />    <span class="st">:recipe_url</span>   =&gt; <span class="st">&quot;s3://my-atlas-resources/chef-solo.tar.gz&quot;</span>,<br />    <span class="st">:s3_access_key</span> =&gt; s3_access_key,<br />    <span class="st">:s3_secret_key</span> =&gt; s3_secret_key<br />  }<br /><br />  installer <span class="st">&quot;ugx&quot;</span>, com.ning.atlas.galaxy.<span class="dt">MicroGalaxyInstaller</span>, {<br />    <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />    <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span>,<br />    <span class="st">:ugx_user</span>     =&gt; <span class="st">&quot;user&quot;</span><br />  }<br /><br />  base <span class="st">&quot;ruby-server&quot;</span>, <span class="st">:ami</span> =&gt; <span class="st">&quot;ami-e2af508b&quot;</span>, <span class="st">:init</span> =&gt; [<span class="st">'atlas'</span>, <span class="st">'chef:role[ruby_server]'</span>]<br />  base <span class="st">&quot;shell&quot;</span>,       <span class="st">:ami</span> =&gt; <span class="st">&quot;ami-e2af508b&quot;</span>, <span class="st">:init</span> =&gt; [<span class="st">'atlas'</span>, <span class="st">'chef:role[shell]'</span>]<br /><span class="kw">end</span></code></pre>
 <p>This configuration defines one ec2 provisioner, two initializers and one installer, and it declares two bases that then can be used in the system configuration.</p>
@@ -170,8 +195,24 @@ chmod +x target/atlas
 <pre class="sourceCode"><code class="sourceCode ruby">provisioner com.ning.atlas.aws.<span class="dt">RDSProvisioner</span>, {<br />  <span class="st">:access_key</span> =&gt; ec2_access_key,<br />  <span class="st">:secret_key</span> =&gt; ec2_secret_key<br />}<br /><br />base <span class="st">&quot;oracle&quot;</span>, {<br />  <span class="st">:storage_size</span> =&gt; <span class="dv">10</span>,<br />  <span class="st">:instance_class</span> =&gt; <span class="st">&quot;db.m1.small&quot;</span>,<br />  <span class="st">:engine</span> =&gt; <span class="st">&quot;oracle-se1&quot;</span>,<br />  <span class="st">:username</span> =&gt; <span class="st">&quot;user&quot;</span>,<br />  <span class="st">:password</span> =&gt; <span class="st">&quot;password&quot;</span>,<br />  <span class="st">:license_model</span> =&gt; <span class="st">&quot;bring-your-own-license&quot;</span><br />}</code></pre>
 <h5 id="com.ning.atlas.virtualbox.vboxprovisioner"><a href="#TOC">com.ning.atlas.virtualbox.VBoxProvisioner</a></h5>
 <p>The <code>VBoxProvisioner</code> provisions <a href="http://www.virtualbox.org/">VirtualBox</a> instances. For more information about VirtualBox see the <a href="http://www.virtualbox.org/manual/UserManual.html">VirtualBox user documentation</a>.</p>
-<p>For this provisioner to work, Oracle VirtualBox 4.1.0 or newer is required. The VirtualBox image must also contain the <a href="http://www.virtualbox.org/manual/ch04.html">Guest Additions</a> for Atlas to work correctly. It is important to note that the <code>virtualbox-ose-guest-utils</code> Debian package will not work for this. Instead, use the correct version of the VBoxGuestAdditions ISO provided from the <a href="http://download.virtualbox.org/virtualbox/">official site</a>.</p>
-<p>The provisioner needs these environment configuration options:</p>
+<p>For this provisioner to work, Oracle VirtualBox 4.1.0 or newer is required, and you'll need to create the appropriate image using either VirtualBox or VMWare, and then exported it in either the <a href="http://en.wikipedia.org/wiki/Open_Virtualization_Format">Open Virtualization Format</a> (OVF) file with the hard disk separate, or an Open Virtualization Archive (OVA), which is a zipped copy of the hard disk and the OVF file.</p>
+<p>Because creating a VirtualBox image can be a bit of a hassle, we provide a simple script called <a href="https://github.com/ning/atlas/blob/master/src/main/resources/vbox/createvm.sh">createvm.sh</a> that automates the creation of the bare virtual hardware image. Note that because the Linux kernel in Ubuntu Server is compiled with <a href="http://en.wikipedia.org/wiki/Physical_Address_Extension">Physical Address Extension (PAE)</a>, you need to have PAE support enabled on the VirtualBox installation if you want to run this Ubuntu server image.</p>
+<p>The VirtualBox image must also contain the <a href="http://www.virtualbox.org/manual/ch04.html">Guest Additions</a> for Atlas to work correctly. It is important to note that the <code>virtualbox-ose-guest-utils</code> Debian package will not work for this. Instead, use the correct version of the VBoxGuestAdditions ISO provided from the <a href="http://download.virtualbox.org/virtualbox/">official site</a>. We provide a script called <a href="https://github.com/ning/atlas/blob/master/src/main/resources/vbox/postinstall_atlas.sh">postinstall_atlas.sh</a> that will install the proper version of the VirtualBox Guest Additions into an ubuntu server.</p>
+<p>To simplify things, we provide two OVA images that can be used directly:</p>
+<ul>
+<li><a href="https://atlas-resources.s3.amazonaws.com/atlas-natty32.ova">Ubuntu Server 11.04 Natty 32</a></li>
+<li><a href="https://atlas-resources.s3.amazonaws.com/atlas-natty64.ova">Ubuntu Server 11.04 Natty 64</a></li>
+</ul>
+<p>These have the following specifications:</p>
+<ul>
+<li>Default username/password: <code>atlasuser</code>/<code>atlasuser</code></li>
+<li>Base Memory: 384 MB</li>
+<li>80 GB HDD</li>
+<li>Uses VT-x, PAE/NX</li>
+<li>NIC 1: Bridged Adapter</li>
+<li>NIC 2: Internal Network Adapter</li>
+</ul>
+<p>The provisioner element in the environment specification needs these configuration options:</p>
 <ul>
 <li><code>pub_key_file</code>: The file path to the public key to allow password-less SSH login into the instances.</li>
 <li><code>intnet_name</code>: The name of the internal network that VirtualBox will use.</li>
@@ -191,7 +232,7 @@ chmod +x target/atlas
 <h5 id="com.ning.atlas.statictaggedserverprovisioner"><a href="#TOC">com.ning.atlas.StaticTaggedServerProvisioner</a></h5>
 <p>This provider can be used to incorporate fixed, already provisioned servers into the environment. The provider itself is used to specify the available servers, keyed by tags that can then be used in the <a href="#base-element">base element</a> to retrieve a server for initializer/installer use.</p>
 <p>Eample:</p>
-<pre class="sourceCode"><code class="sourceCode ruby">provisioner com.ning.atlas.<span class="dt">StaticTaggedServerProvisioner</span>, {<br />  <span class="st">:tag1</span>  =&gt; [<span class="st">&quot;server1&quot;</span>, <span class="st">&quot;server2&quot;</span>]<br />  <span class="st">:tag2</span>  =&gt; [<span class="st">&quot;server3&quot;</span>]<br />}<br /><br />base <span class="st">&quot;server&quot;</span>, {<br />  <span class="st">:tag</span> =&gt; <span class="st">&quot;tag1&quot;</span><br />}</code></pre>
+<pre class="sourceCode"><code class="sourceCode ruby">provisioner com.ning.atlas.<span class="dt">StaticTaggedServerProvisioner</span>, <span class="st">:servers</span> =&gt; {<br />  <span class="st">&quot;java&quot;</span> =&gt; [<span class="st">&quot;server1&quot;</span>, <span class="st">&quot;server2&quot;</span>]<br />  <span class="st">&quot;php&quot;</span> =&gt; [<span class="st">&quot;server3&quot;</span>]<br />}<br /><br />base <span class="st">&quot;server&quot;</span>, {<br />  <span class="st">:tag</span> =&gt; <span class="st">&quot;php&quot;</span><br />}</code></pre>
 <h3 id="initializers"><a href="#TOC">Initializers</a></h3>
 <p>Initializers are used to configure the provisioned instances so that they can actually run services. Think of them as the part of the tool that deploys all that base software that is needed to run your software, but is not actually part of your software. Things like ruby, java, ...</p>
 <p>Atlas defines these initializers at the moment: * <code>com.ning.atlas.AtlasInitializer</code> for initializing a provisioned system with Atlas-related info such as the system map. * <code>com.ning.atlas.galaxy.MicroGalaxyInitializer</code> for deploying software with <a href="https://github.com/brianm/ugalaxy">uGalaxy</a>. * <code>com.ning.atlas.chef.UbuntuChefSoloInitializer</code> for deploying software with <a href="http://wiki.opscode.com/display/chef/Chef+Solo">Chef Solo</a>.</p>
@@ -257,8 +298,8 @@ chmod +x target/atlas
 <pre class="sourceCode"><code class="sourceCode ruby">initializer <span class="st">&quot;chef&quot;</span>, com.ning.atlas.chef.<span class="dt">UbuntuChefSoloInitializer</span>, {<br />  <span class="st">:ssh_user</span>     =&gt; <span class="st">&quot;ubuntu&quot;</span>,<br />  <span class="st">:ssh_key_file</span> =&gt; <span class="st">&quot;</span><span class="ot">#{</span><span class="dt">ENV</span>[<span class="st">'HOME'</span>]<span class="ot">}</span><span class="st">/.ec2/</span><span class="ot">#{</span>ec2_keypair_id<span class="ot">}</span><span class="st">.pem&quot;</span>,<br />  <span class="st">:recipe_url</span>   =&gt; <span class="st">&quot;s3://my-atlas-resources/chef-solo.tar.gz&quot;</span>,<br />  <span class="st">:s3_access_key</span> =&gt; s3_access_key,<br />  <span class="st">:s3_secret_key</span> =&gt; s3_secret_key<br />}<br /><br />base <span class="st">&quot;ruby-server&quot;</span>, {<br />  <span class="st">:ami</span> =&gt; <span class="st">&quot;ami-e2af508b&quot;</span>,<br />  <span class="st">:init</span> =&gt; [<span class="st">'atlas'</span>, <span class="st">'chef:role[ruby_server]'</span>]<br />}</code></pre>
 <p>This will provision an EC2 instance (provisioner not shown) using the Ubuntu AMI ami-e2af508b, and then use Chef Solo to apply the <code>ruby-server</code> role as defined in the corresponding recipse in <code>s3://my-atlas-resources/chef-solo.tar.gz</code>.</p>
 <h3 id="installers"><a href="#TOC">Installers</a></h3>
-<p>Installers are what you use to deploy your services into the environment. The distinction between initializers and installers is a bit arbitrary. You can perfectly well only use initializers if you have packages that for instance can be installed with Chef Solo.</p>
-<p>The main difference between initializers and installers is that installers are designed in a way that they can be run multiple times against the same machine/instance. Initializers don't require this explicitly (though depending on the initializer, they might support it).</p>
+<p>Installers are what you use to deploy your services onto specific servers. The distinction between initializers and installers is a bit arbitrary. You can perfectly well only use initializers if you have packages that for instance can be installed with Chef Solo.</p>
+<p>There are two main differences between initializers and installers: * Initializers are part of the environment specification and used via base elements (blueprints). Installers on the other hand are used to put the actual service onto these provisioned/initialized system when a server is actually created, and are thus part of the system specification. * Installers are designed in a way that they can be run multiple times against the same already provisioned/initialized machine/instance. Initializers don't require this explicitly (though depending on the initializer, they might support it).</p>
 <p>You would use installers if a distinction between base packages (such as Ruby or Apache Httpd) and your service (e.g. a Rails app or some web pages served by Apache Httpd) makes sense. You can usually tell by the frequency of the updates to the component: Ruby updates tend to be rare whereas you might deploy your Rails app several times a week or even more often. In this case, you would use an installer for the rails app.</p>
 <p>Installers are usually tied to a separate tool that manages deployments. Atlas currently only supports <a href="https://github.com/ning/galaxy">Galaxy</a> but adding support for other tools such as <a href="https://github.com/capistrano/capistrano/wiki/">Capistrano</a>, <a href="https://github.com/etsy/deployinator">Deployinator</a> or <a href="http://cast-project.org/">Cast</a> should be straightforward.</p>
 <p>Both the environment and the system specification contain properties used by the installers. The environment specification contains the settings that allow the deployment tool to be used in the environemnt, such as SSH settings. The system specification on the other hand contains the settings that tell the deployment tool what it should actually install. Most installers simply use a URL/URN scheme in the <code>install</code> property of the <code>server</code> element (described below in the system specification).</p>
@@ -332,42 +373,29 @@ chmod +x target/atlas
 <pre class="sourceCode"><code class="sourceCode ruby">installer <span class="st">&quot;ugx&quot;</span>, com.ning.atlas.galaxy.<span class="dt">MicroGalaxyInstaller</span>, {<br />    ...<br />}<br /><br />installer <span class="st">&quot;elb&quot;</span>, com.ning.atlas.aws.<span class="dt">ELBInstaller</span>, {<br />  <span class="st">:access_key</span> =&gt; rc[<span class="st">'access_key'</span>],<br />  <span class="st">:secret_key</span> =&gt; rc[<span class="st">'secret_key'</span>]<br />}</code></pre>
 <pre class="sourceCode"><code class="sourceCode ruby">server <span class="st">&quot;echo&quot;</span>,<br />  <span class="st">:base</span> =&gt; <span class="st">&quot;ruby-server&quot;</span>,<br />  <span class="st">:install</span> =&gt; [<span class="st">&quot;ugx:http://my-atlas-resources.s3.amazonaws.com/echo.tar.gz&quot;</span>, <span class="st">&quot;elb&quot;</span>]</code></pre>
 <h2 id="system-specification"><a href="#TOC">System specification</a></h2>
-<h1 id="running"><a href="#TOC">Running</a></h1>
-<p>Invoking atlas without any arguments will show the basic help</p>
-<pre><code>$ atlas
-
-Missing one or both of environment or system specification paths
-Option                                  Description
-------                                  -----------
--e, --env, --environment                Environment specification file
--s, --sys, --system                     System specification file
-</code></pre>
-<p>Atlas only needs two arguments on the command line: the path to the <a href="#environment-specification">environment specification</a> and the path to the <a href="#system-specification">system specification</a>. Everything else is configured within those two files.</p>
-<p>When running against EC2, you should also make sure that before invoking atlas, the ssh key is registered, e.g.:</p>
-<pre><code>$ ssh-add my-ec2-keypair.pem
-</code></pre>
-<h1 id="output"><a href="#TOC">Output</a></h1>
-<p>TBD</p>
-<h1 id="resources"><a href="#TOC">Resources</a></h1>
-<h2 id="virtualbox"><a href="#TOC">VirtualBox</a></h2>
-<p>To use the VirtualBox provisioner, a VirtualBox image is required. Typically, such an image can be created using VirtualBox or VMWare, and the appliance is then exported to an <a href="http://en.wikipedia.org/wiki/Open_Virtualization_Format">Open Virtualization Format</a> (OVF) file with the hard disk separate, or an Open Virtualization Archive (OVA) which is a zipped copy of the hard disk and the OVF file.</p>
-<p>Because creating a VirtualBox image can be a hassel, we have written a simple script <a href="https://github.com/ning/atlas/blob/master/src/main/resources/vbox/createvm.sh">createvm.sh</a> that automates the creation of the bare virtual hardware. Note that because the Linux kernel in Ubuntu Server is compiled with PAE, you need enable PAE support on the VM if you are running Ubuntu Server.</p>
-<p>We have also provided a <a href="https://github.com/ning/atlas/blob/master/src/main/resources/vbox/postinstall_atlas.sh">postinstall_atlas.sh</a> script that can be run after installing the guest OS on the virtual machine. The script also installs the required VirtualBox Guest Additions.</p>
-<p>Currently, we have provided the following images to help you get started:</p>
+<p>The system specification contains the actual server definitions, i.e. it defines which and how many concrete servers to create. A sample system specification may look like this:</p>
+<pre class="sourceCode"><code class="sourceCode ruby">system <span class="st">&quot;user&quot;</span> <span class="kw">do</span><br />  server <span class="st">&quot;shell&quot;</span>,<br />        <span class="st">:base</span> =&gt; <span class="st">&quot;shell-server&quot;</span>,<br />    <span class="st">:cardinality</span> =&gt; [<span class="st">&quot;shell0&quot;</span>],<br /><br />    server <span class="st">&quot;db&quot;</span>,<br />        <span class="st">:base</span> =&gt; <span class="st">&quot;oracle&quot;</span>,<br />    <span class="st">:cardinality</span> =&gt; [<span class="st">&quot;user&quot;</span>],<br />    <span class="st">:install</span> =&gt; [<span class="st">&quot;oracle:user-schema.sql&quot;</span>]<br /><br />    system <span class="st">&quot;user-cluster&quot;</span>,<br />      <span class="st">:cardinality</span> =&gt; [<span class="st">&quot;user-cluster-1&quot;</span>, <span class="st">&quot;user-cluster-2&quot;</span>] <span class="kw">do</span><br /><br />    server <span class="st">&quot;user&quot;</span>,<br />            <span class="st">:cardinality</span> =&gt; <span class="dv">2</span>,<br />      <span class="st">:base</span> =&gt; <span class="st">&quot;ruby-server&quot;</span>,<br />      <span class="st">:install</span> =&gt; [<span class="st">&quot;ugx:http://my-atlas-resources.s3.amazonaws.com/user-server.tar.gz&quot;</span>],<br /><br />  <span class="kw">end</span><br /><span class="kw">end</span></code></pre>
+<p>This example will create one shell server called &quot;shell0&quot;, one oracle RDS database called &quot;user&quot; that is initialized with a <code>user-schema.sql</code>, and two <code>user</code> ruby servers &quot;user0&quot; and &quot;user1&quot;, deployed with uGalaxy.</p>
+<h3 id="system-element"><a href="#TOC">System element</a></h3>
+<p>The system element defines the scope of a system. It contains <a href="#server-element">server elements</a> as well as nested system elements which will inherit settings from the outer one and can override them as necessary.</p>
+<p>System elements have two pre-defined attributes and can have additional user defined ones. The pre-defined attributes are:</p>
 <ul>
-<li><a href="https://atlas-resources.s3.amazonaws.com/atlas-natty32.ova">Ubuntu Server 11.04 Natty 32</a></li>
-<li><a href="https://atlas-resources.s3.amazonaws.com/atlas-natty64.ova">Ubuntu Server 11.04 Natty 64</a></li>
+<li><code>cardinality</code>: Defines how many instances of this system will be created. By default, one system element represents a single set of servers. However, Atlas can also bring up multiple instances of systems complete will all servers and sub-systems defined in it. The cardinality can either be a list of names for each system, or it can have a numeric value in which case it specifies how many instances. In the latter case, Atlas will automatically generate names. The names are output in the system description file on the machines</li>
+<li><code>external</code>: Specifies that the system definition is contained in an external file. The file is expected to have the normal system specification structure. The value of the <code>external</code> attribute is a normal url, e.g. <code>http</code> or <code>file</code>.</li>
 </ul>
-<p>They have the following specifications:</p>
+<p>User-defined attributes can be specified on the system element, and they will be output in the system map that is put on the actual server once it is up and running. They are currently not used by any other part of Atlas (e.g. installers).</p>
+<p>Example:</p>
+<pre class="sourceCode"><code class="sourceCode ruby">system <span class="st">&quot;system&quot;</span>,<br />  <span class="st">:cardinality</span> =&gt; <span class="dv">2</span>,<br />  <span class="st">&quot;user-attr&quot;</span>: <span class="st">&quot;value&quot;</span> <span class="kw">do</span><br /><br />  ...<br /><span class="kw">end</span></code></pre>
+<h3 id="server-element"><a href="#TOC">Server element</a></h3>
+<p>Server elements specify actual servers to setup. They have these attributes:</p>
 <ul>
-<li>Default username/password: atlasuser/atlasuser</li>
-<li>Base Memory: 384 MB</li>
-<li>80 GB HDD</li>
-<li>Uses VT-x, PAE/NX</li>
-<li>NIC 1: Bridged Adapter</li>
-<li>NIC 2: Internal Network Adapter</li>
+<li><code>cardinality</code> has a similar meaning to the attribute in the system element in that specifies how many of this server should be setup. It allows for the same list of names or numeric value.</li>
+<li><code>base</code> is the name of the base element from the environment specification to use as the blueprint for these servers.</li>
+<li><code>install</code> specifies the list of names of installers (as defined in the environment specification) to be used for installing software on these servers.</li>
 </ul>
-<h2 id="getting-help"><a href="#TOC">Getting Help</a></h2>
-<p>We have a <a href="http://groups.google.com/group/atlas-dev">development mailing list</a>.</p>
+<p>In addition, server elements have user-defined attributes that can be used by installers, and which are put into the system map on the actual server once it is running.</p>
+<p>Example:</p>
+<pre class="sourceCode"><code class="sourceCode ruby">server <span class="st">&quot;shell&quot;</span>,<br />  <span class="st">:base</span> =&gt; <span class="st">&quot;shell-server&quot;</span>,<br />  <span class="st">:cardinality</span> =&gt; [<span class="st">&quot;shell&quot;</span>],<br />  <span class="st">:galaxy</span> =&gt; <span class="st">&quot;shell&quot;</span></code></pre>
+<p>This server element specifies a single server named <code>shell</code> that should be provisioned and initialized using the <code>shell-server</code> blueprint. The galaxy installer will then look for one such server that has the <code>galaxy</code> attribute set to <code>shell</code> and consider it the shell server for the environment.</p>
 </body>
 </html>
