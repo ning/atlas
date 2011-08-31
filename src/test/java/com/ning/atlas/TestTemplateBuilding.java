@@ -6,7 +6,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.ning.atlas.tree.Trees;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.annotation.Nullable;
@@ -32,11 +31,24 @@ public class TestTemplateBuilding
     public void setUp() throws Exception
     {
         root = new SystemTemplate("root");
-        root.addChildren(Arrays.asList(new ServerTemplate("happy") {{ setCardinality(3); setBase("waffle"); }},
-                                       new ServerTemplate("sad") {{ setCardinality(2); setBase("pancake"); }}));
+        root.addChildren(Arrays.asList(new ServerTemplate("happy")
+                                       {{
+                                               setCardinality(3);
+                                               setBase("waffle");
+                                           }},
+                                       new ServerTemplate("sad")
+                                       {{
+                                               setCardinality(2);
+                                               setBase("pancake");
+                                           }}
+        ));
         env = new Environment("desktop");
-        env.addBase(new Base("waffle", env, Collections.<String, String>emptyMap()));
-        env.addBase(new Base("pancake", env, Collections.<String, String>emptyMap()));
+        env.addBase(new Base("waffle", env, "noop",
+                             Collections.<Initialization>emptyList(),
+                             Collections.<String, String>emptyMap()));
+        env.addBase(new Base("pancake", env, "noop",
+                             Collections.<Initialization>emptyList(),
+                             Collections.<String, String>emptyMap()));
     }
 
     @Test
@@ -71,11 +83,11 @@ public class TestTemplateBuilding
     {
         env = new Environment("desktop");
 
-        Base w = new Base("waffle", env);
+        Base w = new Base("waffle", env, "noop", Collections.<Initialization>emptyList(), Collections.<String, String>emptyMap());
         w.getAttributes().put("ami", "ami-1234");
         env.addBase(w);
 
-        Base p = new Base("pancake", env);
+        Base p = new Base("pancake", env, "noop", Collections.<Initialization>emptyList(), Collections.<String, String>emptyMap());
         p.getAttributes().put("ami", "ami-6789");
         env.addBase(p);
 
@@ -93,8 +105,8 @@ public class TestTemplateBuilding
                     }
                 });
 
-                assertThat(happy, instanceOf(BoundServerTemplate.class));
-                BoundServerTemplate ht = (BoundServerTemplate) happy;
+                assertThat(happy, instanceOf(BoundServer.class));
+                BoundServer ht = (BoundServer) happy;
                 return ht.getBase();
             }
         };

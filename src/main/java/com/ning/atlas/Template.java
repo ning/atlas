@@ -4,6 +4,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.ning.atlas.tree.Tree;
+import org.skife.config.cglib.transform.AbstractClassTransformer;
 
 import java.util.List;
 import java.util.Map;
@@ -46,13 +47,11 @@ public abstract class Template implements Tree<Template>
         this.cardinality.addAll(names);
     }
 
-    public final BoundTemplate normalize(Environment env)
-    {
-        Iterable<BoundTemplate> itty = normalize(env, new Stack<String>());
-        return Iterables.getOnlyElement(itty);
+    public final BoundTemplate normalize(Environment env) {
+        return Iterables.getOnlyElement(_normalize(env));
     }
 
-    protected abstract Iterable<BoundTemplate> normalize(Environment env, Stack<String> names);
+    protected abstract Iterable<BoundTemplate> _normalize(Environment env);
 
     @Override
     public String toString()

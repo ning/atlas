@@ -28,14 +28,13 @@ public class ELBInstaller implements Installer
 
 
     @Override
-    public Server install(Server server, String fragment, InitializedTemplate root)
+    public Server install(Server s, String fragment, InitializedTemplate root)
     {
-        EC2Provisioner.EC2Server s = (EC2Provisioner.EC2Server) server;
-        Instance i = new Instance(s.getInstanceId());
+
+        Instance i = new Instance(s.getAttributes().get("instanceId"));
         RegisterInstancesWithLoadBalancerRequest req = new RegisterInstancesWithLoadBalancerRequest(fragment,
                                                                                                     asList(i));
         elb.registerInstancesWithLoadBalancer(req);
-        logger.debug("added {} to elb group {}", s.getExternalAddress(), fragment);
         return s;
     }
 }

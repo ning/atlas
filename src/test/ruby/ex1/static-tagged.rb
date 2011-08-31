@@ -1,13 +1,13 @@
 
 environment "test" do
   initializer "noop", com.ning.atlas.NoOpInitializer
-  provisioner com.ning.atlas.StaticTaggedServerProvisioner, :servers => {
+  provisioner "static", com.ning.atlas.StaticTaggedServerProvisioner, :servers => {
     "java" => ["10.0.0.1", "10.0.0.2"],
     "php" => ["10.0.1.1", "10.0.1.2"]
   }
 
-  base "concrete", :tag => "java"
-  base "macadam", :tag => "php"
+  base "concrete", :tag => "java", :provisioner => "static"
+  base "macadam", :tag => "php", :provisioner => "static"
 end
 
 

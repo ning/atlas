@@ -16,12 +16,14 @@ public class InitializedServer extends InitializedTemplate
     @JsonIgnore
     private final Server server;
     private final List<String> installations;
+    private final Base base;
 
-    public InitializedServer(String type, String name, My my, Server server, List<String> installations)
+    public InitializedServer(String type, String name, My my, Server server, List<String> installations, Base base)
     {
         super(type, name, my);
         this.server = server;
         this.installations = installations;
+        this.base = base;
     }
 
     @JsonIgnore
@@ -46,11 +48,11 @@ public class InitializedServer extends InitializedTemplate
                             String prefix = installation.substring(0, offset);
                             String fragment = installation.substring(offset + 1, installation.length());
 
-                            Installer installer = server.getBase().getInstaller(prefix);
+                            Installer installer = InitializedServer.this.base.getInstaller(prefix);
                             installer.install(server, fragment, root);
                         }
 
-                        return new InstalledServer(getType(), getName(), getMy(), server);
+                        return new InstalledServer(getType(), getName(), getMy(), server, base.getProperties());
                     }
                     catch (Exception e) {
                         return new InstalledError(getType(),  getName(), getMy(), e);
@@ -69,6 +71,6 @@ public class InitializedServer extends InitializedTemplate
 
     @JsonProperty("environment")
     public Map<String, String> getEnvironmentProperties() {
-        return this.server.getEnvironmentProperties();
+        return this.base.getProperties();
     }
 }

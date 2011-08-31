@@ -1,7 +1,8 @@
 package com.ning.atlas;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.ning.atlas.chef.StubServer;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -34,12 +35,11 @@ public class TestInitialization
         Environment env = new Environment("env");
         env.addInitializer("woof", initializer);
 
-        Base base = new Base("server", env);
-        base.addInit("woof:meow");
+        Base base = new Base("server", env, "fake", ImmutableList.<Initialization>of(Initialization.parseUriForm("woof:meow")), Collections.<String, String>emptyMap());
 
         List<? extends ProvisionedElement> children = asList(
             new ProvisionedServer("server", "0", new My(),
-                                          new StubServer("10.0.0.1", base), Collections.<String>emptyList()));
+                                          new Server("10.0.0.1", "10.0.0.1"), Collections.<String>emptyList(), base));
 
         ProvisionedSystem root = new ProvisionedSystem("root", "0", new My(), children);
         InitializedTemplate initialized_root = root.initialize(MoreExecutors.sameThreadExecutor()).get();

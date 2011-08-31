@@ -14,24 +14,26 @@ import java.util.concurrent.Executor;
 public class ProvisionedServer extends ProvisionedElement
 {
     @JsonIgnore
-    private final Server server;
+    private final Server       server;
     private final List<String> installations;
+    private final Base         base;
 
-
-    public ProvisionedServer(String type, String name, My my, Server server, List<String> installations)
+    public ProvisionedServer(String type, String name, My my, Server server, List<String> installations, Base base)
     {
         super(type, name, my);
         this.server = server;
         this.installations = installations;
+        this.base = base;
     }
 
-    public ProvisionedServer(BoundServerTemplate boundServerTemplate, Server server, List<String> installations)
+    public ProvisionedServer(BoundServer boundServerTemplate, Base base, Server server, List<String> installations)
     {
         this(boundServerTemplate.getType(),
              boundServerTemplate.getName(),
              boundServerTemplate.getMy(),
              server,
-             installations);
+             installations,
+             base);
     }
 
     @JsonIgnore
@@ -51,12 +53,13 @@ public class ProvisionedServer extends ProvisionedElement
                 {
 
                     try {
-                        final Server rs = server.getBase().initialize(server, root, ProvisionedServer.this);
+                        final Server rs = base.initialize(server, root, ProvisionedServer.this);
                         return new InitializedServer(getType(),
-                                                             getName(),
-                                                             getMy(),
-                                                             rs,
-                                                             installations);
+                                                     getName(),
+                                                     getMy(),
+                                                     rs,
+                                                     installations,
+                                                     base);
                     }
                     catch (Exception e) {
                         return new InitializedError(getType(), getName(), getMy(), e.getMessage());
@@ -74,7 +77,8 @@ public class ProvisionedServer extends ProvisionedElement
     }
 
     @JsonProperty("environment")
-    public Map<String, String> getEnvironmentProperties() {
-        return this.server.getEnvironmentProperties();
+    public Map<String, String> getEnvironmentProperties()
+    {
+        return this.base.getProperties();
     }
 }

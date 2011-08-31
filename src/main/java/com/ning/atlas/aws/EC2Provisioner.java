@@ -9,6 +9,7 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.ning.atlas.Base;
 import com.ning.atlas.Provisioner;
@@ -47,11 +48,11 @@ public class EC2Provisioner implements Provisioner
     {
         logger.debug("provisioning server for base {}", base.getName());
         RunInstancesRequest req = new RunInstancesRequest(base.getAttributes().get("ami"), 1, 1);
-  
+
         if (base.getAttributes().containsKey("instance_type")) {
         	req.setInstanceType(base.getAttributes().get("instance_type"));
         }
-      
+
         req.setKeyName(keypairId);
         RunInstancesResult rs = ec2.runInstances(req);
 
@@ -76,7 +77,8 @@ public class EC2Provisioner implements Provisioner
                 Instance i2 = res.getReservations().get(0).getInstances().get(0);
                 if ("running".equals(i2.getState().getName())) {
                     logger.debug("ec2 instance {} is running", i.getInstanceId());
-                    return new EC2Server(base, i2);
+                    return new Server(i2.getPrivateIpAddress(), i2.getPublicIpAddress(),
+                                      ImmutableMap.<String, String>of("instanceId", i2.getInstanceId()));
                 }
                 else {
                     try {
@@ -84,7 +86,8 @@ public class EC2Provisioner implements Provisioner
                     }
                     catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        return new EC2Server(base, i);
+                        return new Server(i.getPrivateIpAddress(), i.getPublicIpAddress(),
+                                          ImmutableMap.<String, String>of("instanceId", i2.getInstanceId()));
                     }
                 }
             }
@@ -93,24 +96,6 @@ public class EC2Provisioner implements Provisioner
 
     public void destroy(Server server)
     {
-        EC2Server ec2s = EC2Server.class.cast(server);
-        TerminateInstancesRequest tr = new TerminateInstancesRequest(asList(ec2s.getInstanceId()));
-        ec2.terminateInstances(tr);
-    }
-
-    public final class EC2Server extends Server
-    {
-        private final String instanceId;
-
-        EC2Server(Base base, Instance instance)
-        {
-            super(instance.getPrivateDnsName(), instance.getPublicDnsName(), base);
-            this.instanceId = instance.getInstanceId();
-        }
-
-        public String getInstanceId()
-        {
-            return instanceId;
-        }
+        ec2.terminateInstances(new TerminateInstancesRequest(asList(server.getAttributes().get("instanceId"))));
     }
 }

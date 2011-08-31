@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import com.google.common.collect.ImmutableMap;
 import com.ning.atlas.tree.Tree;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -55,7 +56,7 @@ public class InstalledElement implements Tree<InstalledElement>
     {
 
         if (server != null) {
-            return new InstalledServer(type, name, new My(my), server);
+            return new InstalledServer(type, name, new My(my), server, Collections.<String, String>emptyMap());
         }
         else {
             return new InstalledSystem(type, name, new My(my), children);

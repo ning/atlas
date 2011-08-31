@@ -3,6 +3,7 @@ package com.ning.atlas.aws;
 import com.google.common.collect.ImmutableMap;
 import com.ning.atlas.Base;
 import com.ning.atlas.Environment;
+import com.ning.atlas.Initialization;
 import com.ning.atlas.Server;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +11,7 @@ import org.skife.config.ConfigurationObjectFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Collections;
 import java.util.Properties;
 
 import static com.ning.atlas.testing.AtlasMatchers.exists;
@@ -41,6 +43,8 @@ public class TestEC2Provisioner
 
         Server s = ec2.provision(new Base("test-base",
                                           new Environment("test-env"),
+                                          "ec2",
+                                          Collections.<Initialization>emptyList(),
                                           ImmutableMap.of("ami", "ami-a6f504cf")));
         assertThat(s, notNullValue());
         try {

@@ -3,7 +3,6 @@ package com.ning.atlas;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Stack;
 
 public class ServerTemplate extends Template
 {
@@ -16,15 +15,13 @@ public class ServerTemplate extends Template
     }
 
     @Override
-    protected final Iterable<BoundTemplate> normalize(Environment env, Stack<String> names)
+    public final Iterable<BoundTemplate> _normalize(Environment env)
     {
-        names.push(getType());
         final List<BoundTemplate> rs = new ArrayList<BoundTemplate>();
         List<String> node_names = getCardinality();
         for (String node_name : node_names) {
-            rs.add(new BoundServerTemplate(this, node_name, env, names, installations));
+            rs.add(new BoundServer(this, node_name, env, installations));
         }
-        names.pop();
         return rs;
     }
 

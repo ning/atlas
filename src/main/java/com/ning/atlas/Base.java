@@ -1,11 +1,17 @@
 package com.ning.atlas;
 
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.tuple.Pair;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -13,41 +19,41 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Base
 {
-
     public static final ThreadLocal<Environment> DESERIALIZATION_HACK = new ThreadLocal<Environment>();
 
-
-    private final List<String>        inits      = new CopyOnWriteArrayList<String>();
     private final Map<String, String> attributes = Maps.newConcurrentMap();
+    private final String                                  name;
+    private final List<Pair<Initialization, Initializer>> initializers;
+    private final Pair<String, Provisioner>               provisioner;
+    private final Map<String, String>                     environmentProperies;
+    private final Map<String, Installer>                  installers;
 
-    private final Map<String, Initializer> initalizers;
-    private final Provisioner              provisioner;
-    private final Map<String, Installer>   installers;
-    private final String                   name;
-
-    @JsonIgnore
-    private final Environment env;
-
-
-    @JsonCreator
-    public Base(@JsonProperty("name") String name, @JsonProperty("attributes") Map<String, String> attributes) {
-        this(name, DESERIALIZATION_HACK.get(), attributes);
-    }
+//    @JsonCreator
+//    public Base(@JsonProperty("name") String name, @JsonProperty("attributes") Map<String, String> attributes)
+//    {
+//        this(name, DESERIALIZATION_HACK.get(), attributes);
+//    }
 
 
-    public Base(String name, Environment env, Map<String, String> attributes)
+    public Base(final String name,
+                final Environment e,
+                final String provisionerName,
+                final List<Initialization> initializationUris,
+                final Map<String, String> attributes)
     {
         this.name = name;
-        this.provisioner = env.getProvisioner();
-        this.initalizers = env.getInitializers();
-        this.installers = env.getInstallers();
         this.attributes.putAll(attributes);
-        this.env = env;
-    }
-
-    public Base(String name, Environment env)
-    {
-        this(name, env, Collections.<String, String>emptyMap());
+        this.provisioner = Pair.of(provisionerName, e.getProvisioner(provisionerName));
+        this.environmentProperies = e.getProperties();
+        this.installers = e.getInstallers();
+        this.initializers = Lists.transform(initializationUris, new Function<Initialization, Pair<Initialization, Initializer>>()
+        {
+            @Override
+            public Pair<Initialization, Initializer> apply(Initialization input)
+            {
+                return Pair.of(input, e.getInitializers().get(input.getScheme()));
+            }
+        });
     }
 
     public Map<String, String> getAttributes()
@@ -63,7 +69,7 @@ public class Base
     @JsonIgnore
     public Provisioner getProvisioner()
     {
-        return provisioner;
+        return provisioner.getValue();
     }
 
     @Override
@@ -95,38 +101,23 @@ public class Base
                       .toString();
     }
 
-    public void addInit(String initializer)
-    {
-        inits.add(initializer);
-    }
-
     public Server initialize(Server server,
                              ProvisionedElement root,
                              ProvisionedServer node) throws Exception
     {
-        Server next = server;
-        for (String init : inits) {
-            int idx = init.indexOf(':');
-            final String prefix;
-            final String arg;
-            if (idx < 0) {
-                prefix = init;
-                arg = "";
-            }
-            else {
-                prefix = init.substring(0, idx);
-                arg = init.substring(idx + 1, init.length());
-            }
-
-            Initializer i = initalizers.get(prefix);
-            next = i.initialize(server, arg, root, node);
+        for (Pair<Initialization, Initializer> initializer : initializers) {
+            initializer.getValue().initialize(server, initializer.getKey().getFragment(), root, node);
         }
-        return next;
+        return server;
     }
 
     public List<String> getInits()
     {
-        return inits;
+        ArrayList<String> rs = Lists.newArrayListWithExpectedSize(initializers.size());
+        for (Pair<Initialization, Initializer> initializer : initializers) {
+            rs.add(initializer.getKey().getUriForm());
+        }
+        return rs;
     }
 
     public Installer getInstaller(String prefix)
@@ -137,6 +128,6 @@ public class Base
     @JsonIgnore
     public Map<String, String> getProperties()
     {
-        return env.getProperties();
+        return environmentProperies;
     }
 }

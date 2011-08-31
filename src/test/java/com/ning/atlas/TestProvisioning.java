@@ -1,5 +1,7 @@
 package com.ning.atlas;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.ning.atlas.tree.Trees;
 import org.junit.Test;
@@ -26,13 +28,14 @@ public class TestProvisioning
         {{ put("concrete", Arrays.asList("10.0.0.1")); }});
 
         Base base = new Base("concrete",
-                             new Environment("tests")
-                             {{ setProvisioner(p); }},
-                             new HashMap<String, String>()
-                             {{put("tag", "concrete");}}
-        );
+                             new Environment("tests",
+                                             ImmutableMap.<String, Provisioner>of("static", p),
+                                             Collections.<String, Initializer>emptyMap()),
+                             "static",
+                             Collections.<Initialization>emptyList(),
+                             ImmutableMap.<String, String>of("tag", "concrete"));
 
-        BoundServerTemplate child = new BoundServerTemplate("child", "0", new My(), base, Collections.<String>emptyList());
+        BoundServer child = new BoundServer("child", "0", new My(), base, Collections.<String>emptyList());
 
         BoundTemplate root = new BoundSystemTemplate("root", "1", new My(), Arrays.<BoundTemplate>asList(child));
 
@@ -50,19 +53,21 @@ public class TestProvisioning
     @Test
     public void testUnableToFindNeededServer() throws Exception
     {
-        final Provisioner p = new StaticTaggedServerProvisioner(new HashMap<String, Collection<String>>()
-        {{ put("concrete", Arrays.asList("10.0.0.1")); }});
+        final Provisioner p = new StaticTaggedServerProvisioner(
+            ImmutableMap.<String, Collection<String>>of("concrete", ImmutableList.<String>of("10.0.0.1")));
 
         Base base1 = new Base("concrete",
-                              new Environment("tests")
-                              {{ setProvisioner(p); }},
-                              new HashMap<String, String>()
-                              {{put("tag", "concrete");}}
+                              new Environment("tests",
+                                              ImmutableMap.<String, Provisioner>of("static", p),
+                                              Collections.<String, Initializer>emptyMap()),
+                              "static",
+                              Collections.<Initialization>emptyList(),
+                              ImmutableMap.<String, String>of("tag", "concrete")
         );
-        BoundServerTemplate child = new BoundServerTemplate("child", "0", new My(), base1, Collections.<String>emptyList());
+        BoundServer child = new BoundServer("child", "0", new My(), base1, Collections.<String>emptyList());
 
 
-        BoundServerTemplate child2 = new BoundServerTemplate("child", "1", new My(), base1, Collections.<String>emptyList());
+        BoundServer child2 = new BoundServer("child", "1", new My(), base1, Collections.<String>emptyList());
 
         BoundTemplate root = new BoundSystemTemplate("root", "0", new My(), Arrays.<BoundTemplate>asList(child, child2));
 
