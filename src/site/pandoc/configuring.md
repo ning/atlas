@@ -256,12 +256,39 @@ base "oracle", {
 The ``VBoxProvisioner`` provisions [VirtualBox](http://www.virtualbox.org/) instances. For more information about VirtualBox 
 see the [VirtualBox user documentation](http://www.virtualbox.org/manual/UserManual.html).
 
-For this provisioner to work, Oracle VirtualBox 4.1.0 or newer is required. The VirtualBox image must also contain the
-[Guest Additions](http://www.virtualbox.org/manual/ch04.html) for Atlas to work correctly. It is important to note that
-the ``virtualbox-ose-guest-utils`` Debian package will not work for this. Instead, use the correct version of the
-VBoxGuestAdditions ISO provided from the [official site](http://download.virtualbox.org/virtualbox/).
+For this provisioner to work, Oracle VirtualBox 4.1.0 or newer is required, and you'll need to create the appropriate
+image using either VirtualBox or VMWare, and then exported it in either the 
+[Open Virtualization Format](http://en.wikipedia.org/wiki/Open_Virtualization_Format) (OVF) file with the hard disk separate,
+or an Open Virtualization Archive (OVA), which is a zipped copy of the hard disk and the OVF file.
 
-The provisioner needs these environment configuration options:
+Because creating a VirtualBox image can be a bit of a hassle, we provide a simple script called
+[createvm.sh](https://github.com/ning/atlas/blob/master/src/main/resources/vbox/createvm.sh)
+that automates the creation of the bare virtual hardware image. Note that because the Linux kernel in Ubuntu Server is
+compiled with [Physical Address Extension (PAE)](http://en.wikipedia.org/wiki/Physical_Address_Extension), you need to have
+PAE support enabled on the VirtualBox installation if you want to run this Ubuntu server image.
+
+The VirtualBox image must also contain the [Guest Additions](http://www.virtualbox.org/manual/ch04.html) for Atlas to work
+correctly. It is important to note that the ``virtualbox-ose-guest-utils`` Debian package will not work for this. Instead,
+use the correct version of the VBoxGuestAdditions ISO provided from the
+[official site](http://download.virtualbox.org/virtualbox/). We provide a script called
+[postinstall_atlas.sh](https://github.com/ning/atlas/blob/master/src/main/resources/vbox/postinstall_atlas.sh)
+that will install the proper version of the VirtualBox Guest Additions into an ubuntu server.
+
+To simplify things, we provide two OVA images that can be used directly:
+
+* [Ubuntu Server 11.04 Natty 32](https://atlas-resources.s3.amazonaws.com/atlas-natty32.ova)
+* [Ubuntu Server 11.04 Natty 64](https://atlas-resources.s3.amazonaws.com/atlas-natty64.ova)
+
+These have the following specifications:
+
+* Default username/password: ``atlasuser``/``atlasuser``
+* Base Memory: 384 MB
+* 80 GB HDD
+* Uses VT-x, PAE/NX
+* NIC 1: Bridged Adapter
+* NIC 2: Internal Network Adapter
+
+The provisioner element in the environment specification needs these configuration options:
 
 * ``pub_key_file``: The file path to the public key to allow password-less SSH login into the instances.
 * ``intnet_name``: The name of the internal network that VirtualBox will use.
@@ -306,13 +333,13 @@ retrieve a server for initializer/installer use.
 Eample:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
-provisioner com.ning.atlas.StaticTaggedServerProvisioner, {
-  :tag1  => ["server1", "server2"]
-  :tag2  => ["server3"]
+provisioner com.ning.atlas.StaticTaggedServerProvisioner, :servers => {
+  "java" => ["server1", "server2"]
+  "php" => ["server3"]
 }
 
 base "server", {
-  :tag => "tag1"
+  :tag => "php"
 }
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -672,3 +699,86 @@ server "echo",
 
 ## System specification
 
+The system specification contains the actual server definitions, i.e. it defines which and how many concrete servers to
+create. A sample system specification may look like this:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+system "user" do
+  server "shell",
+		:base => "shell-server",
+    :cardinality => ["shell0"],
+
+ 	server "db",
+ 		:base => "oracle",
+    :cardinality => ["user"],
+    :install => ["oracle:user-schema.sql"]
+
+	system "user-cluster",
+	  :cardinality => ["user-cluster-1", "user-cluster-2"] do
+
+   	server "user",
+			:cardinality => 2,
+      :base => "ruby-server",
+      :install => ["ugx:http://my-atlas-resources.s3.amazonaws.com/user-server.tar.gz"],
+
+  end
+end
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This example will create one shell server called "shell0", one oracle RDS database called "user" that is initialized with
+a ``user-schema.sql``, and two ``user`` ruby servers "user0" and "user1", deployed with uGalaxy.
+
+### System element
+
+The system element defines the scope of a system. It contains [server elements](#server-element) as well as nested system
+elements which will inherit settings from the outer one and can override them as necessary.
+
+System elements have two pre-defined attributes and can have additional user defined ones. The pre-defined attributes are:
+
+* ``cardinality``: Defines how many instances of this system will be created. By default, one system element represents a
+  single set of servers. However, Atlas can also bring up multiple instances of systems complete will all servers and
+  sub-systems defined in it. The cardinality can either be a list of names for each system, or it can have a numeric value
+  in which case it specifies how many instances. In the latter case, Atlas will automatically generate names. The names
+  are output in the system description file on the machines
+* ``external``: Specifies that the system definition is contained in an external file. The file is expected to have the
+  normal system specification structure. The value of the ``external`` attribute is a normal url, e.g. ``http`` or ``file``.
+
+User-defined attributes can be specified on the system element, and they will be output in the system map that is put on the actual
+server once it is up and running. They are currently not used by any other part of Atlas (e.g. installers).
+
+Example:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+system "system",
+  :cardinality => 2,
+  "user-attr": "value" do
+
+  ...
+end
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+### Server element
+
+Server elements specify actual servers to setup. They have these attributes:
+
+* ``cardinality`` has a similar meaning to the attribute in the system element in that specifies how many of this server
+  should be setup. It allows for the same list of names or numeric value.
+* ``base`` is the name of the base element from the environment specification to use as the blueprint for these servers.
+* ``install`` specifies the list of names of installers (as defined in the environment specification) to be used for
+  installing software on these servers.
+
+In addition, server elements have user-defined attributes that can be used by installers, and which are put into the system
+map on the actual server once it is running.
+
+Example:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ {.ruby}
+server "shell",
+  :base => "shell-server",
+  :cardinality => ["shell"],
+  :galaxy => "shell"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This server element specifies a single server named ``shell`` that should be provisioned and initialized using the
+``shell-server`` blueprint. The galaxy installer will then look for one such server that has the ``galaxy`` attribute
+set to ``shell`` and consider it the shell server for the environment.

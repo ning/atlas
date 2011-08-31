@@ -59,9 +59,8 @@ namespace :docs do
          -o #{args.dir}/index.html \
          src/site/pandoc/index.md \
          src/site/pandoc/building.md \
-         src/site/pandoc/configuring.md \
          src/site/pandoc/running.md \
-         src/site/pandoc/resources.md
+         src/site/pandoc/configuring.md
       cp src/site/pandoc/pandoc.css #{args.dir}/
     EOS
   end
