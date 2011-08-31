@@ -138,7 +138,7 @@ public class TestUbuntuChefSoloInitializer
                             "ssh_key_file", new File(props.getProperty("aws.key-file-path")).getAbsolutePath(),
                             "recipe_url", "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz");
 
-        UbuntuChefSoloInitializer i = new UbuntuChefSoloInitializer(attributes);          chrome
+        UbuntuChefSoloInitializer i = new UbuntuChefSoloInitializer(attributes);
 
         String json = i.createNodeJsonFor("role[java-core], recipe[emacs]");
         assertThat(mapper.readValue(json, UbuntuChefSoloInitializer.Node.class),

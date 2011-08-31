@@ -38,7 +38,7 @@ public class AtlasInitializer implements Initializer
     {
         SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
         try {
-            log.debug("initializing {}", server.getExternalAddress());
+            log.info("initializing {} to become a {}", server.getExternalAddress(), node.getType());
 
             ssh.exec("sudo mkdir /etc/atlas");
 
