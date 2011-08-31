@@ -34,11 +34,11 @@ public final class Server
 
     public Server(String internalIp,
                   String externalIp,
-                  Map<String, String> attributes)
+                  Map<String, String> attrs)
     {
         this.internalIp = internalIp;
         this.externalIp = externalIp;
-        this.attributes.putAll(attributes);
+        this.attributes.putAll(attrs);
     }
 
     @JsonProperty("external_address")

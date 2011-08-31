@@ -78,7 +78,7 @@ public class TestUbuntuChefSoloInitializer
 
         final Base base = new Base("ubuntu", env, "ec2",
                                    Collections.<Initialization>emptyList(),
-                                   ImmutableMap.<String, String>of("ami", "ami-e2af508b"));
+                                   ImmutableMap.<String, String>of("ami", "ami-add819c4"));
         Server s = ec2.provision(base);
 
         try {
@@ -138,7 +138,7 @@ public class TestUbuntuChefSoloInitializer
                             "ssh_key_file", new File(props.getProperty("aws.key-file-path")).getAbsolutePath(),
                             "recipe_url", "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz");
 
-        UbuntuChefSoloInitializer i = new UbuntuChefSoloInitializer(attributes);
+        UbuntuChefSoloInitializer i = new UbuntuChefSoloInitializer(attributes);          chrome
 
         String json = i.createNodeJsonFor("role[java-core], recipe[emacs]");
         assertThat(mapper.readValue(json, UbuntuChefSoloInitializer.Node.class),
@@ -164,8 +164,8 @@ public class TestUbuntuChefSoloInitializer
 
         Base java_core = new Base("java-core", env, "ec2",
                                   ImmutableList.<Initialization>of(Initialization.parseUriForm("atlas"),
-                                                                   Initialization.parseUriForm("chef-solo:role[java-core]")),
-                                  ImmutableMap.<String, String>of("ami", "ami-e2af508b"));
+                                                                   Initialization.parseUriForm("chef-solo:role[server]")),
+                                  ImmutableMap.<String, String>of("ami", "ami-add819c4"));
         env.addBase(java_core);
 
         BoundTemplate bt = st.normalize(env);

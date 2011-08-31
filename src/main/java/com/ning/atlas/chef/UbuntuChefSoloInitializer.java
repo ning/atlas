@@ -12,6 +12,7 @@ import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
 import com.ning.atlas.base.Maybe;
 import org.antlr.stringtemplate.StringTemplate;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
@@ -178,6 +179,12 @@ public class UbuntuChefSoloInitializer implements Initializer
         public Node()
         {
             this(new String[]{});
+        }
+
+        @Override
+        public String toString()
+        {
+            return ToStringBuilder.reflectionToString(this);
         }
 
         @Override

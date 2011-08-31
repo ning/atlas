@@ -95,7 +95,7 @@ public class RDSProvisioner implements Provisioner
         attrs.put("port", instance.getEndpoint().getPort().toString());
         attrs.put("instanceId", instance.getDBInstanceIdentifier());
         attrs.put("instanceClass", instance.getDBInstanceClass());
-        attrs.put("name", instance.getDBName());
+        attrs.put("name", instance.getDBName() == null ? "" : instance.getDBName());
         attrs.put("engine", instance.getEngine());
         attrs.put("engineVersion", instance.getEngineVersion());
         attrs.put("password", cfg.getPassword());

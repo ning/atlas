@@ -77,7 +77,7 @@ public class EC2Provisioner implements Provisioner
                 Instance i2 = res.getReservations().get(0).getInstances().get(0);
                 if ("running".equals(i2.getState().getName())) {
                     logger.debug("ec2 instance {} is running", i.getInstanceId());
-                    return new Server(i2.getPrivateIpAddress(), i2.getPublicIpAddress(),
+                    return new Server(i2.getPrivateDnsName(), i2.getPublicDnsName(),
                                       ImmutableMap.<String, String>of("instanceId", i2.getInstanceId()));
                 }
                 else {
