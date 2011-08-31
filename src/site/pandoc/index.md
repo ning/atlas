@@ -34,3 +34,7 @@ Start stuff:
 
     ./target/atlas -e <environment specification file> -s <system specification file> start
 
+# Mailing list
+
+We have a [developer mailing list](http://groups.google.com/group/atlas-dev).
+
