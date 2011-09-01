@@ -1,5 +1,6 @@
 package com.ning.atlas.galaxy;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.Environment;
 import com.ning.atlas.InstalledServer;
 import com.ning.atlas.InstalledElement;
@@ -10,6 +11,7 @@ import com.ning.atlas.aws.EC2Provisioner;
 import com.ning.atlas.tree.Trees;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
@@ -52,31 +54,34 @@ public class TestMicroGalaxyInstaller
     {
         assumeThat(System.getProperty("RUN_EC2_TESTS"), notNullValue());
 
-        ExecutorService exec = Executors.newCachedThreadPool();
+        ExecutorService exec = MoreExecutors.sameThreadExecutor();
 
         JRubyTemplateParser parser = new JRubyTemplateParser();
         Template root = parser.parseSystem(new File("src/test/ruby/test_micro_galaxy_installer.rb"));
         Environment env = parser.parseEnvironment(new File("src/test/ruby/test_micro_galaxy_installer.rb"));
 
         InstalledElement installed = root.normalize(env)
-                                          .provision(exec).get()
-                                          .initialize(exec).get()
-                                          .install(exec).get();
+                                         .provision(exec).get()
+                                         .initialize(exec).get()
+                                         .install(exec).get();
 
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-        mapper.writeValue(System.out, installed);
-
+//        ObjectMapper mapper = new ObjectMapper();
+//        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+//        mapper.writeValue(System.out, installed);
+//
 
         List<InstalledServer> nodes = Trees.findInstancesOf(installed, InstalledServer.class);
-        try {
-            assertThat(nodes.size(), equalTo(1));
-        }
-        finally {
-            for (InstalledServer node : nodes) {
-                ec2.destroy(node.getServer());
-            }
-        }
+
+        assertThat(nodes.size(), equalTo(1));
+
+//        for (InstalledServer node : nodes) {
+//            try {
+//            ec2.destroy(node.getServer());
+//            } catch (Throwable t) {
+//                t.printStackTrace();
+//            }
+//        }
+//        System.out.println("WOOOOOOOT");
     }
 }

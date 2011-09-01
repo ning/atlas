@@ -3,6 +3,7 @@ package com.ning.atlas.aws;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2AsyncClient;
+import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
@@ -24,7 +25,7 @@ import static java.util.Arrays.asList;
 public class EC2Provisioner implements Provisioner
 {
     private final static Logger logger = LoggerFactory.getLogger(EC2Provisioner.class);
-    private final AmazonEC2AsyncClient ec2;
+    private final AmazonEC2Client ec2;
     private final String               keypairId;
 
     public EC2Provisioner(Map<String, String> attributes)
@@ -38,7 +39,7 @@ public class EC2Provisioner implements Provisioner
     public EC2Provisioner(AWSConfig config)
     {
         BasicAWSCredentials credentials = new BasicAWSCredentials(config.getAccessKey(), config.getSecretKey());
-        ec2 = new AmazonEC2AsyncClient(credentials);
+        ec2 = new AmazonEC2Client(credentials);
         keypairId = config.getKeyPairId();
 
     }

@@ -8,8 +8,8 @@ import org.junit.Test;
 import java.io.File;
 
 import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
-import static com.ning.atlas.Reifier.jsonify;
-import static com.ning.atlas.Reifier.reify;
+import static com.ning.atlas.Jsonificator.jsonify;
+import static com.ning.atlas.Jsonificator.reify;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;

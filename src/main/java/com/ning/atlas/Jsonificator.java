@@ -5,7 +5,7 @@ import org.codehaus.jackson.map.SerializationConfig;
 
 import java.io.IOException;
 
-public class Reifier
+public class Jsonificator
 {
     private final static ObjectMapper mapper = new ObjectMapper();
 
