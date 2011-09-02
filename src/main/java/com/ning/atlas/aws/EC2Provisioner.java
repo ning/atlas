@@ -26,7 +26,7 @@ public class EC2Provisioner implements Provisioner
 {
     private final static Logger logger = LoggerFactory.getLogger(EC2Provisioner.class);
     private final AmazonEC2Client ec2;
-    private final String               keypairId;
+    private final String          keypairId;
 
     public EC2Provisioner(Map<String, String> attributes)
     {
@@ -51,13 +51,14 @@ public class EC2Provisioner implements Provisioner
         RunInstancesRequest req = new RunInstancesRequest(base.getAttributes().get("ami"), 1, 1);
 
         if (base.getAttributes().containsKey("instance_type")) {
-        	req.setInstanceType(base.getAttributes().get("instance_type"));
+            req.setInstanceType(base.getAttributes().get("instance_type"));
         }
 
         req.setKeyName(keypairId);
         RunInstancesResult rs = ec2.runInstances(req);
 
         final Instance i = rs.getReservation().getInstances().get(0);
+
         logger.debug("obtained ec2 instance {}", i.getInstanceId());
 
         while (true) {
@@ -74,8 +75,16 @@ public class EC2Provisioner implements Provisioner
                 }
             }
             if (res != null) {
-
                 Instance i2 = res.getReservations().get(0).getInstances().get(0);
+
+//                if (i2.getPrivateDnsName().startsWith("ip-")) {
+//                    logger.info("obtained an instance with a {} internal dns name, throwing it away",
+//                                i2.getPrivateDnsName());
+//                    ec2.terminateInstances(new TerminateInstancesRequest(asList(i2.getInstanceId())));
+//                    return provision(base);
+//                }
+
+
                 if ("running".equals(i2.getState().getName())) {
                     logger.debug("ec2 instance {} is running", i.getInstanceId());
                     return new Server(i2.getPrivateDnsName(), i2.getPublicDnsName(),

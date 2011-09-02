@@ -17,6 +17,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
@@ -87,10 +88,16 @@ public class GalaxyInstaller implements Installer
 
             String cmd = format("galaxy -i %s assign %s %s %s", internal_first_part, env, version, type);
             log.debug("about to run '{}'", cmd);
-            log.debug(ssh.exec(cmd));
+
+            String o;
+            do {
+                o = ssh.exec(cmd, 1, TimeUnit.MINUTES);
+            }
+            while (o.contains("SocketError: getaddrinfo: Name or service not known"));
+
             String cmd2 = format("galaxy -i %s start", internal_first_part);
             log.debug("about to run '{}'", cmd2);
-            log.debug(ssh.exec(cmd2));
+            ssh.exec(cmd2, 1, TimeUnit.MINUTES);
         }
         catch (Exception e) {
             log.warn("unable to install galaxy component", e);

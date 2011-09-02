@@ -141,6 +141,7 @@ public class UbuntuChefSoloInitializer implements Initializer
 
             logger.debug("about to execute initial chef-solo");
             ssh.exec("sudo chef-solo");
+            ssh.exec("sudo chef-solo");
         }
         finally {
             ssh.close();

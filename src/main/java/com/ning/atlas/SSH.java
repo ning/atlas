@@ -7,8 +7,10 @@ import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.String.format;
@@ -44,7 +46,7 @@ public class SSH
 	{
 		this(passWord, userName, host, SSHClient.DEFAULT_PORT);
 	}
-	
+
 	// Password
 	public SSH(String passWord, String userName, String host, int port) throws IOException
 	{
@@ -103,20 +105,34 @@ public class SSH
 
 	public String exec(String command) throws IOException
 	{
-		logger.debug("executing {} on {}", command, host);
-		Session s = ssh.startSession();
-		try {
-			logger.debug("executing '{}' on {}", command, host);
-			Session.Command cmd = s.exec(command);
-			cmd.join();
-			String rs = cmd.getOutputAsString() + "\n" + cmd.getErrorAsString();
-			cmd.close();
-			return rs;
-		}
-		finally {
-			s.close();
-		}
+		return exec(command, 1, TimeUnit.HOURS);
 	}
+
+    public String exec(String command, int time, TimeUnit unit) throws IOException
+    {
+        logger.debug("executing {} on {}", command, host);
+        Session s = ssh.startSession();
+        try {
+            logger.debug("executing '{}' on {}", command, host);
+            Session.Command cmd = s.exec(command);
+
+            StringBuilder all = new StringBuilder();
+            BufferedReader out = new BufferedReader(new InputStreamReader(cmd.getInputStream()));
+            String buf;
+            while (null != (buf = out.readLine())) {
+                logger.debug(buf);
+                all.append(buf).append("\n");
+            }
+
+            cmd.join(time, unit);
+            cmd.close();
+            return all.toString();
+        }
+        finally {
+            s.close();
+        }
+    }
+
 
 	public void scpUpload(File localFile, String remotePath) throws IOException
 	{

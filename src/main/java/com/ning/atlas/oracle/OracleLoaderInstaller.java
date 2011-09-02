@@ -96,7 +96,6 @@ public class OracleLoaderInstaller implements Installer
                                 server.getAttributes().get("name"));
             log.info("about to load sql via [ " +  cmd + " ]");
             String out = ssh.exec(cmd);
-            log.debug(out);
         }
         catch (Exception e) {
             log.warn("failure to load sql", e);

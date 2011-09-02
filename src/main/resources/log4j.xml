@@ -8,24 +8,24 @@
             <param name="ConversionPattern" value="%p   %d{ISO8601} %X{trace}   %t  %c  %m%n"/>
         </layout>
     </appender>
-    
+
     <!-- com.ning.atlas -->
-    
+
     <logger name="com.ning.atlas.SSH">
-        <level value="info"/>
+        <level value="debug"/>
     </logger>
 
     <logger name="com.ning.atlas.virtualbox.VBoxProvisioner">
         <level value="info"/>
     </logger>
-    
+
     <logger name="com.ning.atlas">
         <level value="debug"/>
     </logger>
-    
+
 
     <!-- etc -->
-    
+
     <logger name="com.amazonaws.request">
         <level value="warn"/>
     </logger>
@@ -41,7 +41,7 @@
     <logger name="net.schmizz.concurrent.Event">
         <level value="fatal"/>
     </logger>
-    
+
     <!-- root -->
 
     <root>
