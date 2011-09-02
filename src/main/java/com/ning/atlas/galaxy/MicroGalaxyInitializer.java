@@ -56,7 +56,7 @@ public class MicroGalaxyInitializer implements Initializer
     }
 
     @Override
-    public Server initialize(Server server, String fragment, ProvisionedElement root, ProvisionedServer node) throws Exception
+    public void initialize(Server server, String fragment, ProvisionedElement root, ProvisionedServer node) throws Exception
     {
         SSH ssh = null;
         try {
@@ -70,7 +70,6 @@ public class MicroGalaxyInitializer implements Initializer
         }
         catch (IOException e) {
             log.warn("unable to install {}", fragment, e);
-            return server;
         }
         finally {
             if (ssh != null) {
@@ -82,7 +81,6 @@ public class MicroGalaxyInitializer implements Initializer
                 }
             }
         }
-        return server;
     }
 }
 

@@ -1,6 +1,8 @@
 package com.ning.atlas;
 
 import com.google.common.io.Resources;
+import org.jruby.CompatVersion;
+import org.jruby.RubyInstanceConfig;
 import org.jruby.embed.ScriptingContainer;
 
 import java.io.File;
@@ -13,6 +15,8 @@ public class JRubyTemplateParser
     public Template parseSystem(File template)
     {
         ScriptingContainer container = new ScriptingContainer();
+        container.setCompatVersion(CompatVersion.RUBY1_9);
+        container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
         try {
             container.runScriptlet(new StringReader(Resources.toString(Resources.getResource("atlas/parser.rb"),
                                                                        Charset.defaultCharset())), "atlas/parser.rb");
@@ -27,6 +31,9 @@ public class JRubyTemplateParser
     public Environment parseEnvironment(File template)
     {
         ScriptingContainer container = new ScriptingContainer();
+        container.setCompatVersion(CompatVersion.RUBY1_9);
+        container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
+
         try {
             container.runScriptlet(new StringReader(Resources.toString(Resources.getResource("atlas/parser.rb"),
                                                                        Charset.defaultCharset())), "atlas/parser.rb");

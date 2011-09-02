@@ -92,7 +92,7 @@ public class UbuntuChefSoloInitializer implements Initializer
     }
 
     @Override
-    public Server initialize(final Server server,
+    public void initialize(final Server server,
                              final String arg,
                              ProvisionedElement root,
                              ProvisionedServer node) throws Exception
@@ -106,7 +106,6 @@ public class UbuntuChefSoloInitializer implements Initializer
             sys_map_file.delete();
         }
         while (!done);
-        return server;
     }
 
     private void initServer(Server server, String nodeJson, File sysMapFile) throws IOException

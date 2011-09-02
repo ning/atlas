@@ -35,7 +35,7 @@ public class MicroGalaxyInstaller implements Installer
     }
 
     @Override
-    public Server install(Server server, String fragment, InitializedTemplate root)
+    public void install(Server server, String fragment, InitializedTemplate root)
     {
         SSH ssh = null;
         try {
@@ -49,7 +49,6 @@ public class MicroGalaxyInstaller implements Installer
         }
         catch (IOException e) {
             log.warn("unable to install {}", fragment, e);
-            return server;
         }
         finally {
             if (ssh != null) {
@@ -61,7 +60,6 @@ public class MicroGalaxyInstaller implements Installer
                 }
             }
         }
-        return server;
     }
 
     @Override

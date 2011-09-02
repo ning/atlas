@@ -11,9 +11,7 @@ public class NoOpInitializer implements Initializer
     }
 
     @Override
-    public Server initialize(Server server, String arg, ProvisionedElement root,
-                             ProvisionedServer node)
+    public void initialize(Server server, String arg, ProvisionedElement root, ProvisionedServer node)
     {
-        return server;
     }
 }

@@ -7,8 +7,7 @@ import com.ning.atlas.Server;
 public class NoOpInstaller implements Installer
 {
     @Override
-    public Server install(Server server, String fragment, InitializedTemplate root) throws Exception
+    public void install(Server server, String fragment, InitializedTemplate root) throws Exception
     {
-        return server;
     }
 }

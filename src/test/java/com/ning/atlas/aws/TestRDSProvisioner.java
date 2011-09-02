@@ -33,7 +33,6 @@ public class TestRDSProvisioner
                                       props.getProperty("aws.secret-key"));
     }
 
-
     @Test
     public void testFoo() throws Exception
     {

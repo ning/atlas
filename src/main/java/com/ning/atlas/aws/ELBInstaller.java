@@ -28,13 +28,12 @@ public class ELBInstaller implements Installer
 
 
     @Override
-    public Server install(Server s, String fragment, InitializedTemplate root)
+    public void install(Server s, String fragment, InitializedTemplate root)
     {
 
         Instance i = new Instance(s.getAttributes().get("instanceId"));
         RegisterInstancesWithLoadBalancerRequest req = new RegisterInstancesWithLoadBalancerRequest(fragment,
                                                                                                     asList(i));
         elb.registerInstancesWithLoadBalancer(req);
-        return s;
     }
 }

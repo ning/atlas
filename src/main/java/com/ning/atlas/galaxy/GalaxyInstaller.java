@@ -40,7 +40,7 @@ public class GalaxyInstaller implements Installer
     }
 
     @Override
-    public Server install(Server server, String fragment, InitializedTemplate root) throws Exception
+    public void install(Server server, String fragment, InitializedTemplate root) throws Exception
     {
         Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()
         {
@@ -91,8 +91,9 @@ public class GalaxyInstaller implements Installer
             String cmd2 = format("galaxy -i %s start", internal_first_part);
             log.debug("about to run '{}'", cmd2);
             log.debug(ssh.exec(cmd2));
-
-            return server;
+        }
+        catch (Exception e) {
+            log.warn("unable to install galaxy component", e);
         }
         finally {
             ssh.close();

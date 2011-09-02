@@ -8,8 +8,7 @@ import com.ning.atlas.Server;
 public class NoOpInitializer implements Initializer
 {
     @Override
-    public Server initialize(Server server, String arg, ProvisionedElement root, ProvisionedServer node) throws Exception
+    public void initialize(Server server, String arg, ProvisionedElement root, ProvisionedServer node) throws Exception
     {
-        return server;
     }
 }

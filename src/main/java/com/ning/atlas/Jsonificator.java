@@ -16,6 +16,11 @@ public class Jsonificator
         return mapper.writeValueAsString(template);
     }
 
+    public static String jsonify(InitializedTemplate template ) throws IOException
+    {
+        return mapper.writeValueAsString(template);
+    }
+
     public static InstalledElement reify(Environment e, String json) throws IOException
     {
         Base.DESERIALIZATION_HACK.set(e);

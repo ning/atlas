@@ -23,11 +23,10 @@ public class TestInstallation
         Installer installer = new Installer()
         {
             @Override
-            public Server install(Server server, String fragment, InitializedTemplate root)
+            public void install(Server server, String fragment, InitializedTemplate root)
             {
                 installed.set(true);
                 assertThat(fragment, equalTo("waffles-1.2"));
-                return server;
             }
         };
 

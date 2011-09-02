@@ -82,15 +82,15 @@ public class TestUbuntuChefSoloInitializer
         Server s = ec2.provision(base);
 
         try {
-            Server init_server = initializer.initialize(s, "role[server]",
-                                                        new ProvisionedSystem("root", "0", new My(),
-                                                                              Lists.<ProvisionedElement>newArrayList()),
-                                                        new ProvisionedServer("woof", "meow", new My(), s, Collections.<String>emptyList(), base));
+            initializer.initialize(s, "role[server]",
+                                   new ProvisionedSystem("root", "0", new My(),
+                                                         Lists.<ProvisionedElement>newArrayList()),
+                                   new ProvisionedServer("woof", "meow", new My(), s, Collections.<String>emptyList(), base));
 
 
             SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
                               "ubuntu",
-                              init_server.getExternalAddress());
+                              s.getExternalAddress());
             String out = ssh.exec("java -version");
             assertThat(out, containsString("Java(TM) SE Runtime Environment"));
         }

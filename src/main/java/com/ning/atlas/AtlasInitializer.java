@@ -34,7 +34,7 @@ public class AtlasInitializer implements Initializer
     }
 
     @Override
-    public Server initialize(Server server, String arg, ProvisionedElement root, ProvisionedServer node) throws Exception
+    public void initialize(Server server, String arg, ProvisionedElement root, ProvisionedServer node) throws Exception
     {
         SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
         try {
@@ -59,6 +59,5 @@ public class AtlasInitializer implements Initializer
         finally {
             ssh.close();
         }
-        return server;
     }
 }

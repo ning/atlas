@@ -21,21 +21,19 @@ public class TestBase
         env.addInitializer("waffle", new Initializer()
         {
             @Override
-            public Server initialize(Server server, String arg, ProvisionedElement root, ProvisionedServer node)
+            public void initialize(Server server, String arg, ProvisionedElement root, ProvisionedServer node)
             {
                 inits.add("waffle+" + arg);
-                return server;
             }
         });
 
         env.addInitializer("pancake", new Initializer()
         {
             @Override
-            public Server initialize(Server server, String arg, ProvisionedElement root,
+            public void initialize(Server server, String arg, ProvisionedElement root,
                                      ProvisionedServer node)
             {
                 inits.add("pancake+" + arg);
-                return server;
             }
         });
 
