@@ -12,7 +12,7 @@
     <!-- com.ning.atlas -->
 
     <logger name="com.ning.atlas.SSH">
-        <level value="debug"/>
+        <level value="info"/>
     </logger>
 
     <logger name="com.ning.atlas.virtualbox.VBoxProvisioner">
