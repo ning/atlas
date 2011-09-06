@@ -4,9 +4,9 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.ning.atlas.base.Maybe;
+import com.ning.atlas.errors.ErrorCollector;
+import com.ning.atlas.logging.Logger;
 import com.ning.atlas.upgrade.UpgradePlan;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +16,8 @@ import java.util.concurrent.Executor;
 
 public class BoundServer extends BoundTemplate
 {
-    private static final Logger log = LoggerFactory.getLogger(BoundServer.class);
+    private static final Logger log = Logger.get(BoundServer.class);
+
 
     private final Base base;
     private final List<String> installations;
@@ -69,7 +70,7 @@ public class BoundServer extends BoundTemplate
     }
 
     @Override
-    public ListenableFuture<ProvisionedElement> provision(Executor e)
+    public ListenableFuture<ProvisionedElement> provision(final ErrorCollector collector, Executor e)
     {
         final ListenableFutureTask<ProvisionedElement> f =
             new ListenableFutureTask<ProvisionedElement>(new Callable<ProvisionedElement>()
@@ -81,7 +82,7 @@ public class BoundServer extends BoundTemplate
                         return new ProvisionedServer(BoundServer.this, base, server, installations);
                     }
                     catch (Exception e) {
-                        log.warn("unable to provision server {}", getType() + "." + getName(), e);
+                        log.error(e, collector.error(e, "unable to provision server %s.%s", getType(), getName()));
                         return new ProvisionedError(getType(), getName(), getMy(), e.getMessage());
                     }
                 }
