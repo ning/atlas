@@ -1,17 +1,14 @@
 package com.ning.atlas;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.tree.Trees;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,11 +23,10 @@ public class TestInitialization
     {
 
         final AtomicBoolean initialized = new AtomicBoolean(false);
-        Initializer initializer = new Initializer()
+        Installer initializer = new Installer()
         {
             @Override
-            public void initialize(Server server, String arg, ProvisionedElement root,
-                                     ProvisionedServer node)
+            public void install(Server server, String arg, Thing root, Thing node)
             {
                 initialized.set(true);
                 assertThat(arg, equalTo("meow"));

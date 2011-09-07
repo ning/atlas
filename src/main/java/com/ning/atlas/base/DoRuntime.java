@@ -1,14 +1,13 @@
 package com.ning.atlas.base;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
+import com.google.common.base.Joiner;
 import com.ning.atlas.UnableToProvisionServerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Joiner;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 /**
  * Wrapper around Runtime.getRuntime().exec()

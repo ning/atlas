@@ -2,7 +2,6 @@ package com.ning.atlas.base;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.ning.atlas.Environment;
 
 import java.util.Collections;
 import java.util.Iterator;

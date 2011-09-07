@@ -1,6 +1,6 @@
 package com.ning.atlas.tree;
 
-public interface Visitor<TreeType extends Tree<TreeType>, BatonType>
+public interface Visitor<TreeType extends Tree, BatonType>
 {
     BatonType enter(TreeType node, BatonType baton);
 

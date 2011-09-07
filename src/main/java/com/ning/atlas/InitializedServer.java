@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ListenableFutureTask;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class InitializedServer extends InitializedTemplate
 
     @JsonIgnore
     @Override
-    public List<? extends InitializedTemplate> getChildren()
+    public Collection<? extends Thing> getChildren()
     {
         return Collections.emptyList();
     }
@@ -55,7 +56,7 @@ public class InitializedServer extends InitializedTemplate
                                 fragment = installation.substring(offset + 1, installation.length());
                             }
                             Installer installer = InitializedServer.this.base.getInstaller(prefix);
-                            installer.install(server, fragment, root);
+                            installer.install(server, fragment, root, InitializedServer.this);
                         }
 
                         return new InstalledServer(getType(), getName(), getMy(), server, base.getProperties());

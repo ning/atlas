@@ -10,7 +10,7 @@ import static org.junit.Assert.assertThat;
 public class FancyInstaller implements Installer
 {
     @Override
-    public void install(Server server, String fragment, InitializedTemplate root) throws Exception
+    public void install(Server server, String fragment, Thing root, Thing node) throws Exception
     {
         List<InitializedServer> candidates = Trees.findInstancesOf(root, InitializedServer.class);
         boolean found = false;

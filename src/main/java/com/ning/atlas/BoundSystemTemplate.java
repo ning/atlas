@@ -50,7 +50,7 @@ public class BoundSystemTemplate extends BoundTemplate
     }
 
     @Override
-    public List<BoundTemplate> getChildren()
+    public List<? extends BoundTemplate> getChildren()
     {
         return Collections.unmodifiableList(children);
     }

@@ -31,7 +31,7 @@ public class TestProvisioning
         Base base = new Base("concrete",
                              new Environment("tests",
                                              ImmutableMap.<String, Provisioner>of("static", p),
-                                             Collections.<String, Initializer>emptyMap()),
+                                             Collections.<String, Installer>emptyMap()),
                              "static",
                              Collections.<Initialization>emptyList(),
                              ImmutableMap.<String, String>of("tag", "concrete"));
@@ -60,7 +60,7 @@ public class TestProvisioning
         Base base1 = new Base("concrete",
                               new Environment("tests",
                                               ImmutableMap.<String, Provisioner>of("static", p),
-                                              Collections.<String, Initializer>emptyMap()),
+                                              Collections.<String, Installer>emptyMap()),
                               "static",
                               Collections.<Initialization>emptyList(),
                               ImmutableMap.<String, String>of("tag", "concrete")

@@ -22,7 +22,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
-public class TestAtlasInitializer
+public class TestAtlasInstaller
 {
     private static final JRubyTemplateParser parser = new JRubyTemplateParser();
     private static final Executor            exec   = MoreExecutors.sameThreadExecutor();

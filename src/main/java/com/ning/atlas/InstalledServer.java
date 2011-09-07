@@ -6,7 +6,7 @@ import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Map;
 
 @JsonPropertyOrder({"type", "name", "server"})
@@ -29,7 +29,7 @@ public class InstalledServer extends InstalledElement
 
     @Override
     @JsonIgnore
-    public List<? extends InstalledElement> getChildren()
+    public Collection<? extends InstalledElement> getChildren()
     {
         return super.getChildren();
     }

@@ -1,19 +1,18 @@
 package com.ning.atlas;
 
-import com.google.common.collect.ImmutableMap;
-import com.ning.atlas.tree.Tree;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 @JsonPropertyOrder({"type", "name", "my", "children"})
-public class InstalledElement implements Tree<InstalledElement>
+public class InstalledElement implements Thing
 {
     private final String type;
     private final String name;
@@ -27,7 +26,7 @@ public class InstalledElement implements Tree<InstalledElement>
     }
 
     @Override
-    public List<? extends InstalledElement> getChildren()
+    public Collection<? extends InstalledElement> getChildren()
     {
         return Collections.emptyList();
     }

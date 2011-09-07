@@ -15,7 +15,7 @@ UpgradePlan is a recursive thing, like the elements.
    - install changed installations
 *** Open Questions
     - Should we fully reinitialize and re-install? Can we
-      re-initialize even? Should we take a chef-like approach of
+      re-install even? Should we take a chef-like approach of
       additive-only?
     - Should initializers receive an update() or just re-apply them?
     - initializer.update(from, to) ?

@@ -6,7 +6,6 @@ import com.google.common.collect.Maps;
 import com.ning.atlas.base.Maybe;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,7 @@ public class Environment
     private final List<Base>               bases        = new CopyOnWriteArrayList<Base>();
     private final List<Environment>        children     = new CopyOnWriteArrayList<Environment>();
     private final Map<String, Provisioner> provisioners = Maps.newConcurrentMap();
-    private final Map<String, Initializer> initializers = Maps.newConcurrentMap();
+    private final Map<String, Installer> initializers = Maps.newConcurrentMap();
     private final Map<String, Installer>   installers   = Maps.newConcurrentMap();
     private final Map<String, String>      properties   = Maps.newConcurrentMap();
 
@@ -26,19 +25,19 @@ public class Environment
 
     public Environment(String name)
     {
-        this(name, Collections.<String, Provisioner>emptyMap(), Collections.<String, Initializer>emptyMap(), null);
+        this(name, Collections.<String, Provisioner>emptyMap(), Collections.<String, Installer>emptyMap(), null);
     }
 
     public Environment(String name,
                        Map<String, Provisioner> provisioners,
-                       Map<String, Initializer> initializers)
+                       Map<String, Installer> initializers)
     {
         this(name, provisioners, initializers, null);
     }
 
     public Environment(String name,
                        Map<String, Provisioner> provisioners,
-                       Map<String, Initializer> initializers,
+                       Map<String, Installer> initializers,
                        @Nullable Environment parent)
     {
         this.name = name;
@@ -73,7 +72,7 @@ public class Environment
         return provisioners.get(name);
     }
 
-    public void addInitializer(String name, Initializer init)
+    public void addInitializer(String name, Installer init)
     {
         initializers.put(name, init);
     }
@@ -106,7 +105,7 @@ public class Environment
         bases.add(base);
     }
 
-    public Map<String, Initializer> getInitializers()
+    public Map<String, Installer> getInitializers()
     {
         return initializers;
     }

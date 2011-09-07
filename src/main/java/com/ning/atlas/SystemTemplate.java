@@ -4,8 +4,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Stack;
 
 public class SystemTemplate extends Template
 {
@@ -39,7 +39,7 @@ public class SystemTemplate extends Template
         children.add(child);
     }
 
-    public List<Template> getChildren()
+    public Collection<? extends Template> getChildren()
     {
         return children;
     }

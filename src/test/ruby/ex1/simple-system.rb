@@ -1,9 +1,9 @@
 
 module XN
   C2Provisioner = com.ning.atlas.cruft.EC2OldProvisioner
-  ChefBoot = com.ning.atlas.chef.UbuntuChefSoloInitializer
+  ChefBoot = com.ning.atlas.chef.UbuntuChefSoloInstaller
   ServerPool = com.ning.atlas.ChefTaggedServerPoolProvisioner
-  NoOp = com.ning.atlas.NoOpInitializer
+  NoOp = com.ning.atlas.noop.NoOpInstaller
 end
 
 
@@ -11,7 +11,7 @@ end
 environment "cruft" do
   provisioner XN::EC2Provisioner, :security_group => "backend"
 
-  initializer "chef-solo", com.ning.atlas.chef.UbuntuChefSoloInitializer, {
+  initializer "chef-solo", com.ning.atlas.chef.UbuntuChefSoloInstaller, {
     :ssh_user => "ubuntu",
     :ssh_key_file => "#{ENV['HOME']}/.ec2/brianm-ning.pem",
     :recipe_url => "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz"

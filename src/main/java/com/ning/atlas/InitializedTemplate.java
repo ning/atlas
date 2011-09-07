@@ -1,12 +1,11 @@
 package com.ning.atlas;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.ning.atlas.tree.Tree;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.Executor;
 
-public abstract class InitializedTemplate implements Tree<InitializedTemplate>
+public abstract class InitializedTemplate implements Thing
 {
     private final String type;
     private final String name;
@@ -35,7 +34,7 @@ public abstract class InitializedTemplate implements Tree<InitializedTemplate>
     }
 
     @Override
-    public abstract List<? extends InitializedTemplate> getChildren();
+    public abstract Collection<? extends Thing> getChildren();
 
     public final ListenableFuture<? extends InstalledElement> install(Executor exec)
     {

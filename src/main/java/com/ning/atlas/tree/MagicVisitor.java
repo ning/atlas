@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class MagicVisitor<TreeType extends Tree<TreeType>, BatonType> implements Visitor<TreeType, BatonType>
+public class MagicVisitor<TreeType extends Tree, BatonType> implements Visitor<TreeType, BatonType>
 {
     private static final ConcurrentMap<Class, Dispatcher> DISPATCH_CACHE = new ConcurrentHashMap<Class, Dispatcher>();
 

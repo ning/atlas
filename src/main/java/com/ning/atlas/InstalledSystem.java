@@ -16,7 +16,7 @@ public class InstalledSystem extends InstalledElement
     }
 
     @Override
-    public List<InstalledElement> getChildren() {
+    public List<? extends InstalledElement> getChildren() {
         return this.children;
     }
 

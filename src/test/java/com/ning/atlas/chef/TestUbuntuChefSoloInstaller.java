@@ -10,7 +10,7 @@ import com.ning.atlas.Environment;
 import com.ning.atlas.Initialization;
 import com.ning.atlas.InitializedServer;
 import com.ning.atlas.InitializedTemplate;
-import com.ning.atlas.Initializer;
+import com.ning.atlas.Installer;
 import com.ning.atlas.My;
 import com.ning.atlas.ProvisionedServer;
 import com.ning.atlas.ProvisionedSystem;
@@ -44,7 +44,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
 import static org.junit.matchers.JUnitMatchers.containsString;
 
-public class TestUbuntuChefSoloInitializer
+public class TestUbuntuChefSoloInstaller
 {
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -75,7 +75,7 @@ public class TestUbuntuChefSoloInitializer
                             "ssh_key_file", new File(props.getProperty("aws.key-file-path")).getAbsolutePath(),
                             "recipe_url", "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz");
 
-        Initializer initializer = new UbuntuChefSoloInitializer(attributes);
+        Installer initializer = new UbuntuChefSoloInstaller(attributes);
 
         final Base base = new Base("ubuntu", env, "ec2",
                                    Collections.<Initialization>emptyList(),
@@ -83,10 +83,10 @@ public class TestUbuntuChefSoloInitializer
         Server s = ec2.provision(base);
 
         try {
-            initializer.initialize(s, "role[server]",
-                                   new ProvisionedSystem("root", "0", new My(),
-                                                         Lists.<ProvisionedElement>newArrayList()),
-                                   new ProvisionedServer("woof", "meow", new My(), s, Collections.<String>emptyList(), base));
+            initializer.install(s, "role[server]",
+                                new ProvisionedSystem("root", "0", new My(),
+                                                      Lists.<ProvisionedElement>newArrayList()),
+                                new ProvisionedServer("woof", "meow", new My(), s, Collections.<String>emptyList(), base));
 
 
             SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
@@ -108,11 +108,11 @@ public class TestUbuntuChefSoloInitializer
                             "ssh_key_file", new File(props.getProperty("aws.key-file-path")).getAbsolutePath(),
                             "recipe_url", "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz");
 
-        UbuntuChefSoloInitializer i = new UbuntuChefSoloInitializer(attributes);
+        UbuntuChefSoloInstaller i = new UbuntuChefSoloInstaller(attributes);
 
         String json = i.createNodeJsonFor("{ \"run_list\": [ \"role[java-core]\" ] }");
-        assertThat(mapper.readValue(json, UbuntuChefSoloInitializer.Node.class),
-                   equalTo(new UbuntuChefSoloInitializer.Node("role[java-core]")));
+        assertThat(mapper.readValue(json, UbuntuChefSoloInstaller.Node.class),
+                   equalTo(new UbuntuChefSoloInstaller.Node("role[java-core]")));
     }
 
     @Test
@@ -123,12 +123,12 @@ public class TestUbuntuChefSoloInitializer
                             "ssh_key_file", new File(props.getProperty("aws.key-file-path")).getAbsolutePath(),
                             "recipe_url", "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz");
 
-        UbuntuChefSoloInitializer i = new UbuntuChefSoloInitializer(attributes);
+        UbuntuChefSoloInstaller i = new UbuntuChefSoloInstaller(attributes);
 
         String json = i.createNodeJsonFor("role[java-core]");
 
-        assertThat(mapper.readValue(json, UbuntuChefSoloInitializer.Node.class),
-                   equalTo(new UbuntuChefSoloInitializer.Node("role[java-core]")));
+        assertThat(mapper.readValue(json, UbuntuChefSoloInstaller.Node.class),
+                   equalTo(new UbuntuChefSoloInstaller.Node("role[java-core]")));
     }
 
     @Test
@@ -139,11 +139,11 @@ public class TestUbuntuChefSoloInitializer
                             "ssh_key_file", new File(props.getProperty("aws.key-file-path")).getAbsolutePath(),
                             "recipe_url", "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz");
 
-        UbuntuChefSoloInitializer i = new UbuntuChefSoloInitializer(attributes);
+        UbuntuChefSoloInstaller i = new UbuntuChefSoloInstaller(attributes);
 
         String json = i.createNodeJsonFor("role[java-core], recipe[emacs]");
-        assertThat(mapper.readValue(json, UbuntuChefSoloInitializer.Node.class),
-                   equalTo(new UbuntuChefSoloInitializer.Node("role[java-core]", "recipe[emacs]")));
+        assertThat(mapper.readValue(json, UbuntuChefSoloInstaller.Node.class),
+                   equalTo(new UbuntuChefSoloInstaller.Node("role[java-core]", "recipe[emacs]")));
     }
 
     @Test
@@ -157,7 +157,7 @@ public class TestUbuntuChefSoloInitializer
                             "recipe_url", "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz");
         Environment env = new Environment("ec2",
                                           ImmutableMap.<String, Provisioner>of("ec2", p),
-                                          ImmutableMap.<String, Initializer>of("chef-solo", new UbuntuChefSoloInitializer(attributes)));
+                                          ImmutableMap.<String, Installer>of("chef-solo", new UbuntuChefSoloInstaller(attributes)));
 
 
         ServerTemplate st = new ServerTemplate("server");
@@ -195,7 +195,7 @@ public class TestUbuntuChefSoloInitializer
             ImmutableMap.of("ssh_user", "ubuntu",
                             "ssh_key_file", new File(props.getProperty("aws.key-file-path")).getAbsolutePath(),
                             "recipe_url", "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz");
-        Environment env = new Environment("ec2", ImmutableMap.<String, Provisioner>of("ec2", ec2), ImmutableMap.<String, Initializer>of("chef-solo", new UbuntuChefSoloInitializer(attributes)), null);
+        Environment env = new Environment("ec2", ImmutableMap.<String, Provisioner>of("ec2", ec2), ImmutableMap.<String, Installer>of("chef-solo", new UbuntuChefSoloInstaller(attributes)), null);
 
         ServerTemplate st = new ServerTemplate("server");
         st.setBase("java-core");
@@ -237,7 +237,7 @@ public class TestUbuntuChefSoloInitializer
                             "recipe_url", "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz");
         Environment env = new Environment("ec2",
                                           ImmutableMap.<String, Provisioner>of("ec2", ec2),
-                                          ImmutableMap.<String, Initializer>of("chef-solo", new UbuntuChefSoloInitializer(attributes)),
+                                          ImmutableMap.<String, Installer>of("chef-solo", new UbuntuChefSoloInstaller(attributes)),
                                           null);
 
         Base java_core = new Base("server", env, "ec2",
@@ -246,7 +246,7 @@ public class TestUbuntuChefSoloInitializer
         env.addBase(java_core);
 
 
-        env.addInitializer("chef-solo", new UbuntuChefSoloInitializer(attributes));
+        env.addInitializer("chef-solo", new UbuntuChefSoloInstaller(attributes));
 
 
         ServerTemplate st = new ServerTemplate("shell");

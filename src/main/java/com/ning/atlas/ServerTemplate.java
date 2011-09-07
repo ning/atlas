@@ -1,6 +1,7 @@
 package com.ning.atlas;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class ServerTemplate extends Template
         return rs;
     }
 
-    public Iterable<? extends Template> getChildren()
+    public Collection<? extends Thing> getChildren()
     {
         return Collections.emptyList();
     }

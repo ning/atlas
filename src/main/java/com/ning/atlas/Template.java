@@ -4,14 +4,12 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.ning.atlas.tree.Tree;
-import org.skife.config.cglib.transform.AbstractClassTransformer;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public abstract class Template implements Tree<Template>
+public abstract class Template implements Tree
 {
     private final String type;
     private final List<String> cardinality = new CopyOnWriteArrayList<String>(new String[]{"0"});

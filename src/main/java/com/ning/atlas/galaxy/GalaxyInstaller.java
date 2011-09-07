@@ -5,10 +5,10 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.ning.atlas.InitializedServer;
-import com.ning.atlas.InitializedTemplate;
 import com.ning.atlas.Installer;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
+import com.ning.atlas.Thing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ public class GalaxyInstaller implements Installer
     }
 
     @Override
-    public void install(Server server, String fragment, InitializedTemplate root) throws Exception
+    public void install(Server server, String fragment, Thing root, Thing node) throws Exception
     {
         Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()
         {

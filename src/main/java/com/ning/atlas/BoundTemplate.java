@@ -5,10 +5,10 @@ import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.tree.Tree;
 import com.ning.atlas.upgrade.UpgradePlan;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.concurrent.Executor;
 
-public abstract class BoundTemplate implements Tree<BoundTemplate>
+public abstract class BoundTemplate implements Tree
 {
     private final String type;
     private final String name;
@@ -36,7 +36,7 @@ public abstract class BoundTemplate implements Tree<BoundTemplate>
         return my;
     }
 
-    public abstract List<BoundTemplate> getChildren();
+    public abstract Collection<? extends BoundTemplate> getChildren();
 
     public abstract ListenableFuture<? extends ProvisionedElement> provision(ErrorCollector collector, Executor exec);
 

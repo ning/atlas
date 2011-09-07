@@ -9,6 +9,7 @@ import com.ning.atlas.logging.Logger;
 import com.ning.atlas.upgrade.UpgradePlan;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -64,7 +65,7 @@ public class BoundServer extends BoundTemplate
     }
 
     @Override
-    public List<BoundTemplate> getChildren()
+    public Collection<? extends BoundTemplate> getChildren()
     {
         return Collections.emptyList();
     }

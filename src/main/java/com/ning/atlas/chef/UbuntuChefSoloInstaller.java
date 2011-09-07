@@ -5,11 +5,10 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
-import com.ning.atlas.Initializer;
-import com.ning.atlas.ProvisionedServer;
-import com.ning.atlas.ProvisionedElement;
+import com.ning.atlas.Installer;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
+import com.ning.atlas.Thing;
 import com.ning.atlas.base.Maybe;
 import org.antlr.stringtemplate.StringTemplate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -29,7 +28,7 @@ import java.util.regex.Pattern;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Arrays.asList;
 
-public class UbuntuChefSoloInitializer implements Initializer
+public class UbuntuChefSoloInstaller implements Installer
 {
     private final static ObjectMapper mapper = new ObjectMapper();
 
@@ -37,7 +36,7 @@ public class UbuntuChefSoloInitializer implements Initializer
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
     }
 
-    private final static Logger logger = LoggerFactory.getLogger(UbuntuChefSoloInitializer.class);
+    private final static Logger logger = LoggerFactory.getLogger(UbuntuChefSoloInstaller.class);
 
     private final String sshUser;
     private final String sshKeyFile;
@@ -45,7 +44,7 @@ public class UbuntuChefSoloInitializer implements Initializer
     private final File   soloRbFile;
     private final File s3InitFile;
 
-    public UbuntuChefSoloInitializer(Map<String, String> attributes)
+    public UbuntuChefSoloInstaller(Map<String, String> attributes)
     {
         this.sshUser = attributes.get("ssh_user");
         checkNotNull(sshUser, "ssh_user attribute required");
@@ -61,12 +60,12 @@ public class UbuntuChefSoloInitializer implements Initializer
 
         try {
             this.chefSoloInitFile = File.createTempFile("chef-solo-init", "sh");
-            InputStream in = UbuntuChefSoloInitializer.class.getResourceAsStream("/ubuntu-chef-solo-setup.sh");
+            InputStream in = UbuntuChefSoloInstaller.class.getResourceAsStream("/ubuntu-chef-solo-setup.sh");
             Files.write(ByteStreams.toByteArray(in), this.chefSoloInitFile);
             in.close();
 
             this.soloRbFile = File.createTempFile("solo", "rb");
-            InputStream in2 = UbuntuChefSoloInitializer.class.getResourceAsStream("/ubuntu-chef-solo-solo.st");
+            InputStream in2 = UbuntuChefSoloInstaller.class.getResourceAsStream("/ubuntu-chef-solo-solo.st");
             StringTemplate template = new StringTemplate(new String(ByteStreams.toByteArray(in2)));
             template.setAttribute("recipe_url", recipeUrl);
             Files.write(template.toString().getBytes(), this.soloRbFile);
@@ -74,7 +73,7 @@ public class UbuntuChefSoloInitializer implements Initializer
 
             this.s3InitFile = File.createTempFile("s3_init", ".rb");
             if (s3AccessKey.isKnown() && s3SecretKey.isKnown()) {
-                InputStream in3 = UbuntuChefSoloInitializer.class.getResourceAsStream("/s3_init.rb.st");
+                InputStream in3 = UbuntuChefSoloInstaller.class.getResourceAsStream("/s3_init.rb.st");
                 StringTemplate s3_init_template = new StringTemplate(new String(ByteStreams.toByteArray(in3)));
                 s3_init_template.setAttribute("aws_access_key", s3AccessKey.otherwise(""));
                 s3_init_template.setAttribute("aws_secret_key", s3SecretKey.otherwise(""));
@@ -92,10 +91,10 @@ public class UbuntuChefSoloInitializer implements Initializer
     }
 
     @Override
-    public void initialize(final Server server,
-                             final String arg,
-                             ProvisionedElement root,
-                             ProvisionedServer node) throws Exception
+    public void install(final Server server,
+                        final String arg,
+                        Thing root,
+                        Thing node) throws Exception
     {
         boolean done = true;
         do {

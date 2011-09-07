@@ -4,8 +4,8 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.Executor;
 
 public class InitializedError extends InitializedTemplate
@@ -19,7 +19,7 @@ public class InitializedError extends InitializedTemplate
     }
 
     @Override
-    public List<? extends InitializedTemplate> getChildren()
+    public Collection<? extends Thing> getChildren()
     {
         return Collections.emptyList();
     }

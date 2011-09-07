@@ -2,15 +2,12 @@ package com.ning.atlas;
 
 import com.google.common.io.Resources;
 import org.jruby.CompatVersion;
-import org.jruby.RubyInstanceConfig;
 import org.jruby.embed.ScriptingContainer;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 
 public class JRubyTemplateParser
 {

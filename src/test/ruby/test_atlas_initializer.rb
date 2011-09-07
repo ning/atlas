@@ -15,12 +15,12 @@ environment "ec2" do
       :keypair_id => creds['aws.key-name']
   }
 
-  initializer "atlas", com.ning.atlas.AtlasInitializer, {
+  initializer "atlas", com.ning.atlas.AtlasInstaller, {
       :ssh_user     => creds['aws.ssh-user'],
       :ssh_key_file => creds['aws.key-file-path']
   }
 
-  initializer "chef", com.ning.atlas.chef.UbuntuChefSoloInitializer, {
+  initializer "chef", com.ning.atlas.chef.UbuntuChefSoloInstaller, {
       :ssh_user     => creds['aws.ssh-user'],
       :ssh_key_file => creds['aws.key-file-path'],
       :recipe_url   => "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz"

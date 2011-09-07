@@ -36,7 +36,7 @@ public class ProvisionedServer extends ProvisionedElement
              base);
     }
 
-    @JsonIgnore
+    @Override
     public List<? extends ProvisionedElement> getChildren()
     {
         return Collections.emptyList();

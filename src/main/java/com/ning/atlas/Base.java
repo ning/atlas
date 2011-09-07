@@ -2,20 +2,14 @@ package com.ning.atlas;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.tuple.Pair;
-import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.codehaus.jackson.annotate.JsonProperty;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Base
 {
@@ -23,7 +17,7 @@ public class Base
 
     private final Map<String, String> attributes = Maps.newConcurrentMap();
     private final String                                  name;
-    private final List<Pair<Initialization, Initializer>> initializers;
+    private final List<Pair<Initialization, Installer>> initializers;
     private final Pair<String, Provisioner>               provisioner;
     private final Map<String, String>                     environmentProperies;
     private final Map<String, Installer>                  installers;
@@ -46,10 +40,10 @@ public class Base
         this.provisioner = Pair.of(provisionerName, e.getProvisioner(provisionerName));
         this.environmentProperies = e.getProperties();
         this.installers = e.getInstallers();
-        this.initializers = Lists.transform(initializationUris, new Function<Initialization, Pair<Initialization, Initializer>>()
+        this.initializers = Lists.transform(initializationUris, new Function<Initialization, Pair<Initialization, Installer>>()
         {
             @Override
-            public Pair<Initialization, Initializer> apply(Initialization input)
+            public Pair<Initialization, Installer> apply(Initialization input)
             {
                 return Pair.of(input, e.getInitializers().get(input.getScheme()));
             }
@@ -105,8 +99,8 @@ public class Base
                              ProvisionedElement root,
                              ProvisionedServer node) throws Exception
     {
-        for (Pair<Initialization, Initializer> initializer : initializers) {
-            initializer.getValue().initialize(server, initializer.getKey().getFragment(), root, node);
+        for (Pair<Initialization, Installer> initializer : initializers) {
+            initializer.getValue().install(server, initializer.getKey().getFragment(), root, node);
         }
         return server;
     }
@@ -114,7 +108,7 @@ public class Base
     public List<String> getInits()
     {
         ArrayList<String> rs = Lists.newArrayListWithExpectedSize(initializers.size());
-        for (Pair<Initialization, Initializer> initializer : initializers) {
+        for (Pair<Initialization, Installer> initializer : initializers) {
             rs.add(initializer.getKey().getUriForm());
         }
         return rs;

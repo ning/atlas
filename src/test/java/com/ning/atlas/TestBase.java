@@ -18,20 +18,19 @@ public class TestBase
     {
         final List<String> inits = Lists.newArrayList();
         Environment env = new Environment("unit-test");
-        env.addInitializer("waffle", new Initializer()
+        env.addInitializer("waffle", new Installer()
         {
             @Override
-            public void initialize(Server server, String arg, ProvisionedElement root, ProvisionedServer node)
+            public void install(Server server, String arg, Thing root, Thing node)
             {
                 inits.add("waffle+" + arg);
             }
         });
 
-        env.addInitializer("pancake", new Initializer()
+        env.addInitializer("pancake", new Installer()
         {
             @Override
-            public void initialize(Server server, String arg, ProvisionedElement root,
-                                     ProvisionedServer node)
+            public void install(Server server, String arg, Thing root, Thing node)
             {
                 inits.add("pancake+" + arg);
             }

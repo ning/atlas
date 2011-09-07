@@ -4,19 +4,15 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.ning.atlas.InitializedServer;
-import com.ning.atlas.InitializedTemplate;
 import com.ning.atlas.Installer;
 import com.ning.atlas.Jsonificator;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
-
-import com.ning.atlas.aws.RDSProvisioner;
-import com.ning.atlas.tree.Trees;
+import com.ning.atlas.Thing;
 import org.antlr.stringtemplate.StringTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
@@ -50,7 +46,7 @@ public class OracleLoaderInstaller implements Installer
 
 
     @Override
-    public void install(Server server, String fragment, InitializedTemplate root) throws Exception
+    public void install(Server server, String fragment, Thing root, Thing node) throws Exception
     {
         log.debug("trying to find :oracle => 'shell' in " + Jsonificator.jsonify(root));
         Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()

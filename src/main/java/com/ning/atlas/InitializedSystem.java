@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
@@ -21,7 +22,7 @@ public class InitializedSystem extends InitializedTemplate
     }
 
     @Override
-    public List<? extends InitializedTemplate> getChildren()
+    public Collection<? extends InitializedTemplate> getChildren()
     {
         return children;
     }

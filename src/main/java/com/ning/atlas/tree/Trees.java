@@ -8,14 +8,14 @@ import java.util.List;
 
 public class Trees
 {
-    public static <TreeType extends Tree<TreeType>, BatonType> BatonType visit(TreeType tree,
+    public static <TreeType extends Tree, BatonType> BatonType visit(TreeType tree,
                                                                                BatonType baton,
                                                                                Visitor<TreeType, BatonType> visitor)
     {
         return new Director<TreeType, BatonType>(tree, visitor).apply(baton);
     }
 
-    public static <TreeType extends Tree<TreeType>> List<TreeType> find(TreeType tree, final Predicate<TreeType> test)
+    public static <TreeType extends Tree> List<TreeType> find(TreeType tree, final Predicate<TreeType> test)
     {
         return visit(tree, new ArrayList<TreeType>(), new BaseVisitor<TreeType, List<TreeType>>()
         {
@@ -30,7 +30,7 @@ public class Trees
         });
     }
 
-    public static <TreeType extends Tree<TreeType>> List<TreeType> leaves(TreeType root)
+    public static <TreeType extends Tree> List<TreeType> leaves(TreeType root)
     {
         return visit(root, Lists.<TreeType>newArrayList(), new BaseVisitor<TreeType, List<TreeType>>()
         {
@@ -45,7 +45,7 @@ public class Trees
         });
     }
 
-    public static <TreeType extends Tree<TreeType>, T extends TreeType> List<T> findInstancesOf(TreeType root, final Class<T> type)
+    public static <TreeType extends Tree, T extends TreeType> List<T> findInstancesOf(TreeType root, final Class<T> type)
     {
         return visit(root, new ArrayList<T>(), new BaseVisitor<TreeType, List<T>>()
         {
@@ -60,7 +60,7 @@ public class Trees
         });
     }
 
-    private static class Director<TreeType extends Tree<TreeType>, BatonType>
+    private static class Director<TreeType extends Tree, BatonType>
     {
         private final TreeType                     tree;
         private final Visitor<TreeType, BatonType> visitor;

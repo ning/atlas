@@ -1,6 +1,8 @@
 package com.ning.atlas.tree;
 
-public interface Tree<T extends Tree>
+import java.util.Collection;
+
+public interface Tree
 {
-    Iterable<? extends T> getChildren();
+    Collection<? extends Tree> getChildren();
 }

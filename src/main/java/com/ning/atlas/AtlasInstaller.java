@@ -12,7 +12,7 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class AtlasInitializer implements Initializer
+public class AtlasInstaller implements Installer
 {
     private final static ObjectMapper mapper = new ObjectMapper();
 
@@ -20,11 +20,11 @@ public class AtlasInitializer implements Initializer
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
     }
 
-    private final Logger log = LoggerFactory.getLogger(AtlasInitializer.class);
+    private final Logger log = LoggerFactory.getLogger(AtlasInstaller.class);
     private final String sshUser;
     private final String sshKeyFile;
 
-    public AtlasInitializer(Map<String, String> attributes)
+    public AtlasInstaller(Map<String, String> attributes)
     {
         this.sshUser = attributes.get("ssh_user");
         checkNotNull(sshUser, "ssh_user attribute required");
@@ -34,7 +34,7 @@ public class AtlasInitializer implements Initializer
     }
 
     @Override
-    public void initialize(Server server, String arg, ProvisionedElement root, ProvisionedServer node) throws Exception
+    public void install(Server server, String arg, Thing root, Thing node) throws Exception
     {
         SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
         try {
