@@ -7,6 +7,7 @@ import com.ning.atlas.InstalledElement;
 import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.ProvisionedElement;
 import com.ning.atlas.Template;
+import com.ning.atlas.errors.ErrorCollector;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 
@@ -34,7 +35,7 @@ public class InstallCommand implements Runnable
 
         ExecutorService ex = Executors.newCachedThreadPool();
         try {
-            ProvisionedElement pt = bound.provision(ex).get();
+            ProvisionedElement pt = bound.provision(new ErrorCollector(), ex).get();
             if (pt.getType().equals("__ROOT__") && pt.getChildren().size() == 1) {
                 // lop off the fake root
                 pt = pt.getChildren().get(0);

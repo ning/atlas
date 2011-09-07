@@ -1,11 +1,11 @@
 package com.ning.atlas.main;
 
-import com.google.common.collect.Iterables;
 import com.ning.atlas.BoundTemplate;
 import com.ning.atlas.Environment;
 import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.ProvisionedElement;
 import com.ning.atlas.Template;
+import com.ning.atlas.errors.ErrorCollector;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 
@@ -32,7 +32,7 @@ public class ProvisionCommand implements Runnable
 
         ExecutorService ex = Executors.newCachedThreadPool();
         try {
-            ProvisionedElement t = bound.provision(ex).get();
+            ProvisionedElement t = bound.provision(new ErrorCollector(), ex).get();
             if (t.getType().equals("__ROOT__") && t.getChildren().size() == 1) {
                 // lop off the fake root
                 t = t.getChildren().get(0);

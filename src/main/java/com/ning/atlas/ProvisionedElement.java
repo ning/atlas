@@ -34,11 +34,13 @@ public abstract class ProvisionedElement implements Tree<ProvisionedElement>
         return type;
     }
 
+    @Override
     public abstract List<? extends ProvisionedElement> getChildren();
 
-    protected abstract ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, ProvisionedElement root);
-
-    public ListenableFuture<? extends InitializedTemplate> initialize(Executor exec) {
+    public ListenableFuture<? extends InitializedTemplate> initialize(Executor exec)
+    {
         return initialize(exec, this);
     }
+
+    protected abstract ListenableFuture<? extends InitializedTemplate> initialize(Executor ex, ProvisionedElement root);
 }

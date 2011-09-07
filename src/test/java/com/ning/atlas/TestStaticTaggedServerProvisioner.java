@@ -1,6 +1,7 @@
 package com.ning.atlas;
 
 import com.google.common.util.concurrent.MoreExecutors;
+import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.tree.Trees;
 import org.junit.Test;
 
@@ -24,7 +25,7 @@ public class TestStaticTaggedServerProvisioner
 
         BoundTemplate bt = root.normalize(e);
 
-        ProvisionedElement pt = bt.provision(MoreExecutors.sameThreadExecutor()).get();
+        ProvisionedElement pt = bt.provision(new ErrorCollector(),MoreExecutors.sameThreadExecutor()).get();
 
         List<ProvisionedElement> leaves = Trees.leaves(pt);
         assertThat(leaves.size(), equalTo(4));

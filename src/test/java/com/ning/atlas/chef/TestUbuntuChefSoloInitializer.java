@@ -21,6 +21,7 @@ import com.ning.atlas.Server;
 import com.ning.atlas.ServerTemplate;
 import com.ning.atlas.aws.AWSConfig;
 import com.ning.atlas.aws.EC2Provisioner;
+import com.ning.atlas.errors.ErrorCollector;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -170,7 +171,7 @@ public class TestUbuntuChefSoloInitializer
 
         BoundTemplate bt = st.normalize(env);
         ExecutorService ex = Executors.newCachedThreadPool();
-        ProvisionedElement pt = bt.provision(ex).get();
+        ProvisionedElement pt = bt.provision(new ErrorCollector(),ex).get();
         InitializedTemplate it = pt.initialize(ex).get();
         assertThat(it, instanceOf(InitializedServer.class));
         InitializedServer ist = (InitializedServer) it;
@@ -206,7 +207,7 @@ public class TestUbuntuChefSoloInitializer
 
         BoundTemplate bt = st.normalize(env);
         ExecutorService ex = Executors.newCachedThreadPool();
-        ProvisionedElement pt = bt.provision(ex).get();
+        ProvisionedElement pt = bt.provision(new ErrorCollector(),ex).get();
         InitializedTemplate it = pt.initialize(ex).get();
         assertThat(it, instanceOf(InitializedServer.class));
         InitializedServer ist = (InitializedServer) it;
@@ -253,7 +254,7 @@ public class TestUbuntuChefSoloInitializer
         st.setCardinality(asList("eshell"));
 
         BoundTemplate bt = st.normalize(env);
-        ProvisionedElement pt = bt.provision(MoreExecutors.sameThreadExecutor()).get();
+        ProvisionedElement pt = bt.provision(new ErrorCollector(),MoreExecutors.sameThreadExecutor()).get();
         InitializedTemplate it = pt.initialize(MoreExecutors.sameThreadExecutor()).get();
 
         InitializedServer ist = (InitializedServer) it;

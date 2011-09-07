@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JRubyTemplateParser
 {
@@ -16,7 +18,7 @@ public class JRubyTemplateParser
     {
         ScriptingContainer container = new ScriptingContainer();
         container.setCompatVersion(CompatVersion.RUBY1_9);
-        container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
+//        container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
         try {
             container.runScriptlet(new StringReader(Resources.toString(Resources.getResource("atlas/parser.rb"),
                                                                        Charset.defaultCharset())), "atlas/parser.rb");
@@ -32,7 +34,7 @@ public class JRubyTemplateParser
     {
         ScriptingContainer container = new ScriptingContainer();
         container.setCompatVersion(CompatVersion.RUBY1_9);
-        container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
+//        container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
 
         try {
             container.runScriptlet(new StringReader(Resources.toString(Resources.getResource("atlas/parser.rb"),

@@ -3,6 +3,7 @@ package com.ning.atlas;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.aws.AWSConfig;
 import com.ning.atlas.aws.EC2Provisioner;
+import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.tree.Trees;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +51,7 @@ public class TestAtlasInitializer
         Template t = parser.parseSystem(new File("src/test/ruby/test_atlas_initializer.rb"));
         Environment e = parser.parseEnvironment(new File("src/test/ruby/test_atlas_initializer.rb"));
 
-        InitializedTemplate it = t.normalize(e).provision(exec).get().initialize(exec).get();
+        InitializedTemplate it = t.normalize(e).provision(new ErrorCollector(),exec).get().initialize(exec).get();
 
         List<InitializedServer> leaves = Trees.findInstancesOf(it, InitializedServer.class);
         assertThat(leaves.size(), equalTo(1));

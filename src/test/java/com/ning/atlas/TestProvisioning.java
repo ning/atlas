@@ -3,6 +3,7 @@ package com.ning.atlas;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.tree.Trees;
 import org.junit.Test;
 
@@ -39,7 +40,7 @@ public class TestProvisioning
 
         BoundTemplate root = new BoundSystemTemplate("root", "1", new My(), Arrays.<BoundTemplate>asList(child));
 
-        ListenableFuture<? extends ProvisionedElement> rs = root.provision(Executors.newFixedThreadPool(2));
+        ListenableFuture<? extends ProvisionedElement> rs = root.provision(new ErrorCollector(),Executors.newFixedThreadPool(2));
         ProvisionedElement proot = rs.get();
 
         List<ProvisionedElement> leaves = Trees.leaves(proot);
@@ -72,7 +73,7 @@ public class TestProvisioning
         BoundTemplate root = new BoundSystemTemplate("root", "0", new My(), Arrays.<BoundTemplate>asList(child, child2));
 
         ExecutorService ex = Executors.newFixedThreadPool(2);
-        ListenableFuture<? extends ProvisionedElement> rs = root.provision(ex);
+        ListenableFuture<? extends ProvisionedElement> rs = root.provision(new ErrorCollector(),ex);
         ProvisionedElement proot = rs.get();
 
         List<ProvisionedElement> leaves = Trees.leaves(proot);

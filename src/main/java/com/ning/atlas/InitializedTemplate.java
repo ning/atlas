@@ -37,7 +37,8 @@ public abstract class InitializedTemplate implements Tree<InitializedTemplate>
     @Override
     public abstract List<? extends InitializedTemplate> getChildren();
 
-    public final ListenableFuture<? extends InstalledElement> install(Executor exec) {
+    public final ListenableFuture<? extends InstalledElement> install(Executor exec)
+    {
         return install(exec, this);
     }
 

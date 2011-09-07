@@ -7,7 +7,7 @@ public class ErrorCollector
         return String.format(format, args);
     }
 
-    public String interrupted(InterruptedException e, String format, String... args)
+    public String interrupted(InterruptedException e, String format, Object... args)
     {
         return String.format(format, args);
     }

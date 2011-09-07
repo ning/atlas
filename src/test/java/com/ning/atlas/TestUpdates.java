@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.upgrade.UpgradePlan;
 import org.junit.After;
 import org.junit.Before;
@@ -36,7 +37,7 @@ public class TestUpdates
         Environment e = p.parseEnvironment(new File("src/test/ruby/test_updates_env.rb"));
         InstalledElement one = p.parseSystem(new File("src/test/ruby/test_updates_sys_1.rb"))
                                  .normalize(e)
-                                 .provision(sameThreadExecutor()).get()
+                                 .provision(new ErrorCollector(),sameThreadExecutor()).get()
                                  .initialize(sameThreadExecutor()).get()
                                  .install(sameThreadExecutor()).get();
 

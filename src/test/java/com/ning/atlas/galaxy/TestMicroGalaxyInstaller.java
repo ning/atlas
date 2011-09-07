@@ -8,6 +8,7 @@ import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.Template;
 import com.ning.atlas.aws.AWSConfig;
 import com.ning.atlas.aws.EC2Provisioner;
+import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.tree.Trees;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
@@ -61,7 +62,7 @@ public class TestMicroGalaxyInstaller
         Environment env = parser.parseEnvironment(new File("src/test/ruby/test_micro_galaxy_installer.rb"));
 
         InstalledElement installed = root.normalize(env)
-                                         .provision(exec).get()
+                                         .provision(new ErrorCollector(), exec).get()
                                          .initialize(exec).get()
                                          .install(exec).get();
 

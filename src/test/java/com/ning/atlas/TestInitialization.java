@@ -3,6 +3,7 @@ package com.ning.atlas;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.tree.Trees;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
@@ -67,7 +68,7 @@ public class TestInitialization
         BoundServer bs = lbs.get(0);
         assertThat(String.valueOf(bs.getMy().get("waffles")), equalTo("pancakes"));
 
-        ProvisionedElement ps = bound.provision(s).get();
+        ProvisionedElement ps = bound.provision(new ErrorCollector(),s).get();
         ProvisionedServer pss = Trees.findInstancesOf(ps, ProvisionedServer.class).get(0);
         assertThat(String.valueOf(pss.getMy().get("waffles")), equalTo("pancakes"));
 

@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import com.ning.atlas.errors.ErrorCollector;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.junit.Test;
@@ -21,7 +22,7 @@ public class TestReinflation
         Template t = p.parseSystem(new File("src/test/ruby/test_reinflation_sys.rb"));
 
         BoundTemplate bt = t.normalize(e);
-        ProvisionedElement pt = bt.provision(sameThreadExecutor()).get();
+        ProvisionedElement pt = bt.provision(new ErrorCollector(),sameThreadExecutor()).get();
         InitializedTemplate it = pt.initialize(sameThreadExecutor()).get();
         InstalledElement inst = it.install(sameThreadExecutor()).get();
 
