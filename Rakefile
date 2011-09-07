@@ -3,7 +3,7 @@ task :default => :package
 
 desc "clean and package up the executable"
 task :package do
-  sh "mvn clean package"
+  sh "mvn -DskipTests=true clean package"
   File.open "target/atlas", "w"  do |f|
     f.write <<-EOS
 #!/bin/sh

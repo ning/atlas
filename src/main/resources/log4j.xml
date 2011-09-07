@@ -2,25 +2,28 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 <log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
 
-    <appender name="stdout" class="com.ning.atlas.logging.ColorizedAppender">
+    <appender name="console" class="com.ning.atlas.logging.ColorizedAppender">
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%p\t%d{ISO8601}\t%t\t%c\t%m%n"/>
         </layout>
     </appender>
     <!-- com.ning.atlas -->
 
+    <!--
     <logger name="com.ning.atlas.SSH">
         <level value="info"/>
     </logger>
-
+    -->
+    <!--
     <logger name="com.ning.atlas.virtualbox.VBoxProvisioner">
         <level value="info"/>
     </logger>
-
+    -->
+    <!--
     <logger name="com.ning.atlas">
         <level value="debug"/>
     </logger>
-
+    -->
 
     <!-- etc -->
 
@@ -43,8 +46,8 @@
     <!-- root -->
 
     <root>
-        <priority value="INFO"/>
-        <appender-ref ref="stdout"/>
+        <priority value="WARN"/>
+        <appender-ref ref="console"/>
     </root>
 
 </log4j:configuration>

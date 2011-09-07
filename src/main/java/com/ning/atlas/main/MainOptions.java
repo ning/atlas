@@ -1,8 +1,20 @@
 package com.ning.atlas.main;
 
+import com.google.common.collect.Iterables;
+import com.sun.xml.internal.xsom.impl.scd.Iterators;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
+import org.apache.log4j.Appender;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LoggerRepository;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.logging.LogManager;
 
 import static java.util.Arrays.asList;
 
@@ -14,7 +26,7 @@ public class MainOptions
     private final Command      command;
     private final String[]     commandArguments;
 
-    public MainOptions(String... args)
+    public MainOptions(String... args) throws IOException
     {
         parser = new OptionParser();
         parser.posixlyCorrect(true);
@@ -25,8 +37,28 @@ public class MainOptions
         OptionSpec<String> s = parser.acceptsAll(asList("s", "sys", "system"), "System specification file")
                                      .withRequiredArg()
                                      .ofType(String.class);
+        OptionSpec<File> f = parser.acceptsAll(asList("L", "log-file")).withRequiredArg().ofType(File.class);
+
+        parser.acceptsAll(asList("v", "verbose"), "verbose output");
+        parser.acceptsAll(asList("vv", "very-verbose"), "very verbose output");
 
         OptionSet o = parser.parse(args);
+
+        if (o.has("v")) {
+            Logger.getRootLogger().setLevel(Level.INFO);
+        }
+        if (o.has("vv")) {
+            Logger.getRootLogger().setLevel(Level.DEBUG);
+        }
+        if (o.has(f)) {
+            File log_file = o.valueOf(f);
+            Appender console = Logger.getRootLogger().getAppender("console");
+            Logger.getRootLogger().removeAppender(console);
+            Logger.getRootLogger().addAppender(new FileAppender(console.getLayout(),
+                                                                log_file.getAbsolutePath(),
+                                                                true));
+        }
+
 
         if ((o.has(e) && o.has(s))) {
             this.environmentPath = o.valueOf(e);
