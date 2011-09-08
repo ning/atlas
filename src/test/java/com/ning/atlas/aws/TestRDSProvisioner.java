@@ -2,13 +2,17 @@ package com.ning.atlas.aws;
 
 import com.ning.atlas.Base;
 import com.ning.atlas.Environment;
+import com.ning.atlas.Identity;
 import com.ning.atlas.Initialization;
+import com.ning.atlas.My;
 import com.ning.atlas.Server;
+import com.ning.atlas.Thing;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +54,38 @@ public class TestRDSProvisioner
                              "rds", Collections.<Initialization>emptyList(),
                              props);
 
-        Server db_server = rds.provision(base);
+        Server db_server = rds.provision(base, new Thing()
+        {
+            @Override
+            public Identity getId()
+            {
+                return Identity.root();
+            }
+
+            @Override
+            public String getType()
+            {
+                return "type";
+            }
+
+            @Override
+            public String getName()
+            {
+                return "name";
+            }
+
+            @Override
+            public My getMy()
+            {
+                return new My();
+            }
+
+            @Override
+            public Collection<? extends Thing> getChildren()
+            {
+                return Collections.emptyList();
+            }
+        });
 
         System.out.println(db_server);
 

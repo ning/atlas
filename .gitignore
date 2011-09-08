@@ -1,4 +1,5 @@
 # basics
+.DS_Store
 .rbenv*
 \#*\#
 .\#*

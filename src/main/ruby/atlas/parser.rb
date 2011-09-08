@@ -130,7 +130,12 @@ module Atlas
       eval @template, binding, @path, 1
       root = com.ning.atlas.SystemTemplate.new @name
       @children.each { |t| root.addChild(t) }
-      root
+      if root.type == "__ROOT__" and root.children.size == 1
+        root.children[0]
+      else
+        root
+      end
+
     end
 
     def server name, args={}, &block

@@ -11,4 +11,6 @@ public interface Thing extends Tree
     public My getMy();
 
     public Collection<? extends Thing> getChildren();
+
+    Identity getId();
 }

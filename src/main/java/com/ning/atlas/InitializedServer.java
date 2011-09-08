@@ -2,6 +2,9 @@ package com.ning.atlas;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import com.ning.atlas.base.Threads;
+import com.ning.atlas.errors.ErrorCollector;
+import com.ning.atlas.logging.Logger;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -14,14 +17,16 @@ import java.util.concurrent.Executor;
 
 public class InitializedServer extends InitializedTemplate
 {
+    private static final Logger log = Logger.get(InitializedServer.class);
+
     @JsonIgnore
     private final Server       server;
     private final List<String> installations;
     private final Base         base;
 
-    public InitializedServer(String type, String name, My my, Server server, List<String> installations, Base base)
+    public InitializedServer(Identity id, String type, String name, My my, Server server, List<String> installations, Base base)
     {
-        super(type, name, my);
+        super(id, type, name, my);
         this.server = server;
         this.installations = installations;
         this.base = base;
@@ -35,7 +40,7 @@ public class InitializedServer extends InitializedTemplate
     }
 
     @Override
-    public ListenableFuture<? extends InstalledElement> install(Executor exec, final InitializedTemplate root)
+    protected ListenableFuture<? extends InstalledElement> install(final ErrorCollector ec, Executor exec, final InitializedTemplate root)
     {
         ListenableFutureTask<InstalledElement> f =
             new ListenableFutureTask<InstalledElement>(new Callable<InstalledElement>()
@@ -43,6 +48,7 @@ public class InitializedServer extends InitializedTemplate
                 @Override
                 public InstalledElement call() throws Exception
                 {
+                    Threads.pushName("t-" + getId().toExternalForm());
                     try {
                         for (String installation : installations) {
                             int offset = installation.indexOf(':');
@@ -59,10 +65,16 @@ public class InitializedServer extends InitializedTemplate
                             installer.install(server, fragment, root, InitializedServer.this);
                         }
 
-                        return new InstalledServer(getType(), getName(), getMy(), server, base.getProperties());
+                        return new InstalledServer(getId(), getType(), getName(), getMy(), server, base.getProperties());
                     }
                     catch (Exception e) {
-                        return new InstalledError(getType(), getName(), getMy(), e);
+                        String msg = ec.error(e, "Error while attempting to run installations on server: %s",
+                                              e.getMessage());
+                        log.warn(e, msg);
+                        return new InstalledError(getId(), getType(), getName(), getMy(), e);
+                    }
+                    finally {
+                        Threads.popName();
                     }
                 }
             });

@@ -12,6 +12,7 @@ import com.ning.atlas.upgrade.UpgradeSystemPlan;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -27,9 +28,9 @@ public class BoundSystemTemplate extends BoundTemplate
     /**
      * All other ctors MUST delegate to thi one, it is canonical
      */
-    public BoundSystemTemplate(String type, String name, My my, Iterable<? extends BoundTemplate> children)
+    public BoundSystemTemplate(Identity id, String type, String name, My my, Iterable<? extends BoundTemplate> children)
     {
-        super(type, name, my);
+        super(id, type, name, my);
         this.children = Lists.newArrayList();
         addAll(this.children, children);
     }
@@ -37,14 +38,14 @@ public class BoundSystemTemplate extends BoundTemplate
     /**
      * ctor exists for use during dev, ideally should be removed and use the main ctor
      */
-    public BoundSystemTemplate(SystemTemplate sys, String name, final Environment env)
+    public BoundSystemTemplate(final Identity id, SystemTemplate sys, String name, final Environment env)
     {
-        this(sys.getType(), name, sys.getMy(), concat(transform(sys.getChildren(),
+        this(id, sys.getType(), name, sys.getMy(), concat(transform(sys.getChildren(),
                                                                 new Function<Template, Iterable<BoundTemplate>>()
                                                                 {
                                                                     public Iterable<BoundTemplate> apply(Template in)
                                                                     {
-                                                                        return in._normalize(env);
+                                                                        return in._normalize(env, id);
                                                                     }
                                                                 })));
     }
@@ -75,7 +76,7 @@ public class BoundSystemTemplate extends BoundTemplate
 
                     }
                     catch (InterruptedException e) {
-                        collector.interrupted(e, "interrupted while waiting on children to finish provisioning");
+                        collector.error(e, "interrupted while waiting on children to finish provisioning");
                         Thread.currentThread().interrupt();
                     }
                     catch (ExecutionException e) {
@@ -84,7 +85,8 @@ public class BoundSystemTemplate extends BoundTemplate
                     }
                     finally {
                         if (remaining.decrementAndGet() == 0) {
-                            f.set(new ProvisionedSystem(getType(),
+                            f.set(new ProvisionedSystem(getId(),
+                                                        getType(),
                                                         getName(),
                                                         getMy(),
                                                         p_children));

@@ -43,8 +43,8 @@ public class TestBase
 
         Server s = new Server("10.0.0.1", "10.0.0.1");
         base.initialize(s,
-                        new ProvisionedSystem("root", "0", new My(), Lists.<ProvisionedElement>newArrayList()),
-                        new ProvisionedServer("server", "waffle", new My(), s, Collections.<String>emptyList(), base));
+                        new ProvisionedSystem(Identity.root(),"root", "0", new My(), Lists.<ProvisionedElement>newArrayList()),
+                        new ProvisionedServer(Identity.root(),"server", "waffle", new My(), s, Collections.<String>emptyList(), base));
 
         assertThat(inits, equalTo(asList("waffle+hut", "pancake+house")));
 

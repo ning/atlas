@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
 import com.ning.atlas.base.Maybe;
+import com.ning.atlas.base.Threads;
 import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.upgrade.UpgradePlan;
@@ -23,19 +24,21 @@ public class BoundServer extends BoundTemplate
     private final Base base;
     private final List<String> installations;
 
-    public BoundServer(String type, String name, My my, Base base, List<String> installations)
+    public BoundServer(Identity id, String type, String name, My my, Base base, List<String> installations)
     {
-        super(type, name, my);
+        super(id, type, name, my);
         this.base = base;
         this.installations = installations;
     }
 
-    public BoundServer(ServerTemplate serverTemplate,
+    public BoundServer(Identity id,
+                       ServerTemplate serverTemplate,
                        String name,
                        Environment env,
                        List<String> installations)
     {
-        this(serverTemplate.getType(),
+        this(id,
+             serverTemplate.getType(),
              name,
              serverTemplate.getMy(),
              extractBase(serverTemplate, env),
@@ -78,13 +81,17 @@ public class BoundServer extends BoundTemplate
             {
                 public ProvisionedElement call() throws Exception
                 {
+                    Threads.pushName("t-" + getId().toExternalForm());
                     try {
-                        Server server = base.getProvisioner().provision(base);
+                        Server server = base.getProvisioner().provision(base, BoundServer.this);
                         return new ProvisionedServer(BoundServer.this, base, server, installations);
                     }
                     catch (Exception e) {
-                        log.error(e, collector.error(e, "unable to provision server %s.%s", getType(), getName()));
-                        return new ProvisionedError(getType(), getName(), getMy(), e.getMessage());
+                        log.error(e, collector.error(e, "unable to provision server %s.%s because of '%s'", getType(), getName(), e.getMessage()));
+                        return new ProvisionedError(getId(), getType(), getName(), getMy(), e.getMessage());
+                    }
+                    finally {
+                        Threads.popName();
                     }
                 }
             });

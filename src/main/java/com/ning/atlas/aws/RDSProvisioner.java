@@ -13,12 +13,12 @@ import com.google.common.collect.Maps;
 import com.ning.atlas.Base;
 import com.ning.atlas.Provisioner;
 import com.ning.atlas.Server;
+import com.ning.atlas.Thing;
 import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.base.MapConfigSource;
+import com.ning.atlas.logging.Logger;
 import org.skife.config.Config;
 import org.skife.config.ConfigurationObjectFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.UUID;
@@ -26,10 +26,9 @@ import java.util.UUID;
 public class RDSProvisioner implements Provisioner
 {
 
-    private final Logger log = LoggerFactory.getLogger(RDSProvisioner.class);
+    private static final Logger log = Logger.get(RDSProvisioner.class);
 
     private final AmazonRDSClient rds;
-    private String licenseModel;
 
     public RDSProvisioner(String accessKey, String secretKey)
     {
@@ -43,8 +42,9 @@ public class RDSProvisioner implements Provisioner
     }
 
     @Override
-    public Server provision(Base b) throws UnableToProvisionServerException
+    public Server provision(Base b, Thing node) throws UnableToProvisionServerException
     {
+        log.info("Started provisioning %s, this could take a while", node.getId().toExternalForm());
         RDSConfig cfg = new ConfigurationObjectFactory(new MapConfigSource(b.getAttributes())).build(RDSConfig.class);
 
         String name = "db-" + UUID.randomUUID().toString();
@@ -83,7 +83,7 @@ public class RDSProvisioner implements Provisioner
             instance = rs.getDBInstances().get(0);
             String state = instance.getDBInstanceStatus();
             if (!last_state.equals(state)) {
-                log.debug("database instance {} achieved state {}", instance.getDBInstanceIdentifier(), state);
+                log.debug("database instance %s achieved state %s", instance.getDBInstanceIdentifier(), state);
                 last_state = state;
             }
         }
@@ -102,6 +102,7 @@ public class RDSProvisioner implements Provisioner
         attrs.put("username", cfg.getUsername());
         attrs.put("storageSize", String.valueOf(cfg.getStorageSize()));
 
+        log.info("Finished provisioning %s", node.getId().toExternalForm());
         return new Server(instance.getEndpoint().getAddress(), instance.getEndpoint().getAddress(), attrs);
     }
 

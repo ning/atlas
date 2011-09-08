@@ -48,7 +48,6 @@ public class OracleLoaderInstaller implements Installer
     @Override
     public void install(Server server, String fragment, Thing root, Thing node) throws Exception
     {
-        log.debug("trying to find :oracle => 'shell' in " + Jsonificator.jsonify(root));
         Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()
         {
             @Override

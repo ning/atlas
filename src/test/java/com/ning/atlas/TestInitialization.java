@@ -40,11 +40,11 @@ public class TestInitialization
             .<String, String>emptyMap());
 
         List<? extends ProvisionedElement> children = asList(
-            new ProvisionedServer("server", "0", new My(),
+            new ProvisionedServer(Identity.root(), "server", "0", new My(),
                                   new Server("10.0.0.1", "10.0.0.1"), Collections.<String>emptyList(), base));
 
-        ProvisionedSystem root = new ProvisionedSystem("root", "0", new My(), children);
-        InitializedTemplate initialized_root = root.initialize(MoreExecutors.sameThreadExecutor()).get();
+        ProvisionedSystem root = new ProvisionedSystem(Identity.root(),"root", "0", new My(), children);
+        InitializedTemplate initialized_root = root.initialize(new ErrorCollector(), MoreExecutors.sameThreadExecutor()).get();
 
         assertThat(initialized.get(), equalTo(true));
 
@@ -68,11 +68,11 @@ public class TestInitialization
         ProvisionedServer pss = Trees.findInstancesOf(ps, ProvisionedServer.class).get(0);
         assertThat(String.valueOf(pss.getMy().get("waffles")), equalTo("pancakes"));
 
-        InitializedTemplate is = ps.initialize(s).get();
+        InitializedTemplate is = ps.initialize(new ErrorCollector(), s).get();
         InitializedServer iss = Trees.findInstancesOf(is, InitializedServer.class).get(0);
         assertThat(String.valueOf(iss.getMy().get("waffles")), equalTo("pancakes"));
 
-        InstalledElement ins = is.install(s).get();
+        InstalledElement ins = is.install(new ErrorCollector(), s).get();
         InstalledServer inss = Trees.findInstancesOf(ins, InstalledServer.class).get(0);
         assertThat(String.valueOf(inss.getMy().get("waffles")), equalTo("pancakes"));
     }

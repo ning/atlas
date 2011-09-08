@@ -7,6 +7,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.Base;
 import com.ning.atlas.BoundTemplate;
 import com.ning.atlas.Environment;
+import com.ning.atlas.Identity;
 import com.ning.atlas.Initialization;
 import com.ning.atlas.InitializedServer;
 import com.ning.atlas.InitializedTemplate;
@@ -19,6 +20,7 @@ import com.ning.atlas.Provisioner;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
 import com.ning.atlas.ServerTemplate;
+import com.ning.atlas.Thing;
 import com.ning.atlas.aws.AWSConfig;
 import com.ning.atlas.aws.EC2Provisioner;
 import com.ning.atlas.errors.ErrorCollector;
@@ -29,6 +31,7 @@ import org.skife.config.ConfigurationObjectFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
@@ -80,13 +83,44 @@ public class TestUbuntuChefSoloInstaller
         final Base base = new Base("ubuntu", env, "ec2",
                                    Collections.<Initialization>emptyList(),
                                    ImmutableMap.<String, String>of("ami", "ami-add819c4"));
-        Server s = ec2.provision(base);
+        Server s = ec2.provision(base, new Thing()
+        {
+            @Override
+            public String getType()
+            {
+                return "type";
+            }
+
+            @Override
+            public String getName()
+            {
+                return "name";
+            }
+
+            @Override
+            public My getMy()
+            {
+                return new My();
+            }
+
+            @Override
+            public Collection<? extends Thing> getChildren()
+            {
+                return Collections.emptyList();
+            }
+
+            @Override
+            public Identity getId()
+            {
+                return Identity.root();
+            }
+        });
 
         try {
             initializer.install(s, "role[server]",
-                                new ProvisionedSystem("root", "0", new My(),
+                                new ProvisionedSystem(Identity.root(), "root", "0", new My(),
                                                       Lists.<ProvisionedElement>newArrayList()),
-                                new ProvisionedServer("woof", "meow", new My(), s, Collections.<String>emptyList(), base));
+                                new ProvisionedServer(Identity.root(), "woof", "meow", new My(), s, Collections.<String>emptyList(), base));
 
 
             SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
@@ -172,7 +206,7 @@ public class TestUbuntuChefSoloInstaller
         BoundTemplate bt = st.normalize(env);
         ExecutorService ex = Executors.newCachedThreadPool();
         ProvisionedElement pt = bt.provision(new ErrorCollector(),ex).get();
-        InitializedTemplate it = pt.initialize(ex).get();
+        InitializedTemplate it = pt.initialize(new ErrorCollector(), ex).get();
         assertThat(it, instanceOf(InitializedServer.class));
         InitializedServer ist = (InitializedServer) it;
 
@@ -208,7 +242,7 @@ public class TestUbuntuChefSoloInstaller
         BoundTemplate bt = st.normalize(env);
         ExecutorService ex = Executors.newCachedThreadPool();
         ProvisionedElement pt = bt.provision(new ErrorCollector(),ex).get();
-        InitializedTemplate it = pt.initialize(ex).get();
+        InitializedTemplate it = pt.initialize(new ErrorCollector(), ex).get();
         assertThat(it, instanceOf(InitializedServer.class));
         InitializedServer ist = (InitializedServer) it;
 
@@ -255,7 +289,7 @@ public class TestUbuntuChefSoloInstaller
 
         BoundTemplate bt = st.normalize(env);
         ProvisionedElement pt = bt.provision(new ErrorCollector(),MoreExecutors.sameThreadExecutor()).get();
-        InitializedTemplate it = pt.initialize(MoreExecutors.sameThreadExecutor()).get();
+        InitializedTemplate it = pt.initialize(new ErrorCollector(), MoreExecutors.sameThreadExecutor()).get();
 
         InitializedServer ist = (InitializedServer) it;
         ec2.destroy(ist.getServer());

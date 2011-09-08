@@ -15,7 +15,6 @@ public class JRubyTemplateParser
     {
         ScriptingContainer container = new ScriptingContainer();
         container.setCompatVersion(CompatVersion.RUBY1_9);
-//        container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
         try {
             container.runScriptlet(new StringReader(Resources.toString(Resources.getResource("atlas/parser.rb"),
                                                                        Charset.defaultCharset())), "atlas/parser.rb");
@@ -31,7 +30,6 @@ public class JRubyTemplateParser
     {
         ScriptingContainer container = new ScriptingContainer();
         container.setCompatVersion(CompatVersion.RUBY1_9);
-//        container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
 
         try {
             container.runScriptlet(new StringReader(Resources.toString(Resources.getResource("atlas/parser.rb"),

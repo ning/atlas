@@ -38,8 +38,8 @@ public class TestUpdates
         InstalledElement one = p.parseSystem(new File("src/test/ruby/test_updates_sys_1.rb"))
                                  .normalize(e)
                                  .provision(new ErrorCollector(),sameThreadExecutor()).get()
-                                 .initialize(sameThreadExecutor()).get()
-                                 .install(sameThreadExecutor()).get();
+                                 .initialize(new ErrorCollector(), sameThreadExecutor()).get()
+                                 .install(new ErrorCollector(), sameThreadExecutor()).get();
 
         assertThat(jsonify(reify(e, jsonify(one))), equalTo(jsonify(one)));
         InstalledElement reified = reify(e, jsonify(one));

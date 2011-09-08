@@ -32,7 +32,7 @@ public enum Command
             @Override
             public Runnable create(MainOptions mo)
             {
-                return new InstallCommand(mo);
+                return new StartCommand(mo);
             }
         },
     /**

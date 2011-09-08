@@ -15,8 +15,9 @@ import com.google.common.collect.Lists;
 import com.ning.atlas.Base;
 import com.ning.atlas.Provisioner;
 import com.ning.atlas.Server;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.ning.atlas.Thing;
+import com.ning.atlas.UnableToProvisionServerException;
+import com.ning.atlas.logging.Logger;
 
 import java.util.Map;
 
@@ -24,7 +25,8 @@ import static java.util.Arrays.asList;
 
 public class EC2Provisioner implements Provisioner
 {
-    private final static Logger logger = LoggerFactory.getLogger(EC2Provisioner.class);
+    private final static Logger logger = Logger.get(EC2Provisioner.class);
+
     private final AmazonEC2Client ec2;
     private final String          keypairId;
 
@@ -45,9 +47,9 @@ public class EC2Provisioner implements Provisioner
     }
 
     @Override
-    public Server provision(Base base)
+    public Server provision(Base base, Thing node) throws UnableToProvisionServerException
     {
-        logger.debug("provisioning server for base {}", base.getName());
+        logger.info("Provisioning server for %s", node.getId());
         RunInstancesRequest req = new RunInstancesRequest(base.getAttributes().get("ami"), 1, 1);
 
         if (base.getAttributes().containsKey("instance_type")) {
@@ -77,16 +79,9 @@ public class EC2Provisioner implements Provisioner
             if (res != null) {
                 Instance i2 = res.getReservations().get(0).getInstances().get(0);
 
-//                if (i2.getPrivateDnsName().startsWith("ip-")) {
-//                    logger.info("obtained an instance with a {} internal dns name, throwing it away",
-//                                i2.getPrivateDnsName());
-//                    ec2.terminateInstances(new TerminateInstancesRequest(asList(i2.getInstanceId())));
-//                    return provision(base);
-//                }
-
-
                 if ("running".equals(i2.getState().getName())) {
-                    logger.debug("ec2 instance {} is running", i.getInstanceId());
+                    logger.info("Obtained instance %s at %s for %s",
+                                i2.getInstanceId(), i2.getPublicDnsName(), node.getId());
                     return new Server(i2.getPrivateDnsName(), i2.getPublicDnsName(),
                                       ImmutableMap.<String, String>of("instanceId", i2.getInstanceId()));
                 }
@@ -96,8 +91,7 @@ public class EC2Provisioner implements Provisioner
                     }
                     catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        return new Server(i.getPrivateIpAddress(), i.getPublicIpAddress(),
-                                          ImmutableMap.<String, String>of("instanceId", i2.getInstanceId()));
+                        throw new UnableToProvisionServerException("Interrupted while waiting on EC2");
                     }
                 }
             }

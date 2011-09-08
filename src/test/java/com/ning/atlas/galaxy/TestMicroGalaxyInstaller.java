@@ -63,8 +63,8 @@ public class TestMicroGalaxyInstaller
 
         InstalledElement installed = root.normalize(env)
                                          .provision(new ErrorCollector(), exec).get()
-                                         .initialize(exec).get()
-                                         .install(exec).get();
+                                         .initialize(new ErrorCollector(), exec).get()
+                                         .install(new ErrorCollector(), exec).get();
 
 
 //        ObjectMapper mapper = new ObjectMapper();

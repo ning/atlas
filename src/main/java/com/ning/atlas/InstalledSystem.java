@@ -9,9 +9,9 @@ public class InstalledSystem extends InstalledElement
 {
     private final List<InstalledElement> children;
 
-    public InstalledSystem(String type, String name, My my, List<InstalledElement> children)
+    public InstalledSystem(Identity id, String type, String name, My my, List<InstalledElement> children)
     {
-        super(type, name, my);
+        super(id, type, name, my);
         this.children = children;
     }
 

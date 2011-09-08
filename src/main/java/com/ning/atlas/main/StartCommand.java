@@ -8,6 +8,7 @@ import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.ProvisionedElement;
 import com.ning.atlas.Template;
 import com.ning.atlas.errors.ErrorCollector;
+import com.ning.atlas.logging.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 
@@ -15,11 +16,12 @@ import java.io.File;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class InstallCommand implements Runnable
+public class StartCommand implements Runnable
 {
+    private static final Logger logger = Logger.get(StartCommand.class);
     private final MainOptions mainOptions;
 
-    public InstallCommand(MainOptions mainOptions)
+    public StartCommand(MainOptions mainOptions)
     {
         this.mainOptions = mainOptions;
     }
@@ -27,24 +29,41 @@ public class InstallCommand implements Runnable
     @Override
     public void run()
     {
+        final ErrorCollector ec = new ErrorCollector();
+
         JRubyTemplateParser p = new JRubyTemplateParser();
         Template sys = p.parseSystem(new File(mainOptions.getSystemPath()));
         Environment env = p.parseEnvironment(new File(mainOptions.getEnvironmentPath()));
 
         BoundTemplate bound = sys.normalize(env);
+        logger.info("Generated deployment tree");
+        if (mainOptions.isFailFast() && ec.hasErrors()) {
+            ec.dumpErrorsTo(System.err);
+            return;
+        }
 
         ExecutorService ex = Executors.newCachedThreadPool();
         try {
-            ProvisionedElement pt = bound.provision(new ErrorCollector(), ex).get();
-            if (pt.getType().equals("__ROOT__") && pt.getChildren().size() == 1) {
-                // lop off the fake root
-                pt = pt.getChildren().get(0);
+            ProvisionedElement pt = bound.provision(ec, ex).get();
+            logger.info("Provisioned system");
+            if (mainOptions.isFailFast() && ec.hasErrors()) {
+                ec.dumpErrorsTo(System.err);
+                return;
             }
 
+            InitializedTemplate it = pt.initialize(ec, ex).get();
+            logger.info("Initialized system");
+            if (mainOptions.isFailFast() && ec.hasErrors()) {
+                ec.dumpErrorsTo(System.err);
+                return;
+            }
 
-            InitializedTemplate it = pt.initialize(ex).get();
-
-            InstalledElement installed = it.install(ex).get();
+            InstalledElement installed = it.install(ec, ex).get();
+            logger.info("Installed and Started system");
+            if (mainOptions.isFailFast() && ec.hasErrors()) {
+                ec.dumpErrorsTo(System.err);
+                return;
+            }
 
             ObjectMapper mapper = new ObjectMapper();
             mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);

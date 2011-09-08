@@ -15,9 +15,9 @@ public class InstalledServer extends InstalledElement
     private final Server server;
     private final Map<String, String> environmentProperties;
 
-    public InstalledServer(String type, String name, My my, Server installed, Map<String, String> environmentProperties)
+    public InstalledServer(Identity id, String type, String name, My my, Server installed, Map<String, String> environmentProperties)
     {
-        super(type, name, my);
+        super(id, type, name, my);
         this.environmentProperties = environmentProperties;
         this.server = installed;
     }

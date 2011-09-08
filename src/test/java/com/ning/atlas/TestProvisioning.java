@@ -36,11 +36,12 @@ public class TestProvisioning
                              Collections.<Initialization>emptyList(),
                              ImmutableMap.<String, String>of("tag", "concrete"));
 
-        BoundServer child = new BoundServer("child", "0", new My(), base, Collections.<String>emptyList());
+        BoundServer child = new BoundServer(Identity.root(), "child", "0", new My(), base, Collections.<String>emptyList());
 
-        BoundTemplate root = new BoundSystemTemplate("root", "1", new My(), Arrays.<BoundTemplate>asList(child));
+        BoundTemplate root = new BoundSystemTemplate(Identity.root(), "root", "1", new My(), Arrays.<BoundTemplate>asList(child));
 
-        ListenableFuture<? extends ProvisionedElement> rs = root.provision(new ErrorCollector(),Executors.newFixedThreadPool(2));
+        ListenableFuture<? extends ProvisionedElement> rs = root.provision(new ErrorCollector(),
+                                                                           Executors.newFixedThreadPool(2));
         ProvisionedElement proot = rs.get();
 
         List<ProvisionedElement> leaves = Trees.leaves(proot);
@@ -65,15 +66,15 @@ public class TestProvisioning
                               Collections.<Initialization>emptyList(),
                               ImmutableMap.<String, String>of("tag", "concrete")
         );
-        BoundServer child = new BoundServer("child", "0", new My(), base1, Collections.<String>emptyList());
+        BoundServer child = new BoundServer(Identity.root(),"child", "0", new My(), base1, Collections.<String>emptyList());
 
 
-        BoundServer child2 = new BoundServer("child", "1", new My(), base1, Collections.<String>emptyList());
+        BoundServer child2 = new BoundServer(Identity.root(),"child", "1", new My(), base1, Collections.<String>emptyList());
 
-        BoundTemplate root = new BoundSystemTemplate("root", "0", new My(), Arrays.<BoundTemplate>asList(child, child2));
+        BoundTemplate root = new BoundSystemTemplate(Identity.root(),"root", "0", new My(), Arrays.<BoundTemplate>asList(child, child2));
 
         ExecutorService ex = Executors.newFixedThreadPool(2);
-        ListenableFuture<? extends ProvisionedElement> rs = root.provision(new ErrorCollector(),ex);
+        ListenableFuture<? extends ProvisionedElement> rs = root.provision(new ErrorCollector(), ex);
         ProvisionedElement proot = rs.get();
 
         List<ProvisionedElement> leaves = Trees.leaves(proot);

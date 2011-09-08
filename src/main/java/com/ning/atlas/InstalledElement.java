@@ -14,12 +14,14 @@ import java.util.Map;
 @JsonPropertyOrder({"type", "name", "my", "children"})
 public class InstalledElement implements Thing
 {
-    private final String type;
-    private final String name;
-    private final My my;
+    private final Identity id;
+    private final String   type;
+    private final String   name;
+    private final My       my;
 
-    public InstalledElement(String type, String name, My my)
+    public InstalledElement(Identity id, String type, String name, My my)
     {
+        this.id = id;
         this.type = type;
         this.name = name;
         this.my = my;
@@ -29,6 +31,12 @@ public class InstalledElement implements Thing
     public Collection<? extends InstalledElement> getChildren()
     {
         return Collections.emptyList();
+    }
+
+    @Override
+    public Identity getId()
+    {
+        return this.id;
     }
 
     public String getType()
@@ -47,23 +55,25 @@ public class InstalledElement implements Thing
     }
 
     @JsonCreator
-    public static InstalledElement create(@JsonProperty("name") String name,
-                                           @JsonProperty("type") String type,
-                                           @JsonProperty("my") Map<String, Object> my,
-                                           @JsonProperty("children") List<InstalledElement> children,
-                                           @JsonProperty("server") Server server)
+    public static InstalledElement create(@JsonProperty("id") String id,
+                                          @JsonProperty("name") String name,
+                                          @JsonProperty("type") String type,
+                                          @JsonProperty("my") Map<String, Object> my,
+                                          @JsonProperty("children") List<InstalledElement> children,
+                                          @JsonProperty("server") Server server)
     {
 
         if (server != null) {
-            return new InstalledServer(type, name, new My(my), server, Collections.<String, String>emptyMap());
+            return new InstalledServer(Identity.valueOf(id), type, name, new My(my), server, Collections.<String, String>emptyMap());
         }
         else {
-            return new InstalledSystem(type, name, new My(my), children);
+            return new InstalledSystem(Identity.valueOf(id), type, name, new My(my), children);
         }
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(Object o)
+    {
         return EqualsBuilder.reflectionEquals(this, o, true, Object.class);
     }
 

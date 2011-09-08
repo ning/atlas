@@ -51,7 +51,8 @@ public class TestAtlasInstaller
         Template t = parser.parseSystem(new File("src/test/ruby/test_atlas_initializer.rb"));
         Environment e = parser.parseEnvironment(new File("src/test/ruby/test_atlas_initializer.rb"));
 
-        InitializedTemplate it = t.normalize(e).provision(new ErrorCollector(),exec).get().initialize(exec).get();
+        final ErrorCollector ec = new ErrorCollector();
+        InitializedTemplate it = t.normalize(e).provision(ec,exec).get().initialize(ec,exec).get();
 
         List<InitializedServer> leaves = Trees.findInstancesOf(it, InitializedServer.class);
         assertThat(leaves.size(), equalTo(1));

@@ -16,12 +16,13 @@ public class ServerTemplate extends Template
     }
 
     @Override
-    public final Iterable<BoundTemplate> _normalize(Environment env)
+    public final Iterable<BoundTemplate> _normalize(Environment env, Identity parent)
     {
         final List<BoundTemplate> rs = new ArrayList<BoundTemplate>();
         List<String> node_names = getCardinality();
         for (String node_name : node_names) {
-            rs.add(new BoundServer(this, node_name, env, installations));
+
+            rs.add(new BoundServer(parent.createChild(getType(), node_name) , this, node_name, env, installations));
         }
         return rs;
     }

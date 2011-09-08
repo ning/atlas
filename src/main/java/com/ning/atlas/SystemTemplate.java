@@ -17,13 +17,23 @@ public class SystemTemplate extends Template
     }
 
     @Override
-    public List<BoundTemplate> _normalize(Environment env)
+    public List<BoundTemplate> _normalize(Environment env, Identity parent)
     {
-
         List<BoundTemplate> rs = new ArrayList<BoundTemplate>();
         List<String> node_names = getCardinality();
         for (String node_name : node_names) {
-            BoundSystemTemplate dup = new BoundSystemTemplate(this, node_name, env);
+
+            Identity id = parent.createChild(getType(), node_name);
+
+            List<BoundTemplate> chillins = Lists.newArrayListWithCapacity(getChildren().size());
+
+            for (Template child : getChildren()) {
+                Iterable<BoundTemplate> r2 = child._normalize(env, id);
+                Iterables.addAll(chillins, r2);
+            }
+
+            BoundSystemTemplate dup = new BoundSystemTemplate(id, getType(), node_name, getMy(), chillins);
+
             rs.add(dup);
         }
         return rs;
