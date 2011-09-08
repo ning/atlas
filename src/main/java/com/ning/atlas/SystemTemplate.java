@@ -5,15 +5,21 @@ import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class SystemTemplate extends Template
 {
     private final List<Template> children = Lists.newArrayList();
 
-    public SystemTemplate(String name)
+    @Deprecated
+    public SystemTemplate(String name) {
+        this(name, Collections.<String, Object>emptyMap());
+    }
+    public SystemTemplate(String name, Map<String, Object> my)
     {
-        super(name);
+        super(name, new My(my));
     }
 
     @Override

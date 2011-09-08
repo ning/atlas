@@ -166,13 +166,13 @@ module Atlas
 
     def __parse
       instance_eval &@block
-      s = com.ning.atlas.SystemTemplate.new @name
+      my = @args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v; a }
+      s = com.ning.atlas.SystemTemplate.new @name, my
       @args.each do |k, v|
         sym = "#{k}=".to_sym
         s.send(sym, v) if s.respond_to? sym
       end
       @children.each { |child| s.addChild(child) }
-      s.my = @args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v; a }
       s
     end
 
@@ -194,12 +194,12 @@ module Atlas
     end
 
     def __parse
-      s = com.ning.atlas.ServerTemplate.new @name
+      my = @args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v; a }
+      s = com.ning.atlas.ServerTemplate.new @name, my
       @args.each do |k, v|
         setter = "#{k}=".to_sym
         s.send(setter, v) if s.respond_to? setter
       end
-      s.my = @args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v; a }
       s
     end
   end

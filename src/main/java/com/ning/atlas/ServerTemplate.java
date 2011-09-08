@@ -4,15 +4,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class ServerTemplate extends Template
 {
     private List<String> installations = new ArrayList<String>();
     private String base;
 
-    public ServerTemplate(String name)
+    @Deprecated
+    public ServerTemplate(String name) {
+        this(name, Collections.<String, Object>emptyMap());
+    }
+
+    public ServerTemplate(String name, Map<String, Object> my)
     {
-        super(name);
+        super(name, new My(my));
     }
 
     @Override

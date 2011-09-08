@@ -5,26 +5,26 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.ning.atlas.tree.Tree;
-import org.bouncycastle.util.Strings;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 public abstract class Template implements Tree
 {
-    private final String type;
     private final List<String> cardinality = new CopyOnWriteArrayList<String>(new String[]{"0"});
-    private       My           my          = new My();
 
-    public Template(String type)
+    private final String type;
+    private final My my;
+
+    public Template(String type, My my)
     {
-        Preconditions.checkArgument(type.contains("."), "type is not allowed to contain '.' but is '%s'", type);
-        Preconditions.checkArgument(type.contains("/"), "type is not allowed to contain '/' but is '%s'", type);
+        Preconditions.checkArgument(!type.contains("."), "type is not allowed to contain '.' but is '%s'", type);
+        Preconditions.checkArgument(!type.contains("/"), "type is not allowed to contain '/' but is '%s'", type);
 
+        this.my = my;
         this.type = type;
     }
 
@@ -36,8 +36,8 @@ public abstract class Template implements Tree
     public List<String> getCardinality()
     {
         for (String s : cardinality) {
-            checkArgument(s.contains("."), "cardinality values are not allowed to contain '.' but has '%s'", s);
-            checkArgument(s.contains("/"), "cardinality values are not allowed to contain '/' but has '%s'", s);
+            checkArgument(!s.contains("."), "cardinality values are not allowed to contain '.' but has '%s'", s);
+            checkArgument(!s.contains("/"), "cardinality values are not allowed to contain '/' but has '%s'", s);
         }
         return this.cardinality;
     }
@@ -73,11 +73,6 @@ public abstract class Template implements Tree
                       .add("cardinality", cardinality)
                       .add("children", getChildren())
                       .toString();
-    }
-
-    public void setMy(Map<String, Object> of)
-    {
-        this.my = new My(of);
     }
 
     public My getMy()
