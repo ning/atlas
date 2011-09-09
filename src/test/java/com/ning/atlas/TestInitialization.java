@@ -39,8 +39,8 @@ public class TestInitialization
         Base base = new Base("server", env, "fake", ImmutableList.<Initialization>of(Initialization.parseUriForm("woof:meow")), Collections
             .<String, String>emptyMap());
 
-        List<? extends ProvisionedElement> children = asList(
-            new ProvisionedServer(Identity.root(), "server", "0", new My(),
+        List<ProvisionedElement> children = asList(
+            (ProvisionedElement)new ProvisionedServer(Identity.root(), "server", "0", new My(),
                                   new Server("10.0.0.1", "10.0.0.1"), Collections.<String>emptyList(), base));
 
         ProvisionedSystem root = new ProvisionedSystem(Identity.root(),"root", "0", new My(), children);

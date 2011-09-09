@@ -1,8 +1,7 @@
 package com.ning.atlas;
 
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListenableFutureTask;
+import com.ning.atlas.base.ListenableExecutorService;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.base.Threads;
 import com.ning.atlas.errors.ErrorCollector;
@@ -14,14 +13,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 public class BoundServer extends BoundTemplate
 {
     private static final Logger log = Logger.get(BoundServer.class);
 
 
-    private final Base base;
+    private final Base         base;
     private final List<String> installations;
 
     public BoundServer(Identity id, String type, String name, My my, Base base, List<String> installations)
@@ -74,38 +73,33 @@ public class BoundServer extends BoundTemplate
     }
 
     @Override
-    public ListenableFuture<ProvisionedElement> provision(final ErrorCollector collector, Executor e)
+    public ListenableFuture<ProvisionedElement> provision(final ErrorCollector collector, ExecutorService e)
     {
-        final ListenableFutureTask<ProvisionedElement> f =
-            new ListenableFutureTask<ProvisionedElement>(new Callable<ProvisionedElement>()
+        return ListenableExecutorService.delegateTo(e).submit(new Callable<ProvisionedElement>()
+        {
+            public ProvisionedElement call() throws Exception
             {
-                public ProvisionedElement call() throws Exception
-                {
-                    Threads.pushName("t-" + getId().toExternalForm());
-                    try {
-                        Server server = base.getProvisioner().provision(base, BoundServer.this);
-                        return new ProvisionedServer(BoundServer.this, base, server, installations);
-                    }
-                    catch (Exception e) {
-                        log.error(e, collector.error(e, "unable to provision server %s.%s because of '%s'", getType(), getName(), e.getMessage()));
-                        return new ProvisionedError(getId(), getType(), getName(), getMy(), e.getMessage());
-                    }
-                    finally {
-                        Threads.popName();
-                    }
+                Threads.pushName("t-" + getId().toExternalForm());
+                try {
+                    Server server = base.getProvisioner().provision(base, BoundServer.this);
+                    return new ProvisionedServer(BoundServer.this, base, server, installations);
                 }
-            });
-        e.execute(f);
-        return f;
+                catch (Exception e) {
+                    log.error(e, collector.error(e, "unable to provision server %s.%s because of '%s'", getType(), getName(), e
+                        .getMessage()));
+                    return new ProvisionedError(getId(), getType(), getName(), getMy(), e.getMessage());
+                }
+                finally {
+                    Threads.popName();
+                }
+            }
+        });
     }
 
     @Override
     public UpgradePlan upgradeFrom(InstalledElement initialState)
     {
-
-        List<String> id = Lists.newArrayList(getType(), getName());
-
-        BoundServer prior = findPrior(id);
+        BoundServer prior = findPrior(initialState.getId());
 
         List<String> prior_inits = prior.getBase().getInits();
         List<String> my_inits = new ArrayList<String>(this.getBase().getInits());
@@ -115,12 +109,14 @@ public class BoundServer extends BoundTemplate
         // find installations to add and to remove
 
 
-
         return null;
     }
 
-    private BoundServer findPrior(List<String> id)
+    private BoundServer findPrior(Identity id)
     {
+
+//         BoundServer bound = new BoundServer(id, getType(), getName(), getMy())
+
         return null;
     }
 }

@@ -14,6 +14,7 @@ import java.io.FileInputStream;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 import static com.ning.atlas.testing.AtlasMatchers.exists;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -25,7 +26,7 @@ import static org.junit.matchers.JUnitMatchers.containsString;
 public class TestAtlasInstaller
 {
     private static final JRubyTemplateParser parser = new JRubyTemplateParser();
-    private static final Executor            exec   = MoreExecutors.sameThreadExecutor();
+    private static final ExecutorService exec   = MoreExecutors.sameThreadExecutor();
 
     private AWSConfig      config;
     private EC2Provisioner ec2;
@@ -52,7 +53,7 @@ public class TestAtlasInstaller
         Environment e = parser.parseEnvironment(new File("src/test/ruby/test_atlas_initializer.rb"));
 
         final ErrorCollector ec = new ErrorCollector();
-        InitializedTemplate it = t.normalize(e).provision(ec,exec).get().initialize(ec,exec).get();
+        InitializedTemplate it = t.normalize(e).provision(ec, exec).get().initialize(ec,exec).get();
 
         List<InitializedServer> leaves = Trees.findInstancesOf(it, InitializedServer.class);
         assertThat(leaves.size(), equalTo(1));

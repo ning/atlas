@@ -5,6 +5,7 @@ import com.ning.atlas.errors.ErrorCollector;
 
 import java.util.Collection;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 public abstract class InitializedTemplate implements Thing
 {
@@ -44,10 +45,10 @@ public abstract class InitializedTemplate implements Thing
     @Override
     public abstract Collection<? extends Thing> getChildren();
 
-    public final ListenableFuture<? extends InstalledElement> install(ErrorCollector ec, Executor exec)
+    public final ListenableFuture<InstalledElement> install(ErrorCollector ec, ExecutorService exec)
     {
         return install(ec, exec, this);
     }
 
-    protected abstract ListenableFuture<? extends InstalledElement> install(ErrorCollector ec, Executor exec, InitializedTemplate root);
+    protected abstract ListenableFuture<InstalledElement> install(ErrorCollector ec, ExecutorService exec, InitializedTemplate root);
 }

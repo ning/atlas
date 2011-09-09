@@ -8,6 +8,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 public class InitializedError extends InitializedTemplate
 {
@@ -26,9 +27,9 @@ public class InitializedError extends InitializedTemplate
     }
 
     @Override
-    protected ListenableFuture<InstalledError> install(ErrorCollector ec, Executor exec, InitializedTemplate root)
+    protected ListenableFuture<InstalledElement> install(ErrorCollector ec, ExecutorService exec, InitializedTemplate root)
     {
-        return Futures.immediateFuture(new InstalledError(getId(), getType(), getName(), getMy(), message));
+        return Futures.immediateFuture((InstalledElement)new InstalledError(getId(), getType(), getName(), getMy(), message));
     }
 
     @JsonProperty("error")

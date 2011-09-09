@@ -2,23 +2,22 @@ package com.ning.atlas;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.SettableFuture;
+import com.ning.atlas.base.Either;
+import com.ning.atlas.base.MoreFutures;
 import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.upgrade.UpgradePlan;
 import com.ning.atlas.upgrade.UpgradeSystemPlan;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
-import java.util.Stack;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ExecutorService;
 
-import static com.google.common.collect.Iterables.*;
+import static com.google.common.collect.Iterables.addAll;
 
 public class BoundSystemTemplate extends BoundTemplate
 {
@@ -35,21 +34,6 @@ public class BoundSystemTemplate extends BoundTemplate
         addAll(this.children, children);
     }
 
-    /**
-     * ctor exists for use during dev, ideally should be removed and use the main ctor
-     */
-    public BoundSystemTemplate(final Identity id, SystemTemplate sys, String name, final Environment env)
-    {
-        this(id, sys.getType(), name, sys.getMy(), concat(transform(sys.getChildren(),
-                                                                new Function<Template, Iterable<BoundTemplate>>()
-                                                                {
-                                                                    public Iterable<BoundTemplate> apply(Template in)
-                                                                    {
-                                                                        return in._normalize(env, id);
-                                                                    }
-                                                                })));
-    }
-
     @Override
     public List<? extends BoundTemplate> getChildren()
     {
@@ -57,46 +41,37 @@ public class BoundSystemTemplate extends BoundTemplate
     }
 
     @Override
-    public ListenableFuture<? extends ProvisionedElement> provision(final ErrorCollector collector, Executor exec)
+    public ListenableFuture<ProvisionedElement> provision(final ErrorCollector collector, final ExecutorService exec)
     {
-        final SettableFuture<ProvisionedElement> f = SettableFuture.create();
-
-        final CopyOnWriteArrayList<ProvisionedElement> p_children = new CopyOnWriteArrayList<ProvisionedElement>();
-        final AtomicInteger remaining = new AtomicInteger(children.size());
-
-        for (final BoundTemplate child : children) {
-            final ListenableFuture<? extends ProvisionedElement> cf = child.provision(collector, exec);
-            cf.addListener(new Runnable()
-            {
-                public void run()
-                {
-                    try {
-                        ProvisionedElement pt = cf.get();
-                        p_children.add(pt);
-
-                    }
-                    catch (InterruptedException e) {
-                        collector.error(e, "interrupted while waiting on children to finish provisioning");
-                        Thread.currentThread().interrupt();
-                    }
-                    catch (ExecutionException e) {
-                        String msg = collector.error(e.getCause(), "error while provisioning child %s", child);
-                        logger.error(e, msg);
-                    }
-                    finally {
-                        if (remaining.decrementAndGet() == 0) {
-                            f.set(new ProvisionedSystem(getId(),
-                                                        getType(),
-                                                        getName(),
-                                                        getMy(),
-                                                        p_children));
-                        }
-                    }
-                }
-            }, MoreExecutors.sameThreadExecutor());
+        List<ListenableFuture<ProvisionedElement>> lof = Lists.newArrayListWithExpectedSize(getChildren().size());
+        for (BoundTemplate template : getChildren()) {
+            lof.add(template.provision(collector, exec));
         }
 
-        return f;
+        ListenableFuture<List<Either<ProvisionedElement, ExecutionException>>> goop = MoreFutures.combine(lof);
+        return Futures.chain(goop, new Function<List<Either<ProvisionedElement, ExecutionException>>, ListenableFuture<ProvisionedElement>>()
+        {
+            @Override
+            public ListenableFuture<ProvisionedElement> apply(List<Either<ProvisionedElement, ExecutionException>> input)
+            {
+                List<ProvisionedElement> children = Lists.newArrayList();
+                for (Either<ProvisionedElement, ExecutionException> either : input) {
+                    switch (either.getSide()) {
+                        case Success:
+                            children.add(either.getSuccess());
+                            break;
+                        default:
+                        case Failure:
+                            Throwable cause = either.getFailure().getCause();
+                            String msg = collector.error(cause, "Exception while processing a child: %s", cause.getMessage());
+                            logger.warn(cause, msg);
+                            break;
+                    }
+                }
+                ProvisionedElement pe = new ProvisionedSystem(getId(), getType(), getName(), getMy(), children);
+                return Futures.immediateFuture(pe);
+            }
+        });
     }
 
     @Override

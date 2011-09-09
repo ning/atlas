@@ -2,7 +2,6 @@ package com.ning.atlas.base;
 
 import com.google.common.base.Predicate;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -10,9 +9,9 @@ public class MorePredicates
 {
     public static <T> Predicate<T> beanPropertyEquals(final String name, final Object value)
     {
-        return new Predicate()
+        return new Predicate<T>()
         {
-            public boolean apply(@Nullable Object input)
+            public boolean apply(T input)
             {
                 try {
                     Method m = input.getClass().getMethod("get"

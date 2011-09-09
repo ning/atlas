@@ -3,15 +3,16 @@ package com.ning.atlas;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.ning.atlas.errors.ErrorCollector;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 
 public abstract class ProvisionedElement implements Thing
 {
     private final Identity id;
-    private final String type;
-    private final String name;
-    private final My     my;
+    private final String   type;
+    private final String   name;
+    private final My       my;
 
     public ProvisionedElement(Identity id, String type, String name, My my)
     {
@@ -42,14 +43,17 @@ public abstract class ProvisionedElement implements Thing
     }
 
     @Override
-    public abstract List<? extends ProvisionedElement> getChildren();
+    public List<ProvisionedElement> getChildren()
+    {
+        return Collections.emptyList();
+    }
 
     public final ListenableFuture<? extends InitializedTemplate> initialize(ErrorCollector errors, Executor exec)
     {
         return initialize(errors, exec, this);
     }
 
-    protected abstract ListenableFuture<? extends InitializedTemplate> initialize(ErrorCollector errors,
-                                                                                  Executor ex,
-                                                                                  ProvisionedElement root);
+    protected abstract ListenableFuture<InitializedTemplate> initialize(ErrorCollector errors,
+                                                                        Executor ex,
+                                                                        ProvisionedElement root);
 }

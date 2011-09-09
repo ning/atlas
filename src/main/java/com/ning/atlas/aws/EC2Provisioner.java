@@ -73,7 +73,7 @@ public class EC2Provisioner implements Provisioner
             catch (AmazonServiceException e) {
                 // sometimes amazon says the instance doesn't exist yet,
                 if (!e.getMessage().contains("does not exist")) {
-                    throw e;
+                    throw new UnableToProvisionServerException(node.getId(), node.getType(), node.getName(), node.getMy(), "EC2 says the server we asked for doesn't exist");
                 }
             }
             if (res != null) {
@@ -91,7 +91,7 @@ public class EC2Provisioner implements Provisioner
                     }
                     catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        throw new UnableToProvisionServerException("Interrupted while waiting on EC2");
+                        throw new UnableToProvisionServerException(node.getId(), node.getType(), node.getName(), node.getMy(), "Interrupted while trying to provision");
                     }
                 }
             }

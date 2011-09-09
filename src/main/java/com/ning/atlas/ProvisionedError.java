@@ -3,10 +3,13 @@ package com.ning.atlas;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.ning.atlas.errors.ErrorCollector;
+import com.sun.servicetag.SystemEnvironment;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 public class ProvisionedError extends ProvisionedElement
@@ -19,19 +22,30 @@ public class ProvisionedError extends ProvisionedElement
         this.message = message;
     }
 
+    public ProvisionedError(Throwable cause, String msg)
+    {
+        super(Identity.root().createChild("unknown",
+                                          String.valueOf(System.identityHashCode(cause))),
+              "unknown",
+              String.valueOf(System.identityHashCode(cause)),
+              new My());
+        this.message = msg;
+    }
+
     @Override
-    public List<? extends ProvisionedElement> getChildren()
+    public List<ProvisionedElement> getChildren()
     {
         return Collections.emptyList();
     }
 
     @Override
-    protected ListenableFuture<? extends InitializedTemplate> initialize(final ErrorCollector ec, Executor ex, ProvisionedElement root)
+    protected ListenableFuture<InitializedTemplate> initialize(final ErrorCollector ec, Executor ex, ProvisionedElement root)
     {
-        return Futures.immediateFuture(new InitializedError(getId(), getType(), getType(), getMy(),
-                                                            "Unable to initialize server because " +
-                                                            "of previous provisioning error, '" +
-                                                            message + "'"));
+
+        return Futures.immediateFuture((InitializedTemplate) new InitializedError(getId(), getType(), getType(), getMy(),
+                                                                                  "Unable to initialize server because " +
+                                                                                  "of previous provisioning error, '" +
+                                                                                  message + "'"));
     }
 
     @JsonProperty("error")

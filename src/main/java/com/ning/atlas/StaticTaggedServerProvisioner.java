@@ -35,7 +35,8 @@ public class StaticTaggedServerProvisioner implements Provisioner
         String tag = base.getAttributes().get("tag");
         String host = Iterables.getFirst(this.availables.get(tag), "!!@@##");
         if (host.equals("!!@@##")) {
-            throw new UnableToProvisionServerException("No server matching tag '" + tag + "' available");
+            throw new UnableToProvisionServerException(node.getId(), node.getType(), node.getName(), node.getMy(),
+                                                       "No server matching tag '" + tag + "' available");
         }
         this.availables.remove(tag, host);
         return new Server(host, host);

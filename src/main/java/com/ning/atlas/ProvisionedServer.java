@@ -43,15 +43,9 @@ public class ProvisionedServer extends ProvisionedElement
     }
 
     @Override
-    public List<? extends ProvisionedElement> getChildren()
-    {
-        return Collections.emptyList();
-    }
-
-    @Override
-    protected ListenableFuture<? extends InitializedTemplate> initialize(final ErrorCollector ec,
-                                                                         final Executor ex,
-                                                                         final ProvisionedElement root)
+    protected ListenableFuture<InitializedTemplate> initialize(final ErrorCollector ec,
+                                                               final Executor ex,
+                                                               final ProvisionedElement root)
     {
         ListenableFutureTask<InitializedTemplate> f =
             new ListenableFutureTask<InitializedTemplate>(new Callable<InitializedTemplate>()

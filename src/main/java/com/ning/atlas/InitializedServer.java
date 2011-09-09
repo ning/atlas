@@ -2,6 +2,7 @@ package com.ning.atlas;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
+import com.ning.atlas.base.ListenableExecutorService;
 import com.ning.atlas.base.Threads;
 import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.logging.Logger;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 public class InitializedServer extends InitializedTemplate
 {
@@ -40,46 +42,43 @@ public class InitializedServer extends InitializedTemplate
     }
 
     @Override
-    protected ListenableFuture<? extends InstalledElement> install(final ErrorCollector ec, Executor exec, final InitializedTemplate root)
+    protected ListenableFuture<InstalledElement> install(final ErrorCollector ec, ExecutorService exec, final InitializedTemplate root)
     {
-        ListenableFutureTask<InstalledElement> f =
-            new ListenableFutureTask<InstalledElement>(new Callable<InstalledElement>()
+        return ListenableExecutorService.delegateTo(exec).submit(new Callable<InstalledElement>()
+        {
+            @Override
+            public InstalledElement call() throws Exception
             {
-                @Override
-                public InstalledElement call() throws Exception
-                {
-                    Threads.pushName("t-" + getId().toExternalForm());
-                    try {
-                        for (String installation : installations) {
-                            int offset = installation.indexOf(':');
-                            final String prefix, fragment;
-                            if (offset == -1) {
-                                prefix = installation;
-                                fragment = "";
-                            }
-                            else {
-                                prefix = installation.substring(0, offset);
-                                fragment = installation.substring(offset + 1, installation.length());
-                            }
-                            Installer installer = InitializedServer.this.base.getInstaller(prefix);
-                            installer.install(server, fragment, root, InitializedServer.this);
+                Threads.pushName("t-" + getId().toExternalForm());
+                try {
+                    for (String installation : installations) {
+                        int offset = installation.indexOf(':');
+                        final String prefix, fragment;
+                        if (offset == -1) {
+                            prefix = installation;
+                            fragment = "";
                         }
+                        else {
+                            prefix = installation.substring(0, offset);
+                            fragment = installation.substring(offset + 1, installation.length());
+                        }
+                        Installer installer = InitializedServer.this.base.getInstaller(prefix);
+                        installer.install(server, fragment, root, InitializedServer.this);
+                    }
 
-                        return new InstalledServer(getId(), getType(), getName(), getMy(), server, base.getProperties());
-                    }
-                    catch (Exception e) {
-                        String msg = ec.error(e, "Error while attempting to run installations on server: %s",
-                                              e.getMessage());
-                        log.warn(e, msg);
-                        return new InstalledError(getId(), getType(), getName(), getMy(), e);
-                    }
-                    finally {
-                        Threads.popName();
-                    }
+                    return new InstalledServer(getId(), getType(), getName(), getMy(), server, base.getProperties());
                 }
-            });
-        exec.execute(f);
-        return f;
+                catch (Exception e) {
+                    String msg = ec.error(e, "Error while attempting to run installations on server: %s",
+                                          e.getMessage());
+                    log.warn(e, msg);
+                    return new InstalledError(getId(), getType(), getName(), getMy(), e);
+                }
+                finally {
+                    Threads.popName();
+                }
+            }
+        });
     }
 
     @JsonIgnore
