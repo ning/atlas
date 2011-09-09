@@ -11,7 +11,6 @@ import com.ning.atlas.logging.Logger;
 import com.ning.atlas.upgrade.UpgradePlan;
 import com.ning.atlas.upgrade.UpgradeSystemPlan;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -48,7 +47,7 @@ public class BoundSystemTemplate extends BoundTemplate
             lof.add(template.provision(collector, exec));
         }
 
-        ListenableFuture<List<Either<ProvisionedElement, ExecutionException>>> goop = MoreFutures.combine(lof);
+        ListenableFuture<List<Either<ProvisionedElement, ExecutionException>>> goop = MoreFutures.invertify(lof);
         return Futures.chain(goop, new Function<List<Either<ProvisionedElement, ExecutionException>>, ListenableFuture<ProvisionedElement>>()
         {
             @Override

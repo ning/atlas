@@ -4,20 +4,15 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
 import com.ning.atlas.base.Either;
 import com.ning.atlas.base.MoreFutures;
 import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.logging.Logger;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProvisionedSystem extends ProvisionedElement
 {
@@ -44,7 +39,7 @@ public class ProvisionedSystem extends ProvisionedElement
             lof.add(element.initialize(ec, ex, root));
         }
 
-        ListenableFuture<List<Either<InitializedTemplate, ExecutionException>>> goop = MoreFutures.combine(lof);
+        ListenableFuture<List<Either<InitializedTemplate, ExecutionException>>> goop = MoreFutures.invertify(lof);
 
         return Futures.chain(goop, new Function<List<Either<InitializedTemplate, ExecutionException>>, ListenableFuture<? extends InitializedTemplate>>()
         {

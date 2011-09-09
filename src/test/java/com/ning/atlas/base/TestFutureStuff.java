@@ -52,7 +52,7 @@ public class TestFutureStuff
 
         List<ListenableFuture<String>> list_of_futures = asList(f1, f2);
 
-        ListenableFuture<List<Either<String, ExecutionException>>> rs = MoreFutures.combine(list_of_futures);
+        ListenableFuture<List<Either<String, ExecutionException>>> rs = MoreFutures.invertify(list_of_futures);
         List<Either<String, ExecutionException>> ls = rs.get();
         assertThat(ls.size(), equalTo(2));
 
@@ -82,7 +82,7 @@ public class TestFutureStuff
 
         List<ListenableFuture<Map<String, String>>> list_of_futures = asList(f1, f2);
 
-        ListenableFuture<List<Either<Map<String, String>, ExecutionException>>> rs = MoreFutures.combine(list_of_futures);
+        ListenableFuture<List<Either<Map<String, String>, ExecutionException>>> rs = MoreFutures.invertify(list_of_futures);
         List<Either<Map<String, String>, ExecutionException>> ls = rs.get();
         assertThat(ls.size(), equalTo(2));
 

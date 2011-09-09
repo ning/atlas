@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutionException;
 
 public class MoreFutures
 {
-    public static <T> ListenableFuture<List<Either<T, ExecutionException>>> combine(List<ListenableFuture<T>> list_of_futures)
+    public static <T> ListenableFuture<List<Either<T, ExecutionException>>> invertify(List<ListenableFuture<T>> list_of_futures)
     {
         final SettableFuture<List<Either<T, ExecutionException>>> rs = SettableFuture.create();
         int idx = 0;
