@@ -1,0 +1,11 @@
+* Identity can be assigned. 
+  This is important for stateful nodes (ie, databases) in case they ar
+  emoved in the topology.
+
+* Basic upgrade sequence
+  Match identity to current installed servers, if matched then build
+  the next stage from information in the installed node. If there is a
+  difference that needs to be adjusted, build/execute the upgrade plan
+  to accomodate the difference. Do not accumulate upgrade plans across
+  stages, but do it stage by stage. Within a stage, follow the normal
+  sequence (add, upgrade, remove).
