@@ -6,6 +6,7 @@ import com.ning.atlas.tree.Tree;
 import com.ning.atlas.upgrade.UpgradePlan;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
@@ -48,5 +49,5 @@ public abstract class BoundTemplate implements Thing
 
     public abstract ListenableFuture<ProvisionedElement> provision(ErrorCollector collector, ExecutorService exec);
 
-    public abstract UpgradePlan upgradeFrom(InstalledElement initialState);
+    public abstract List<Update> upgradeFrom(InstalledElement initialState);
 }

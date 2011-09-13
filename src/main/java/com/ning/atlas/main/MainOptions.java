@@ -38,6 +38,9 @@ public class MainOptions
         parser.acceptsAll(asList("f", "fail-fast"), "fail at the end of any stage which has errors");
         parser.acceptsAll(asList("v", "verbose"), "verbose output");
         parser.acceptsAll(asList("vv", "very-verbose"), "very verbose output");
+        OptionSpec<File> p = parser.acceptsAll(asList("p", "plugins"), "directory (root) containing plugin archives")
+                                   .withRequiredArg()
+                                   .ofType(File.class);
 
         OptionSet o = parser.parse(args);
 

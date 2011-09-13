@@ -9,3 +9,4 @@
   to accomodate the difference. Do not accumulate upgrade plans across
   stages, but do it stage by stage. Within a stage, follow the normal
   sequence (add, upgrade, remove).
+

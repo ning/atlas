@@ -1,7 +1,10 @@
 package com.ning.atlas.tree;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.ning.atlas.InstalledElement;
+import com.ning.atlas.base.Maybe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +61,17 @@ public class Trees
                 return baton;
             }
         });
+    }
+
+    public static <TreeType extends Tree> Maybe<TreeType> findFirst(TreeType root, Predicate<TreeType> predicate)
+    {
+        List<TreeType> candidates =  find(root, predicate);
+        if (candidates.size() > 0) {
+            return Maybe.definitely(candidates.get(0));
+        }
+        else {
+            return Maybe.unknown();
+        }
     }
 
     private static class Director<TreeType extends Tree, BatonType>

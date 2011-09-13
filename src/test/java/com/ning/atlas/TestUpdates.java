@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.List;
 
 import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
 import static com.ning.atlas.Jsonificator.jsonify;
@@ -47,7 +48,7 @@ public class TestUpdates
         BoundTemplate two = p.parseSystem(new File("src/test/ruby/test_updates_sys_2.rb"))
                              .normalize(e);
 
-        UpgradePlan plan = two.upgradeFrom(reified);
+        List<Update> plan = two.upgradeFrom(reified);
 
 //                                 .provision(sameThreadExecutor()).get()
 //                                 .initialize(sameThreadExecutor()).get();

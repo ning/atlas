@@ -1,15 +1,16 @@
 package com.ning.atlas;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.ning.atlas.base.Either;
+import com.ning.atlas.base.Maybe;
 import com.ning.atlas.base.MoreFutures;
 import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.logging.Logger;
-import com.ning.atlas.upgrade.UpgradePlan;
-import com.ning.atlas.upgrade.UpgradeSystemPlan;
+import com.ning.atlas.tree.Trees;
 
 import java.util.Collections;
 import java.util.List;
@@ -74,12 +75,28 @@ public class BoundSystemTemplate extends BoundTemplate
     }
 
     @Override
-    public UpgradePlan upgradeFrom(InstalledElement initialState)
+    public List<Update> upgradeFrom(InstalledElement initialState)
     {
-        List<UpgradePlan> plan_children = Lists.newArrayList();
-        for (BoundTemplate child : children) {
-            plan_children.add(child.upgradeFrom(initialState));
+        Maybe<InstalledElement> old_instance_of_this = Trees.findFirst(initialState, new Predicate<InstalledElement>()
+        {
+            @Override
+            public boolean apply(InstalledElement input)
+            {
+                return getId().equals(input.getId());
+            }
+        });
+
+        if (old_instance_of_this.isKnown()) {
+            // I existed before, let's recur down looking for additions.
+            List<Update> plan_children = Lists.newArrayList();
+            for (BoundTemplate child : children) {
+                plan_children.addAll(child.upgradeFrom(initialState));
+            }
+            return plan_children;
         }
-        return new UpgradeSystemPlan(plan_children);
+        else {
+            // oo, I didn't exist before, need to do an addition!
+            return Lists.newArrayList((Update)new Install(this));
+        }
     }
 }

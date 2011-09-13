@@ -97,7 +97,7 @@ public class BoundServer extends BoundTemplate
     }
 
     @Override
-    public UpgradePlan upgradeFrom(InstalledElement initialState)
+    public List<Update> upgradeFrom(InstalledElement initialState)
     {
         BoundServer prior = findPrior(initialState.getId());
 

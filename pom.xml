@@ -116,6 +116,12 @@
             <!-- ASL -->
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.xbean</groupId>
+            <artifactId>xbean-finder</artifactId>
+            <version>3.8</version>
+        </dependency>
+
 
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -127,7 +133,7 @@
         <dependency>
             <groupId>org.jruby</groupId>
             <artifactId>jruby-complete</artifactId>
-            <version>1.6.3</version>
+            <version>1.6.4</version>
         </dependency>
 
         <dependency>
@@ -200,6 +206,9 @@
                         </goals>
                         <configuration>
                             <transformers>
+                                <transformer>
+
+                                </transformer>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.ning.atlas.main.Main</mainClass>
