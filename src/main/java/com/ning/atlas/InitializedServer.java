@@ -1,8 +1,7 @@
 package com.ning.atlas;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListenableFutureTask;
-import com.ning.atlas.base.ListenableExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.base.Threads;
 import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.logging.Logger;
@@ -14,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 public class InitializedServer extends InitializedTemplate
@@ -44,7 +42,7 @@ public class InitializedServer extends InitializedTemplate
     @Override
     protected ListenableFuture<InstalledElement> install(final ErrorCollector ec, ExecutorService exec, final InitializedTemplate root)
     {
-        return ListenableExecutorService.delegateTo(exec).submit(new Callable<InstalledElement>()
+        return MoreExecutors.listeningDecorator(exec).submit(new Callable<InstalledElement>()
         {
             @Override
             public InstalledElement call() throws Exception

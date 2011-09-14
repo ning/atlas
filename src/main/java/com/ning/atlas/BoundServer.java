@@ -1,12 +1,11 @@
 package com.ning.atlas;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.ning.atlas.base.ListenableExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.base.Threads;
 import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.logging.Logger;
-import com.ning.atlas.upgrade.UpgradePlan;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,7 +74,7 @@ public class BoundServer extends BoundTemplate
     @Override
     public ListenableFuture<ProvisionedElement> provision(final ErrorCollector collector, ExecutorService e)
     {
-        return ListenableExecutorService.delegateTo(e).submit(new Callable<ProvisionedElement>()
+        return MoreExecutors.listeningDecorator(e).submit(new Callable<ProvisionedElement>()
         {
             public ProvisionedElement call() throws Exception
             {

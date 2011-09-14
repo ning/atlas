@@ -2,6 +2,8 @@ package com.ning.atlas.base;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,12 +21,12 @@ import static org.junit.Assert.assertThat;
 public class TestFutureStuff
 {
 
-    private ListenableExecutorService exec;
+    private ListeningExecutorService exec;
 
     @Before
     public void setUp() throws Exception
     {
-        this.exec = ListenableExecutorService.delegateTo(Executors.newCachedThreadPool());
+        this.exec = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
     }
 
     @After

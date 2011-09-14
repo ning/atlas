@@ -21,6 +21,7 @@ public class MainOptions
     private final Command      command;
     private final String[]     commandArguments;
     private final boolean      failFast;
+    private final File pluginRootDirectory;
 
     public MainOptions(String... args) throws IOException
     {
@@ -38,7 +39,7 @@ public class MainOptions
         parser.acceptsAll(asList("f", "fail-fast"), "fail at the end of any stage which has errors");
         parser.acceptsAll(asList("v", "verbose"), "verbose output");
         parser.acceptsAll(asList("vv", "very-verbose"), "very verbose output");
-        OptionSpec<File> p = parser.acceptsAll(asList("p", "plugins"), "directory (root) containing plugin archives")
+        OptionSpec<File> p = parser.acceptsAll(asList("p", "plugin"), "directory (root) containing plugin archives")
                                    .withRequiredArg()
                                    .ofType(File.class);
 
@@ -60,6 +61,15 @@ public class MainOptions
         }
 
         this.failFast = o.has("f");
+
+        if (o.has(p)) {
+            this.pluginRootDirectory = o.valueOf(p);
+        }
+        else {
+            this.pluginRootDirectory = File.createTempFile("woof", "meow");
+            this.pluginRootDirectory.delete();
+            this.pluginRootDirectory.mkdir();
+        }
 
         if ((o.has(e) && o.has(s))) {
             this.environmentPath = o.valueOf(e);
