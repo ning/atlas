@@ -1,11 +1,10 @@
-package com.ning.atlas.oracle;
+package com.ning.atlas.databases;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.ning.atlas.InitializedServer;
 import com.ning.atlas.Installer;
-import com.ning.atlas.Jsonificator;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
 import com.ning.atlas.Thing;
@@ -22,14 +21,14 @@ import static com.google.common.collect.Iterables.filter;
 import static com.ning.atlas.tree.Trees.findInstancesOf;
 import static java.lang.String.format;
 
-public class OracleLoaderInstaller implements Installer
+public class MysqlLoaderInstaller implements Installer
 {
-    private final Logger log = LoggerFactory.getLogger(OracleLoaderInstaller.class);
+    private final Logger log = LoggerFactory.getLogger(MysqlLoaderInstaller.class);
     private final String sshUser;
     private final String sshKeyFile;
     private final String sqlUrlTemplate;
 
-    public OracleLoaderInstaller(Map<String, String> attributes)
+    public MysqlLoaderInstaller(Map<String, String> attributes)
     {
         this.sshUser = attributes.get("ssh_user");
         checkNotNull(sshUser, "ssh_user attribute required");
@@ -39,10 +38,7 @@ public class OracleLoaderInstaller implements Installer
 
         checkNotNull(attributes.get("sql_url_template"), "sql_url_template required");
         this.sqlUrlTemplate = attributes.get("sql_url_template");
-
     }
-
-
 
 
     @Override
@@ -54,14 +50,12 @@ public class OracleLoaderInstaller implements Installer
             public boolean apply(InitializedServer input)
             {
                 log.debug("looking at {}", input.getMy().toJson());
-                return "shell".equals(input.getMy().get("oracle"));
+                return "shell".equals(input.getMy().get("mysql"));
             }
         });
 
-
-
         if (Iterables.isEmpty(shells)) {
-            log.warn("unable to find a :oracle => 'shell' host to run install on, failing");
+            log.warn("unable to find a :databases => 'shell' host to run install on, failing");
             throw new IllegalStateException("no galaxy shell defined in the deploy tree, unable to continue");
         }
 
@@ -99,4 +93,5 @@ public class OracleLoaderInstaller implements Installer
             ssh.close();
         }
     }
+
 }

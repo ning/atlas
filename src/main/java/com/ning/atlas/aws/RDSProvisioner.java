@@ -135,8 +135,8 @@ public class RDSProvisioner implements Provisioner
         /**
          * The name of the database engine to be used for this
          * instance. <p> Valid Values: <code>MySQL</code> |
-         * <code>oracle-se1</code> | <code>oracle-se</code> |
-         * <code>oracle-ee</code>
+         * <code>databases-se1</code> | <code>databases-se</code> |
+         * <code>databases-ee</code>
          */
         @Config("engine")
         public abstract String getEngine();
