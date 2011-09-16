@@ -43,12 +43,13 @@ public class GalaxyInstaller implements Installer
     @Override
     public void install(Server server, String fragment, Thing root, Thing node) throws Exception
     {
+        log.info("using galaxy to install {} on {}", server, fragment);
         Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()
         {
             @Override
-            public boolean apply(@Nullable InitializedServer input)
+            public boolean apply(InitializedServer input)
             {
-                log.debug("looking at {}", input.getMy().toJson());
+                log.info("looking at {}", input.getMy().toJson());
                 return "shell".equals(input.getMy().get("galaxy"));
             }
         });

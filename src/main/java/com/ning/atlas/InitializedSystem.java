@@ -37,7 +37,7 @@ public class InitializedSystem extends InitializedTemplate
     {
         List<ListenableFuture<InstalledElement>> lof = Lists.newArrayListWithExpectedSize(getChildren().size());
         for (InitializedTemplate template : getChildren()) {
-            lof.add(template.install(ec, ex));
+            lof.add(template.install(ec, ex, root));
         }
 
         ListenableFuture<List<Either<InstalledElement, ExecutionException>>> goop = MoreFutures.invertify(lof);

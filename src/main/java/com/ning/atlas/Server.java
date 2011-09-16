@@ -3,6 +3,7 @@ package com.ning.atlas;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
@@ -67,6 +68,12 @@ public final class Server
     public int hashCode()
     {
         return HashCodeBuilder.reflectionHashCode(this, true);
+    }
+
+    @Override
+    public String toString()
+    {
+        return ToStringBuilder.reflectionToString(this);
     }
 
     public static class Deserializer extends JsonDeserializer<Server> {
