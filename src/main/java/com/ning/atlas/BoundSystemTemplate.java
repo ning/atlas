@@ -41,7 +41,7 @@ public class BoundSystemTemplate extends BoundTemplate
     }
 
     @Override
-    public ListenableFuture<ProvisionedElement> provision(final ErrorCollector collector, final ExecutorService exec)
+    public ListenableFuture<ProvisionedElement> provision(final ErrorCollector collector, ExecutorService exec)
     {
         List<ListenableFuture<ProvisionedElement>> lof = Lists.newArrayListWithExpectedSize(getChildren().size());
         for (BoundTemplate template : getChildren()) {
