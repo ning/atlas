@@ -6,7 +6,7 @@ import com.ning.atlas.Identity;
 import com.ning.atlas.Initialization;
 import com.ning.atlas.My;
 import com.ning.atlas.Server;
-import com.ning.atlas.Thing;
+import com.ning.atlas.Node;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,7 +54,7 @@ public class TestRDSProvisioner
                              "rds", Collections.<Initialization>emptyList(),
                              props);
 
-        Server db_server = rds.provision(base, new Thing()
+        Server db_server = rds.provision(base, new Node()
         {
             @Override
             public Identity getId()
@@ -81,7 +81,7 @@ public class TestRDSProvisioner
             }
 
             @Override
-            public Collection<? extends Thing> getChildren()
+            public Collection<? extends Node> getChildren()
             {
                 return Collections.emptyList();
             }

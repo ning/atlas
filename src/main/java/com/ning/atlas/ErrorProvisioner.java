@@ -14,7 +14,7 @@ public class ErrorProvisioner implements Provisioner
 
     }
 
-    public Server provision(Base base, Thing node)
+    public Server provision(Base base, Node node)
     {
         throw new IllegalStateException("No provisioner available!");
     }

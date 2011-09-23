@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @JsonPropertyOrder({"type", "name", "my", "children"})
-public class InstalledElement implements Thing
+public class InstalledElement implements Node
 {
     private final Identity id;
     private final String   type;

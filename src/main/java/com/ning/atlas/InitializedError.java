@@ -7,7 +7,6 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 public class InitializedError extends InitializedTemplate
@@ -21,7 +20,7 @@ public class InitializedError extends InitializedTemplate
     }
 
     @Override
-    public Collection<? extends Thing> getChildren()
+    public Collection<? extends Node> getChildren()
     {
         return Collections.emptyList();
     }

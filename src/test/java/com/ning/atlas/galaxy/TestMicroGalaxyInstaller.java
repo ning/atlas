@@ -50,32 +50,32 @@ public class TestMicroGalaxyInstaller
 
     }
 
-    @Test
-    public void testEndToEnd() throws Exception
-    {
-        assumeThat(System.getProperty("RUN_EC2_TESTS"), notNullValue());
-
-        ExecutorService exec = MoreExecutors.sameThreadExecutor();
-
-        JRubyTemplateParser parser = new JRubyTemplateParser();
-        Template root = parser.parseSystem(new File("src/test/ruby/test_micro_galaxy_installer.rb"));
-        Environment env = parser.parseEnvironment(new File("src/test/ruby/test_micro_galaxy_installer.rb"));
-
-        InstalledElement installed = root.normalize(env)
-                                         .provision(new ErrorCollector(), exec).get()
-                                         .initialize(new ErrorCollector(), exec).get()
-                                         .install(new ErrorCollector(), exec).get();
-
-
+//    @Test
+//    public void testEndToEnd() throws Exception
+//    {
+//        assumeThat(System.getProperty("RUN_EC2_TESTS"), notNullValue());
+//
+//        ExecutorService exec = MoreExecutors.sameThreadExecutor();
+//
+//        JRubyTemplateParser parser = new JRubyTemplateParser();
+//        Template root = parser.parseSystem(new File("src/test/ruby/test_micro_galaxy_installer.rb"));
+//        Environment env = parser.parseEnvironment(new File("src/test/ruby/test_micro_galaxy_installer.rb"));
+//
+//        InstalledElement installed = root.normalize(env)
+//                                         .provision(new ErrorCollector(), exec).get()
+//                                         .initialize(new ErrorCollector(), exec).get()
+//                                         .install(new ErrorCollector(), exec).get();
+//
+//
 //        ObjectMapper mapper = new ObjectMapper();
 //        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
 //        mapper.writeValue(System.out, installed);
 //
 
-        List<InstalledServer> nodes = Trees.findInstancesOf(installed, InstalledServer.class);
-
-        assertThat(nodes.size(), equalTo(1));
-
+//        List<InstalledServer> nodes = Trees.findInstancesOf(installed, InstalledServer.class);
+//
+//        assertThat(nodes.size(), equalTo(1));
+//
 //        for (InstalledServer node : nodes) {
 //            try {
 //            ec2.destroy(node.getServer());
@@ -84,5 +84,5 @@ public class TestMicroGalaxyInstaller
 //            }
 //        }
 //        System.out.println("WOOOOOOOT");
-    }
+//    }
 }

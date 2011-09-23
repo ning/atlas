@@ -23,7 +23,7 @@ public class TestInstallation
         Installer installer = new Installer()
         {
             @Override
-            public void install(Server server, String fragment, Thing root, Thing node)
+            public void install(Server server, String fragment, Node root, Node node)
             {
                 installed.set(true);
                 assertThat(fragment, equalTo("waffles-1.2"));

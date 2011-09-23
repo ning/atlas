@@ -3,7 +3,7 @@ package com.ning.atlas.galaxy;
 import com.ning.atlas.Installer;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
-import com.ning.atlas.Thing;
+import com.ning.atlas.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +35,7 @@ public class MicroGalaxyInstaller implements Installer
     }
 
     @Override
-    public void install(Server server, String fragment, Thing root, Thing node)
+    public void install(Server server, String fragment, Node root, Node node)
     {
         SSH ssh = null;
         try {

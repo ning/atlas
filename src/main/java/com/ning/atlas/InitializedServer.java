@@ -34,7 +34,7 @@ public class InitializedServer extends InitializedTemplate
 
     @JsonIgnore
     @Override
-    public Collection<? extends Thing> getChildren()
+    public Collection<? extends Node> getChildren()
     {
         return Collections.emptyList();
     }

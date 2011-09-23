@@ -4,6 +4,6 @@ public interface Installer
 {
     public void install(Server server,
                         String fragment,
-                        Thing root,
-                        Thing node) throws Exception;
+                        Node root,
+                        Node node) throws Exception;
 }

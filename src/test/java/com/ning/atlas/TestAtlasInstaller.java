@@ -44,6 +44,7 @@ public class TestAtlasInstaller
         this.ec2 = new EC2Provisioner(config);
     }
 
+    /*
     @Test
     public void testExplicitSpinUp() throws Exception
     {
@@ -71,5 +72,5 @@ public class TestAtlasInstaller
             ec2.destroy(leave.getServer());
         }
     }
-
+    */
 }

@@ -13,7 +13,7 @@ import com.google.common.collect.Maps;
 import com.ning.atlas.Base;
 import com.ning.atlas.Provisioner;
 import com.ning.atlas.Server;
-import com.ning.atlas.Thing;
+import com.ning.atlas.Node;
 import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.base.MapConfigSource;
 import com.ning.atlas.logging.Logger;
@@ -42,7 +42,7 @@ public class RDSProvisioner implements Provisioner
     }
 
     @Override
-    public Server provision(Base b, Thing node) throws UnableToProvisionServerException
+    public Server provision(Base b, Node node) throws UnableToProvisionServerException
     {
         log.info("Started provisioning %s, this could take a while", node.getId().toExternalForm());
         RDSConfig cfg = new ConfigurationObjectFactory(new MapConfigSource(b.getAttributes())).build(RDSConfig.class);

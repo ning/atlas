@@ -21,7 +21,7 @@ public class TestBase
         env.addInitializer("waffle", new Installer()
         {
             @Override
-            public void install(Server server, String arg, Thing root, Thing node)
+            public void install(Server server, String arg, Node root, Node node)
             {
                 inits.add("waffle+" + arg);
             }
@@ -30,7 +30,7 @@ public class TestBase
         env.addInitializer("pancake", new Installer()
         {
             @Override
-            public void install(Server server, String arg, Thing root, Thing node)
+            public void install(Server server, String arg, Node root, Node node)
             {
                 inits.add("pancake+" + arg);
             }

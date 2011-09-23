@@ -30,7 +30,7 @@ public class StaticTaggedServerProvisioner implements Provisioner
         }
     }
 
-    public synchronized Server provision(Base base, Thing node) throws UnableToProvisionServerException
+    public synchronized Server provision(Base base, Node node) throws UnableToProvisionServerException
     {
         String tag = base.getAttributes().get("tag");
         String host = Iterables.getFirst(this.availables.get(tag), "!!@@##");

@@ -33,7 +33,7 @@ public class ServerTemplate extends Template
         return rs;
     }
 
-    public Collection<? extends Thing> getChildren()
+    public Collection<? extends Node> getChildren()
     {
         return Collections.emptyList();
     }

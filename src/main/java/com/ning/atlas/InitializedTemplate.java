@@ -4,10 +4,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.ning.atlas.errors.ErrorCollector;
 
 import java.util.Collection;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
-public abstract class InitializedTemplate implements Thing
+public abstract class InitializedTemplate implements Node
 {
     private final Identity id;
     private final String type;
@@ -43,7 +42,7 @@ public abstract class InitializedTemplate implements Thing
     }
 
     @Override
-    public abstract Collection<? extends Thing> getChildren();
+    public abstract Collection<? extends Node> getChildren();
 
     public final ListenableFuture<InstalledElement> install(ErrorCollector ec, ExecutorService exec)
     {

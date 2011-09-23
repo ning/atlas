@@ -7,7 +7,7 @@ import com.ning.atlas.InitializedServer;
 import com.ning.atlas.Installer;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
-import com.ning.atlas.Thing;
+import com.ning.atlas.Node;
 import org.antlr.stringtemplate.StringTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +42,7 @@ public class OracleLoaderInstaller implements Installer
 
 
     @Override
-    public void install(Server server, String fragment, Thing root, Thing node) throws Exception
+    public void install(Server server, String fragment, Node root, Node node) throws Exception
     {
         Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()
         {

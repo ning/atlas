@@ -7,7 +7,7 @@ import com.ning.atlas.Identity;
 import com.ning.atlas.Initialization;
 import com.ning.atlas.My;
 import com.ning.atlas.Server;
-import com.ning.atlas.Thing;
+import com.ning.atlas.Node;
 import org.junit.Before;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
@@ -50,7 +50,7 @@ public class TestEC2Provisioner
                                           "ec2",
                                           Collections.<Initialization>emptyList(),
                                           ImmutableMap.of("ami", "ami-a6f504cf")),
-                                 new Thing()
+                                 new Node()
                                  {
 
                                      @Override
@@ -78,7 +78,7 @@ public class TestEC2Provisioner
                                      }
 
                                      @Override
-                                     public Collection<? extends Thing> getChildren()
+                                     public Collection<? extends Node> getChildren()
                                      {
                                          return Collections.emptyList();
                                      }

@@ -5,7 +5,7 @@ import com.ning.atlas.Base;
 import com.ning.atlas.Provisioner;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
-import com.ning.atlas.Thing;
+import com.ning.atlas.Node;
 import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.base.DoRuntime;
 import org.slf4j.Logger;
@@ -68,7 +68,7 @@ public class VBoxProvisioner implements Provisioner
 
 
 	@Override
-	public Server provision(Base base, Thing node) throws UnableToProvisionServerException
+	public Server provision(Base base, Node node) throws UnableToProvisionServerException
 	{
 		/*
 		 * Plan of attack:

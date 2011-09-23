@@ -15,7 +15,7 @@ import com.google.common.collect.Lists;
 import com.ning.atlas.Base;
 import com.ning.atlas.Provisioner;
 import com.ning.atlas.Server;
-import com.ning.atlas.Thing;
+import com.ning.atlas.Node;
 import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.logging.Logger;
 
@@ -47,7 +47,7 @@ public class EC2Provisioner implements Provisioner
     }
 
     @Override
-    public Server provision(Base base, Thing node) throws UnableToProvisionServerException
+    public Server provision(Base base, Node node) throws UnableToProvisionServerException
     {
         logger.info("Provisioning server for %s", node.getId());
         RunInstancesRequest req = new RunInstancesRequest(base.getAttributes().get("ami"), 1, 1);

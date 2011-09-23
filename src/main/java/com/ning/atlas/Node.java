@@ -4,13 +4,13 @@ import com.ning.atlas.tree.Tree;
 
 import java.util.Collection;
 
-public interface Thing extends Tree
+public interface Node extends Tree
 {
     public String getType();
     public String getName();
     public My getMy();
 
-    public Collection<? extends Thing> getChildren();
+    public Collection<? extends Node> getChildren();
 
     Identity getId();
 }

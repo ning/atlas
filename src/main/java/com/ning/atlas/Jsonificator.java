@@ -11,7 +11,7 @@ public class Jsonificator
 
     static { mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true); }
 
-    public static String jsonify(Thing template ) throws IOException
+    public static String jsonify(Node template ) throws IOException
     {
         return mapper.writeValueAsString(template);
     }

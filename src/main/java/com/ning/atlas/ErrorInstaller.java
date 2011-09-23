@@ -11,7 +11,7 @@ public class ErrorInstaller implements Installer
     }
 
     @Override
-    public void install(Server server, String arg, Thing root, Thing node)
+    public void install(Server server, String arg, Node root, Node node)
     {
         throw new UnsupportedOperationException("Not Yet Implemented!");
     }

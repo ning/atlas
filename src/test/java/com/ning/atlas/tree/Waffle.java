@@ -1,7 +1,6 @@
 package com.ning.atlas.tree;
 
 import com.google.common.collect.Lists;
-import com.ning.atlas.Thing;
 
 import java.util.Collection;
 import java.util.List;

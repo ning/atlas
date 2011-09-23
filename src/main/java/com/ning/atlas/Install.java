@@ -1,10 +1,14 @@
 package com.ning.atlas;
 
-public class Install extends Update
+public class Install extends Change
 {
-    private final BoundTemplate template;
+    private final Installer installer;
 
-    public Install(BoundTemplate template) {
-        this.template = template;
+    public Install(Installer installer, Root root, Node node) {
+        this.installer = installer;
+    }
+
+    public void install() {
+
     }
 }

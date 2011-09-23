@@ -34,7 +34,7 @@ public class AtlasInstaller implements Installer
     }
 
     @Override
-    public void install(Server server, String arg, Thing root, Thing node) throws Exception
+    public void install(Server server, String arg, Node root, Node node) throws Exception
     {
         SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
         try {

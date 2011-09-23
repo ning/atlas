@@ -8,11 +8,10 @@ import com.ning.atlas.InitializedServer;
 import com.ning.atlas.Installer;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
-import com.ning.atlas.Thing;
+import com.ning.atlas.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -41,7 +40,7 @@ public class GalaxyInstaller implements Installer
     }
 
     @Override
-    public void install(Server server, String fragment, Thing root, Thing node) throws Exception
+    public void install(Server server, String fragment, Node root, Node node) throws Exception
     {
         log.info("using galaxy to install {} on {}", server, fragment);
         Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()

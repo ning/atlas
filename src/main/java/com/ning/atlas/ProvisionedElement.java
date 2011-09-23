@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-public abstract class ProvisionedElement implements Thing
+public abstract class ProvisionedElement implements Node
 {
     private final Identity id;
     private final String   type;

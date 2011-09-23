@@ -1,5 +1,5 @@
 package com.ning.atlas;
 
-public class Update
+public abstract class Change
 {
 }

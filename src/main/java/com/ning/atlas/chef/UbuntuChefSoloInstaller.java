@@ -8,7 +8,6 @@ import com.google.common.io.Files;
 import com.ning.atlas.Installer;
 import com.ning.atlas.SSH;
 import com.ning.atlas.Server;
-import com.ning.atlas.Thing;
 import com.ning.atlas.base.Maybe;
 import org.antlr.stringtemplate.StringTemplate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -93,8 +92,8 @@ public class UbuntuChefSoloInstaller implements Installer
     @Override
     public void install(final Server server,
                         final String arg,
-                        Thing root,
-                        Thing node) throws Exception
+                        com.ning.atlas.Node root,
+                        com.ning.atlas.Node node) throws Exception
     {
         boolean done = true;
         do {

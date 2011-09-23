@@ -6,7 +6,7 @@ import com.amazonaws.services.elasticloadbalancing.model.Instance;
 import com.amazonaws.services.elasticloadbalancing.model.RegisterInstancesWithLoadBalancerRequest;
 import com.ning.atlas.Installer;
 import com.ning.atlas.Server;
-import com.ning.atlas.Thing;
+import com.ning.atlas.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +28,7 @@ public class ELBInstaller implements Installer
 
 
     @Override
-    public void install(Server s, String fragment, Thing root, Thing node)
+    public void install(Server s, String fragment, Node root, Node node)
     {
 
         Instance i = new Instance(s.getAttributes().get("instanceId"));
