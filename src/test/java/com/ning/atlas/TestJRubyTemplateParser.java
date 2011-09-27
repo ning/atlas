@@ -101,14 +101,14 @@ public class TestJRubyTemplateParser
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
         Environment e = p.parseEnvironment(new File("src/test/ruby/ex1/simple-environment.rb")).getChildren().get(0);
-        final Map<String, Installer> m = e.getInstallers();
+        final Map<Uri<Installer>, Installer> m = e.getInstallers();
 
 
-        Map<String, Installer> target = new HashMap<String, Installer>();
-        target.put("ugx", new MicroGalaxyInstaller(ImmutableMap.of("ssh_user", "ubuntu",
-                                                                   "ssh_key_file", "~/.ec2/brianm-ning.pem",
-                                                                   "ugx_user", "ugx",
-                                                                   "ugx_path", "/home/ugx/deploy")));
+        Map<Uri<Installer>, Installer> target = new HashMap<Uri<Installer>, Installer>();
+        target.put(Uri.<Installer>valueOf("ugx"), new MicroGalaxyInstaller(ImmutableMap.of("ssh_user", "ubuntu",
+                                                                                           "ssh_key_file", "~/.ec2/brianm-ning.pem",
+                                                                                           "ugx_user", "ugx",
+                                                                                           "ugx_path", "/home/ugx/deploy")));
         assertThat(m, equalTo(target));
     }
 

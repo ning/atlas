@@ -7,15 +7,12 @@ import com.ning.atlas.badger.DeploymentPlan;
 import com.ning.atlas.badger.Host;
 import com.ning.atlas.badger.NormalizedTemplate;
 import com.ning.atlas.badger.SystemMap;
+import com.ning.atlas.badger.Uri;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.tree.MagicVisitor;
-import com.ning.atlas.tree.Trees;
 
 import javax.annotation.Nullable;
-import java.io.BufferedInputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -23,42 +20,42 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Environment
 {
-    private final List<Base>               bases        = new CopyOnWriteArrayList<Base>();
-    private final List<Environment>        children     = new CopyOnWriteArrayList<Environment>();
-    private final Map<String, Provisioner> provisioners = Maps.newConcurrentMap();
-    private final Map<String, Installer>   initializers = Maps.newConcurrentMap();
-    private final Map<String, Installer>   installers   = Maps.newConcurrentMap();
-    private final Map<String, String>      properties   = Maps.newConcurrentMap();
+    private final List<Base>                         bases        = new CopyOnWriteArrayList<Base>();
+    private final List<Environment>                  children     = new CopyOnWriteArrayList<Environment>();
+    private final Map<Uri<Provisioner>, Provisioner> provisioners = Maps.newConcurrentMap();
+    private final Map<Uri<Installer>, Installer>     installers   = Maps.newConcurrentMap();
+    private final Map<String, String>                properties   = Maps.newConcurrentMap();
 
     private final String             name;
     private final Maybe<Environment> parent;
 
     public Environment(String name)
     {
-        this(name, Collections.<String, Provisioner>emptyMap(), Collections.<String, Installer>emptyMap(), null);
+        this(name,
+             Collections.<Uri<Provisioner>, Provisioner>emptyMap(),
+             Collections.<Uri<Installer>, Installer>emptyMap(), null);
     }
 
     public Environment(String name,
-                       Map<String, Provisioner> provisioners,
-                       Map<String, Installer> initializers)
+                       Map<Uri<Provisioner>, Provisioner> provisioners,
+                       Map<Uri<Installer>, Installer> initializers)
     {
         this(name, provisioners, initializers, null);
     }
 
     public Environment(String name,
-                       Map<String, Provisioner> provisioners,
-                       Map<String, Installer> initializers,
+                       Map<Uri<Provisioner>, Provisioner> provisioners,
+                       Map<Uri<Installer>, Installer> initializers,
                        @Nullable Environment parent)
     {
         this.name = name;
         this.parent = Maybe.elideNull(parent);
         this.provisioners.putAll(provisioners);
-        this.initializers.putAll(initializers);
     }
 
     public void addProvisioner(String name, Provisioner p)
     {
-        this.provisioners.put(name, p);
+        this.provisioners.put(Uri.<Provisioner>valueOf(name), p);
     }
 
     @Override
@@ -67,7 +64,6 @@ public class Environment
         return Objects.toStringHelper(this)
                       .add("name", name)
                       .add("provisioners", provisioners)
-                      .add("initializers", initializers)
                       .add("children", children)
                       .add("bases", bases)
                       .toString();
@@ -78,17 +74,12 @@ public class Environment
         this.children.add(e);
     }
 
-    public Provisioner getProvisioner(String name)
+    public Provisioner getProvisioner(Uri<Provisioner> name)
     {
         return provisioners.get(name);
     }
 
-    public void addInitializer(String name, Installer init)
-    {
-        initializers.put(name, init);
-    }
-
-    public void addInstaller(String name, Installer installer)
+    public void addInstaller(Uri<Installer> name, Installer installer)
     {
         installers.put(name, installer);
     }
@@ -116,14 +107,9 @@ public class Environment
         bases.add(base);
     }
 
-    public Map<String, Installer> getInitializers()
+    public Map<Uri<Installer>, Installer> getInstallers()
     {
-        return initializers;
-    }
-
-    public Map<String, Installer> getInstallers()
-    {
-        return installers;
+        return Maps.newHashMap(installers);
     }
 
     public List<Environment> getChildren()
@@ -153,7 +139,7 @@ public class Environment
         return rs;
     }
 
-    public Map<String, Provisioner> getProvisioners()
+    public Map<Uri<Provisioner>, Provisioner> getProvisioners()
     {
         return provisioners;
     }

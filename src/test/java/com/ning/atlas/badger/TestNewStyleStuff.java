@@ -29,8 +29,8 @@ public class TestNewStyleStuff
 
 
         Environment env = new Environment("local",
-                                          ImmutableMap.<String, Provisioner>of("noop", new NoOpProvisioner()),
-                                          ImmutableMap.<String, Installer>of("foo", new NoOpInstaller()));
+                                          ImmutableMap.<Uri<Provisioner>, Provisioner>of(Uri.<Provisioner>valueOf("noop"), new NoOpProvisioner()),
+                                          ImmutableMap.<Uri<Installer>, Installer>of(Uri.<Installer>valueOf("foo"), new NoOpInstaller()));
 
         env.addBase(new Base("base",
                              Uri.<Provisioner>valueOf("noop"),
@@ -40,10 +40,6 @@ public class TestNewStyleStuff
         NormalizedTemplate norm = root.nom();
 
         DeploymentPlan dp = env.planDeploymentFor(norm, SystemMap.empty());
-
-
-
-//        DeploymentPlan plan = bound.createDeploymentPlan();
 
     }
 }
