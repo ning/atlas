@@ -5,10 +5,12 @@ import com.google.common.util.concurrent.ListenableFutureTask;
 import com.ning.atlas.base.Threads;
 import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.logging.Logger;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.My;
+import com.ning.atlas.spi.Server;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -47,37 +49,38 @@ public class ProvisionedServer extends ProvisionedElement
                                                                final Executor ex,
                                                                final ProvisionedElement root)
     {
-        ListenableFutureTask<InitializedTemplate> f =
-            new ListenableFutureTask<InitializedTemplate>(new Callable<InitializedTemplate>()
-            {
-                @Override
-                public InitializedTemplate call() throws Exception
-                {
-
-                    Threads.pushName("t-" + getId().toExternalForm());
-                    try {
-                        final Server rs = base.initialize(server, root, ProvisionedServer.this);
-                        return new InitializedServer(getId(),
-                                                     getType(),
-                                                     getName(),
-                                                     getMy(),
-                                                     rs,
-                                                     installations,
-                                                     base);
-                    }
-                    catch (Exception e) {
-                        String msg = ec.error(e, "Error while initializing server: %s", e.getMessage());
-                        logger.warn(e, msg);
-                        return new InitializedError(getId(), getType(), getName(), getMy(), e.getMessage());
-                    }
-                    finally {
-                        Threads.popName();
-                    }
-                }
-            });
-
-        ex.execute(f);
-        return f;
+//        ListenableFutureTask<InitializedTemplate> f =
+//            new ListenableFutureTask<InitializedTemplate>(new Callable<InitializedTemplate>()
+//            {
+//                @Override
+//                public InitializedTemplate call() throws Exception
+//                {
+//
+//                    Threads.pushName("t-" + getId().toExternalForm());
+//                    try {
+//                        final Server rs = base.initialize(server, root, ProvisionedServer.this);
+//                        return new InitializedServer(getId(),
+//                                                     getType(),
+//                                                     getName(),
+//                                                     getMy(),
+//                                                     rs,
+//                                                     installations,
+//                                                     base);
+//                    }
+//                    catch (Exception e) {
+//                        String msg = ec.error(e, "Error while initializing server: %s", e.getMessage());
+//                        logger.warn(e, msg);
+//                        return new InitializedError(getId(), getType(), getName(), getMy(), e.getMessage());
+//                    }
+//                    finally {
+//                        Threads.popName();
+//                    }
+//                }
+//            });
+//
+//        ex.execute(f);
+//        return f;
+        throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 
     public Server getServer()
@@ -85,9 +88,9 @@ public class ProvisionedServer extends ProvisionedElement
         return server;
     }
 
-    @JsonProperty("environment")
-    public Map<String, String> getEnvironmentProperties()
-    {
-        return this.base.getProperties();
-    }
+//    @JsonProperty("environment")
+//    public Map<String, String> getEnvironmentProperties()
+//    {
+//        return this.base.getProperties();
+//    }
 }

@@ -4,10 +4,12 @@ import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.ning.atlas.badger.NormalizedTemplate;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.My;
 import com.ning.atlas.tree.Tree;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -79,4 +81,11 @@ public abstract class Template implements Tree
     {
         return my;
     }
+
+    public final NormalizedTemplate nom() {
+        return Iterables.getOnlyElement(_nom(Identity.root()));
+    }
+
+    protected abstract List<NormalizedTemplate> _nom(Identity parent);
+
 }

@@ -1,4 +1,4 @@
-package com.ning.atlas;
+package com.ning.atlas.spi;
 
 public interface Installer
 {

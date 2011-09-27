@@ -4,9 +4,9 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
 import com.amazonaws.services.elasticloadbalancing.model.Instance;
 import com.amazonaws.services.elasticloadbalancing.model.RegisterInstancesWithLoadBalancerRequest;
-import com.ning.atlas.Installer;
-import com.ning.atlas.Server;
-import com.ning.atlas.Node;
+import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.Server;
+import com.ning.atlas.spi.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

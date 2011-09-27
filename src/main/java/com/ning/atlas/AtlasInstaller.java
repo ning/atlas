@@ -1,6 +1,9 @@
 package com.ning.atlas;
 
 import com.google.common.io.Files;
+import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.Node;
+import com.ning.atlas.spi.Server;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;

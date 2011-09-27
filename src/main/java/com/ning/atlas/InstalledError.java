@@ -1,5 +1,8 @@
 package com.ning.atlas;
 
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.My;
+
 public class InstalledError extends InstalledElement
 {
     private final String message;

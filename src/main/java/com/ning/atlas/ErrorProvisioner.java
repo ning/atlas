@@ -1,5 +1,9 @@
 package com.ning.atlas;
 
+import com.ning.atlas.spi.Node;
+import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.spi.Server;
+
 import java.util.Map;
 
 public class ErrorProvisioner implements Provisioner

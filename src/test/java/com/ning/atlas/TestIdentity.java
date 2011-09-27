@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import com.ning.atlas.spi.Identity;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;

@@ -1,5 +1,8 @@
 package com.ning.atlas;
 
+import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.Node;
+import com.ning.atlas.spi.Server;
 import com.ning.atlas.tree.Trees;
 
 import java.util.List;

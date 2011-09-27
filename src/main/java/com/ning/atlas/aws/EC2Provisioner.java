@@ -13,9 +13,9 @@ import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.ning.atlas.Base;
-import com.ning.atlas.Provisioner;
-import com.ning.atlas.Server;
-import com.ning.atlas.Node;
+import com.ning.atlas.spi.Node;
+import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.spi.Server;
 import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.logging.Logger;
 

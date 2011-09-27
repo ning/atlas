@@ -1,5 +1,7 @@
 package com.ning.atlas;
 
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.My;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 

@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import com.ning.atlas.spi.Node;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 

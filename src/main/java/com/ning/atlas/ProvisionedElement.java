@@ -2,6 +2,9 @@ package com.ning.atlas;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.ning.atlas.errors.ErrorCollector;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.My;
+import com.ning.atlas.spi.Node;
 
 import java.util.Collections;
 import java.util.List;

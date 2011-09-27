@@ -1,5 +1,8 @@
 package com.ning.atlas;
 
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.My;
+import com.ning.atlas.spi.Server;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.codehaus.jackson.annotate.JsonIgnore;

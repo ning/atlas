@@ -1,5 +1,11 @@
 package com.ning.atlas;
 
+import com.ning.atlas.badger.NormalizedServerTemplate;
+import com.ning.atlas.badger.NormalizedTemplate;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.My;
+import com.ning.atlas.spi.Node;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +35,19 @@ public class ServerTemplate extends Template
         for (String node_name : node_names) {
 
             rs.add(new BoundServer(parent.createChild(getType(), node_name) , this, node_name, env, installations));
+        }
+        return rs;
+    }
+
+    @Override
+    protected List<NormalizedTemplate> _nom(Identity parent)
+    {
+        final List<NormalizedTemplate> rs = new ArrayList<NormalizedTemplate>();
+        List<String> node_names = getCardinality();
+        for (String node_name : node_names) {
+
+            Identity id = parent.createChild(getType(), node_name);
+            rs.add(new NormalizedServerTemplate(id, getBase(), getMy(), getInstallations()));
         }
         return rs;
     }

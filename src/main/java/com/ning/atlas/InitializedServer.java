@@ -5,6 +5,11 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.base.Threads;
 import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.logging.Logger;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.My;
+import com.ning.atlas.spi.Node;
+import com.ning.atlas.spi.Server;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonProperty;
 
@@ -42,41 +47,42 @@ public class InitializedServer extends InitializedTemplate
     @Override
     protected ListenableFuture<InstalledElement> install(final ErrorCollector ec, ExecutorService exec, final InitializedTemplate root)
     {
-        return MoreExecutors.listeningDecorator(exec).submit(new Callable<InstalledElement>()
-        {
-            @Override
-            public InstalledElement call() throws Exception
-            {
-                Threads.pushName("t-" + getId().toExternalForm());
-                try {
-                    for (String installation : installations) {
-                        int offset = installation.indexOf(':');
-                        final String prefix, fragment;
-                        if (offset == -1) {
-                            prefix = installation;
-                            fragment = "";
-                        }
-                        else {
-                            prefix = installation.substring(0, offset);
-                            fragment = installation.substring(offset + 1, installation.length());
-                        }
-                        Installer installer = InitializedServer.this.base.getInstaller(prefix);
-                        installer.install(server, fragment, root, InitializedServer.this);
-                    }
-
-                    return new InstalledServer(getId(), getType(), getName(), getMy(), server, base.getProperties());
-                }
-                catch (Exception e) {
-                    String msg = ec.error(e, "Error while attempting to run installations on server: %s",
-                                          e.getMessage());
-                    log.warn(e, msg);
-                    return new InstalledError(getId(), getType(), getName(), getMy(), e);
-                }
-                finally {
-                    Threads.popName();
-                }
-            }
-        });
+//        return MoreExecutors.listeningDecorator(exec).submit(new Callable<InstalledElement>()
+//        {
+//            @Override
+//            public InstalledElement call() throws Exception
+//            {
+//                Threads.pushName("t-" + getId().toExternalForm());
+//                try {
+//                    for (String installation : installations) {
+//                        int offset = installation.indexOf(':');
+//                        final String prefix, fragment;
+//                        if (offset == -1) {
+//                            prefix = installation;
+//                            fragment = "";
+//                        }
+//                        else {
+//                            prefix = installation.substring(0, offset);
+//                            fragment = installation.substring(offset + 1, installation.length());
+//                        }
+//                        Installer installer = InitializedServer.this.base.getInstaller(prefix);
+//                        installer.install(server, fragment, root, InitializedServer.this);
+//                    }
+//
+//                    return new InstalledServer(getId(), getType(), getName(), getMy(), server, base.getProperties());
+//                }
+//                catch (Exception e) {
+//                    String msg = ec.error(e, "Error while attempting to run installations on server: %s",
+//                                          e.getMessage());
+//                    log.warn(e, msg);
+//                    return new InstalledError(getId(), getType(), getName(), getMy(), e);
+//                }
+//                finally {
+//                    Threads.popName();
+//                }
+//            }
+//        });
+        throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 
     @JsonIgnore
@@ -85,9 +91,9 @@ public class InitializedServer extends InitializedTemplate
         return server;
     }
 
-    @JsonProperty("environment")
-    public Map<String, String> getEnvironmentProperties()
-    {
-        return this.base.getProperties();
-    }
+//    @JsonProperty("environment")
+//    public Map<String, String> getEnvironmentProperties()
+//    {
+//        return this.base.getProperties();
+//    }
 }

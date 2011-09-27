@@ -1,9 +1,9 @@
 package com.ning.atlas.noop;
 
 import com.ning.atlas.Base;
-import com.ning.atlas.Provisioner;
-import com.ning.atlas.Server;
-import com.ning.atlas.Node;
+import com.ning.atlas.spi.Node;
+import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.spi.Server;
 import com.ning.atlas.UnableToProvisionServerException;
 
 public class NoOpProvisioner implements Provisioner

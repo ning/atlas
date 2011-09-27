@@ -3,8 +3,9 @@ package com.ning.atlas;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.logging.Logger;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.My;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -13,8 +14,6 @@ import java.util.concurrent.ExecutorService;
 public class BoundServer extends BoundTemplate
 {
     private static final Logger log = Logger.get(BoundServer.class);
-
-
     private final Base         base;
     private final List<String> installations;
 
@@ -110,12 +109,4 @@ public class BoundServer extends BoundTemplate
 //
 //        return null;
 //    }
-
-    private BoundServer findPrior(Identity id)
-    {
-
-//         BoundServer bound = new BoundServer(id, getType(), getName(), getMy())
-
-        return null;
-    }
 }

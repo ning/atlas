@@ -1,5 +1,8 @@
 package com.ning.atlas;
 
+import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.Node;
+
 public class Install extends Change
 {
     private final Installer installer;

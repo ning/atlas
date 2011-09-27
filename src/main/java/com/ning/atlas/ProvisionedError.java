@@ -3,13 +3,12 @@ package com.ning.atlas;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.ning.atlas.errors.ErrorCollector;
-import com.sun.servicetag.SystemEnvironment;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.My;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 public class ProvisionedError extends ProvisionedElement

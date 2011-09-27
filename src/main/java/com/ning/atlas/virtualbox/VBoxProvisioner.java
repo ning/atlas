@@ -2,10 +2,10 @@ package com.ning.atlas.virtualbox;
 
 import com.google.common.collect.ImmutableMap;
 import com.ning.atlas.Base;
-import com.ning.atlas.Provisioner;
+import com.ning.atlas.spi.Node;
+import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.SSH;
-import com.ning.atlas.Server;
-import com.ning.atlas.Node;
+import com.ning.atlas.spi.Server;
 import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.base.DoRuntime;
 import org.slf4j.Logger;

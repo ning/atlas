@@ -1,4 +1,4 @@
-package com.ning.atlas;
+package com.ning.atlas.spi;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;

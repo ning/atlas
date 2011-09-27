@@ -1,8 +1,8 @@
 package com.ning.atlas.noop;
 
-import com.ning.atlas.Installer;
-import com.ning.atlas.Server;
-import com.ning.atlas.Node;
+import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.Server;
+import com.ning.atlas.spi.Node;
 
 public class NoOpInstaller implements Installer
 {

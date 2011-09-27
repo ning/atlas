@@ -3,9 +3,19 @@ package com.ning.atlas;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
+import com.ning.atlas.badger.DeploymentPlan;
+import com.ning.atlas.badger.Host;
+import com.ning.atlas.badger.NormalizedTemplate;
+import com.ning.atlas.badger.SystemMap;
 import com.ning.atlas.base.Maybe;
+import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.tree.MagicVisitor;
+import com.ning.atlas.tree.Trees;
 
 import javax.annotation.Nullable;
+import java.io.BufferedInputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +26,7 @@ public class Environment
     private final List<Base>               bases        = new CopyOnWriteArrayList<Base>();
     private final List<Environment>        children     = new CopyOnWriteArrayList<Environment>();
     private final Map<String, Provisioner> provisioners = Maps.newConcurrentMap();
-    private final Map<String, Installer> initializers = Maps.newConcurrentMap();
+    private final Map<String, Installer>   initializers = Maps.newConcurrentMap();
     private final Map<String, Installer>   installers   = Maps.newConcurrentMap();
     private final Map<String, String>      properties   = Maps.newConcurrentMap();
 
@@ -46,7 +56,8 @@ public class Environment
         this.initializers.putAll(initializers);
     }
 
-    public void addProvisioner(String name, Provisioner p) {
+    public void addProvisioner(String name, Provisioner p)
+    {
         this.provisioners.put(name, p);
     }
 
@@ -145,5 +156,19 @@ public class Environment
     public Map<String, Provisioner> getProvisioners()
     {
         return provisioners;
+    }
+
+    public DeploymentPlan planDeploymentFor(NormalizedTemplate root, SystemMap from)
+    {
+        // find all hosts
+        List<Host> hosts = Host.findHostsIn(root, this);
+
+        // determine provision steps
+
+        // determine init steps
+
+        // determine install steps
+
+        return null;
     }
 }

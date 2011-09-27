@@ -8,6 +8,8 @@ import com.ning.atlas.base.Either;
 import com.ning.atlas.base.MoreFutures;
 import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.logging.Logger;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.My;
 
 import java.util.Collection;
 import java.util.List;

@@ -1,8 +1,7 @@
-package com.ning.atlas;
+package com.ning.atlas.spi;
 
 import com.google.common.base.Splitter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonProcessingException;
@@ -17,9 +16,13 @@ import java.util.Iterator;
 public final class Identity
 {
     private final String externalForm;
+    private final String type;
+    private final String name;
 
     private Identity(Identity parent, String type, String name)
     {
+        this.type = type;
+        this.name = name;
         if (parent == null) {
             this.externalForm = "/";
         }
@@ -31,6 +34,16 @@ public final class Identity
             b.append("/").append(type).append(".").append(name);
             this.externalForm = b.toString();
         }
+    }
+
+    public String getType()
+    {
+        return type;
+    }
+
+    public String getName()
+    {
+        return name;
     }
 
     @Override

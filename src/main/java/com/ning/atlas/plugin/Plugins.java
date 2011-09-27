@@ -1,6 +1,6 @@
 package com.ning.atlas.plugin;
 
-import com.ning.atlas.Installer;
+import com.ning.atlas.spi.Installer;
 import org.apache.xbean.finder.AnnotationFinder;
 import org.apache.xbean.finder.archive.ClasspathArchive;
 

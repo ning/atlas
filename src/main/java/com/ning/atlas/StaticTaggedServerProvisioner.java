@@ -4,6 +4,9 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.ning.atlas.spi.Node;
+import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.spi.Server;
 
 import java.util.Collection;
 import java.util.Map;
