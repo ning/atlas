@@ -2,13 +2,17 @@ package com.ning.atlas.badger;
 
 import com.ning.atlas.Base;
 import com.ning.atlas.Environment;
+import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
+import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.spi.Server;
 import com.ning.atlas.tree.Trees;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Host
 {
@@ -17,8 +21,9 @@ public class Host
     private final Base                 base;
     private final List<Uri<Installer>> installs;
     private final Map<String, String>  environmentProperties;
+    private AtomicReference<Server> server;
 
-    private Host(Identity id,
+    public Host(Identity id,
                  My my,
                  Base base,
                  List<Uri<Installer>> installs,
@@ -47,5 +52,25 @@ public class Host
                               env.getProperties());
         }
         return null;
+    }
+
+    public Uri<Provisioner> getProvisioner()
+    {
+        return base.getProvisioner();
+    }
+
+    public Base getBase()
+    {
+        return base;
+    }
+
+    public void addError(Throwable e)
+    {
+
+    }
+
+    public void setServer(Server s)
+    {
+        this.server.set(s);
     }
 }

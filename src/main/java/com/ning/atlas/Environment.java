@@ -2,16 +2,19 @@ package com.ning.atlas;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ning.atlas.badger.Deployment;
 import com.ning.atlas.badger.DeploymentPlan;
 import com.ning.atlas.badger.Host;
+import com.ning.atlas.badger.NormalizedServerTemplate;
 import com.ning.atlas.badger.NormalizedTemplate;
 import com.ning.atlas.badger.SystemMap;
 import com.ning.atlas.badger.Uri;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.tree.Trees;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -145,17 +148,26 @@ public class Environment
         return provisioners;
     }
 
-    public DeploymentPlan planDeploymentFor(SystemMap root, Deployment from)
+    public DeploymentPlan planDeploymentFor(SystemMap map, Deployment from)
     {
-        // find all hosts
-//        List<Host> hosts = Host.findHostsIn(root, this);
+        List<Host> hosts = Lists.newArrayList();
+        for (NormalizedTemplate root : map.getRoots()) {
+            for (NormalizedServerTemplate template : Trees.findInstancesOf(root, NormalizedServerTemplate.class)) {
+                Base base = findBase(template.getBase()).otherwise(Base.errorBase(template.getBase(), this));
+                Host h = new Host(template.getId(), template.getMy(), base, template.getInstallations(), getProperties());
+                hosts.add(h);
+            }
+        }
+        return new DeploymentPlan(hosts, map, this);
+    }
 
-        // determine provision steps
-
-        // determine init steps
-
-        // determine install steps
-
-        return null;
+    public Maybe<Provisioner> findProvisioner(Uri<Provisioner> provisioner)
+    {
+        if (provisioners.containsKey(provisioner)) {
+            return Maybe.definitely(provisioners.get(provisioner));
+        }
+        else {
+            return Maybe.unknown();
+        }
     }
 }

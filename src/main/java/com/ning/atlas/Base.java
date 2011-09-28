@@ -23,9 +23,9 @@ public class Base
 
     private final Map<String, String> attributes = Maps.newConcurrentMap();
 
-    private final String    name;
+    private final String               name;
     private final List<Uri<Installer>> initializations;
-    private final Uri       provisioner;
+    private final Uri<Provisioner>     provisioner;
 
     public Base(final String name,
                 final Uri<Provisioner> provisioner,
@@ -54,7 +54,7 @@ public class Base
     }
 
     @JsonIgnore
-    public Uri getProvisioner()
+    public Uri<Provisioner> getProvisioner()
     {
         return provisioner;
     }
