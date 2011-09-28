@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.ning.atlas.badger.NormalizedTemplate;
+import com.ning.atlas.badger.SystemMap;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.tree.Tree;
@@ -82,8 +83,8 @@ public abstract class Template implements Tree
         return my;
     }
 
-    public final NormalizedTemplate nom() {
-        return Iterables.getOnlyElement(_nom(Identity.root()));
+    public final SystemMap normalize() {
+        return new SystemMap(_nom(Identity.root()));
     }
 
     protected abstract List<NormalizedTemplate> _nom(Identity parent);

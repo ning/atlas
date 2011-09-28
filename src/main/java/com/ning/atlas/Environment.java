@@ -3,6 +3,7 @@ package com.ning.atlas;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
+import com.ning.atlas.badger.Deployment;
 import com.ning.atlas.badger.DeploymentPlan;
 import com.ning.atlas.badger.Host;
 import com.ning.atlas.badger.NormalizedTemplate;
@@ -144,10 +145,10 @@ public class Environment
         return provisioners;
     }
 
-    public DeploymentPlan planDeploymentFor(NormalizedTemplate root, SystemMap from)
+    public DeploymentPlan planDeploymentFor(SystemMap root, Deployment from)
     {
         // find all hosts
-        List<Host> hosts = Host.findHostsIn(root, this);
+//        List<Host> hosts = Host.findHostsIn(root, this);
 
         // determine provision steps
 
