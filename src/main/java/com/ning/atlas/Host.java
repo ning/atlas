@@ -1,8 +1,5 @@
-package com.ning.atlas.badger;
+package com.ning.atlas;
 
-import com.ning.atlas.Base;
-import com.ning.atlas.Environment;
-import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;

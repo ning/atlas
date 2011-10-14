@@ -1,8 +1,7 @@
 package com.ning.atlas;
 
-import com.ning.atlas.badger.NormalizedServerTemplate;
-import com.ning.atlas.badger.NormalizedTemplate;
 import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Node;
 
@@ -14,7 +13,7 @@ import java.util.Map;
 
 public class ServerTemplate extends Template
 {
-    private List<String> installations = new ArrayList<String>();
+    private List<Uri<Installer>> installations = new ArrayList<Uri<Installer>>();
     private String base;
 
     @Deprecated
@@ -25,18 +24,6 @@ public class ServerTemplate extends Template
     public ServerTemplate(String name, Map<String, Object> my)
     {
         super(name, new My(my));
-    }
-
-    @Override
-    public final Iterable<BoundTemplate> _normalize(Environment env, Identity parent)
-    {
-        final List<BoundTemplate> rs = new ArrayList<BoundTemplate>();
-        List<String> node_names = getCardinality();
-        for (String node_name : node_names) {
-
-            rs.add(new BoundServer(parent.createChild(getType(), node_name) , this, node_name, env, installations));
-        }
-        return rs;
     }
 
     @Override
@@ -57,7 +44,7 @@ public class ServerTemplate extends Template
         return Collections.emptyList();
     }
 
-    public List<String> getInstallations()
+    public List<Uri<Installer>> getInstallations()
     {
         return installations;
     }
@@ -77,7 +64,7 @@ public class ServerTemplate extends Template
      */
     public void setInstall(List<String> installs)
     {
-        this.installations = new ArrayList<String>(installs);
+//        this.installations = new ArrayList<String>(installs);
     }
 
 }

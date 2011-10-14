@@ -3,7 +3,6 @@ package com.ning.atlas.tree;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.ning.atlas.InstalledElement;
 import com.ning.atlas.base.Maybe;
 
 import java.util.ArrayList;

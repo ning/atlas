@@ -2,10 +2,7 @@ package com.ning.atlas;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.ning.atlas.badger.NormalizedTemplate;
-import com.ning.atlas.badger.SystemMap;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.tree.Tree;
@@ -59,14 +56,6 @@ public abstract class Template implements Tree
         this.cardinality.clear();
         this.cardinality.addAll(names);
     }
-
-    public final BoundTemplate normalize(Environment env)
-    {
-        Identity root = Identity.root();
-        return Iterables.getOnlyElement(_normalize(env, root));
-    }
-
-    protected abstract Iterable<BoundTemplate> _normalize(Environment env, Identity parent);
 
     @Override
     public String toString()

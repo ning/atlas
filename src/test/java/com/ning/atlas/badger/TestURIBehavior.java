@@ -1,5 +1,6 @@
 package com.ning.atlas.badger;
 
+import com.ning.atlas.Uri;
 import org.junit.Test;
 
 

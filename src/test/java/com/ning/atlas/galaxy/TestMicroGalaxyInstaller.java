@@ -1,31 +1,15 @@
 package com.ning.atlas.galaxy;
 
-import com.google.common.util.concurrent.MoreExecutors;
-import com.ning.atlas.Environment;
-import com.ning.atlas.InstalledServer;
-import com.ning.atlas.InstalledElement;
-import com.ning.atlas.JRubyTemplateParser;
-import com.ning.atlas.Template;
 import com.ning.atlas.aws.AWSConfig;
 import com.ning.atlas.aws.EC2Provisioner;
-import com.ning.atlas.errors.ErrorCollector;
-import com.ning.atlas.tree.Trees;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static com.ning.atlas.testing.AtlasMatchers.exists;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;

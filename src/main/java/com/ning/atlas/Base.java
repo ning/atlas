@@ -2,17 +2,11 @@ package com.ning.atlas;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.ning.atlas.badger.Uri;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.spi.Server;
-import org.apache.commons.lang3.tuple.Pair;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

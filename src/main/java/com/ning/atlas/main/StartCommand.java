@@ -1,20 +1,6 @@
 package com.ning.atlas.main;
 
-import com.ning.atlas.BoundTemplate;
-import com.ning.atlas.Environment;
-import com.ning.atlas.InitializedTemplate;
-import com.ning.atlas.InstalledElement;
-import com.ning.atlas.JRubyTemplateParser;
-import com.ning.atlas.ProvisionedElement;
-import com.ning.atlas.Template;
-import com.ning.atlas.errors.ErrorCollector;
 import com.ning.atlas.logging.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
-
-import java.io.File;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class StartCommand implements Runnable
 {

@@ -1,4 +1,4 @@
-package com.ning.atlas.badger;
+package com.ning.atlas;
 
 import com.google.common.collect.ImmutableList;
 import com.ning.atlas.spi.Node;

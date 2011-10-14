@@ -1,4 +1,4 @@
-package com.ning.atlas.badger;
+package com.ning.atlas;
 
 /**
  * @todo Add garbage collection via mark and sweep (marked if read or written during a deployment, sweep at end)

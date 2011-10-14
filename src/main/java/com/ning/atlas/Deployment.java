@@ -1,4 +1,4 @@
-package com.ning.atlas.badger;
+package com.ning.atlas;
 
 public class Deployment
 {

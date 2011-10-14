@@ -1,19 +1,9 @@
 package com.ning.atlas;
 
-import com.ning.atlas.errors.ErrorCollector;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 
-import java.io.File;
-import java.util.List;
-
-import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
-import static com.ning.atlas.Jsonificator.jsonify;
-import static com.ning.atlas.Jsonificator.reify;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assume.assumeThat;
 
 public class TestUpdates
 {

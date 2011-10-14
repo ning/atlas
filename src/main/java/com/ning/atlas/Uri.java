@@ -1,4 +1,4 @@
-package com.ning.atlas.badger;
+package com.ning.atlas;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

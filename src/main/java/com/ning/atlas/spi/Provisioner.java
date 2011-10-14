@@ -1,7 +1,7 @@
 package com.ning.atlas.spi;
 
-import com.ning.atlas.Base;
 import com.ning.atlas.UnableToProvisionServerException;
+import com.ning.atlas.Base;
 
 public interface Provisioner
 {

@@ -2,11 +2,11 @@ package com.ning.atlas.virtualbox;
 
 import com.google.common.collect.ImmutableMap;
 import com.ning.atlas.Base;
+import com.ning.atlas.SSH;
+import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.spi.Node;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.SSH;
 import com.ning.atlas.spi.Server;
-import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.base.DoRuntime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -220,7 +220,8 @@ public class VBoxProvisioner implements Provisioner
 		return vboxServer(base, vmname, internalIp, externalIp);
 	}
 
-	public void destroy(Server server) throws UnableToProvisionServerException {
+	public void destroy(Server server) throws UnableToProvisionServerException
+    {
 		DoRuntime.exec("VBoxManage", "controlvm", server.getAttributes().get("vmname"), "poweroff");
 		DoRuntime.exec("VBoxManage", "unregistervm", server.getAttributes().get("vmname"), "--delete");
 	}

@@ -16,15 +16,4 @@ public class Jsonificator
     {
         return mapper.writeValueAsString(template);
     }
-
-    public static InstalledElement reify(Environment e, String json) throws IOException
-    {
-        Base.DESERIALIZATION_HACK.set(e);
-        try {
-            return mapper.readValue(json, InstalledElement.class);
-        }
-        finally {
-            Base.DESERIALIZATION_HACK.set(null);
-        }
-    }
 }

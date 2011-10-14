@@ -2,12 +2,9 @@ package com.ning.atlas;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.ning.atlas.badger.NormalizedSystemTemplate;
-import com.ning.atlas.badger.NormalizedTemplate;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.My;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -26,29 +23,6 @@ public class SystemTemplate extends Template
     public SystemTemplate(String name, Map<String, Object> my)
     {
         super(name, new My(my));
-    }
-
-    @Override
-    public List<BoundTemplate> _normalize(Environment env, Identity parent)
-    {
-        List<BoundTemplate> rs = new ArrayList<BoundTemplate>();
-        List<String> node_names = getCardinality();
-        for (String node_name : node_names) {
-
-            Identity id = parent.createChild(getType(), node_name);
-
-            List<BoundTemplate> chillins = Lists.newArrayListWithCapacity(getChildren().size());
-
-            for (Template child : getChildren()) {
-                Iterable<BoundTemplate> r2 = child._normalize(env, id);
-                Iterables.addAll(chillins, r2);
-            }
-
-            BoundSystemTemplate dup = new BoundSystemTemplate(id, getType(), node_name, getMy(), chillins);
-
-            rs.add(dup);
-        }
-        return rs;
     }
 
     public void addChildren(Iterable<? extends Template> normalize)

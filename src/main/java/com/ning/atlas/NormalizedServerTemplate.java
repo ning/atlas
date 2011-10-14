@@ -1,4 +1,4 @@
-package com.ning.atlas.badger;
+package com.ning.atlas;
 
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;

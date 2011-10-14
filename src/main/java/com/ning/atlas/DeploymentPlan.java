@@ -1,13 +1,9 @@
-package com.ning.atlas.badger;
+package com.ning.atlas;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.ning.atlas.Environment;
-import com.ning.atlas.ErrorProvisioner;
-import com.ning.atlas.UnableToProvisionServerException;
-import com.ning.atlas.base.Either;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Server;
@@ -15,8 +11,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class DeploymentPlan

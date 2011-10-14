@@ -1,7 +1,7 @@
 package com.ning.atlas.galaxy;
 
-import com.ning.atlas.spi.Installer;
 import com.ning.atlas.SSH;
+import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Server;
 import com.ning.atlas.spi.Node;
 import org.slf4j.Logger;

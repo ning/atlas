@@ -2,14 +2,19 @@ package com.ning.atlas.badger;
 
 import com.google.common.collect.ImmutableMap;
 import com.ning.atlas.Base;
+import com.ning.atlas.Deployment;
+import com.ning.atlas.DeploymentPlan;
 import com.ning.atlas.Environment;
 import com.ning.atlas.ServerTemplate;
+import com.ning.atlas.SystemMap;
 import com.ning.atlas.SystemTemplate;
+import com.ning.atlas.Uri;
 import com.ning.atlas.noop.NoOpInstaller;
 import com.ning.atlas.noop.NoOpProvisioner;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -71,16 +76,13 @@ public class TestNewStyleStuff
     }
 
     @Test
-    public void testWatch() throws Exception
+    public void testFoo() throws Exception
     {
         DeploymentPlan dp = env.planDeploymentFor(map, emptyDeployment);
-        dp.watch(new DeploymentObserver()
-        {
-
-        });
     }
 
     @Test
+    @Ignore
     public void testDescribe() throws Exception
     {
         DeploymentPlan dp = env.planDeploymentFor(map, emptyDeployment);
@@ -88,6 +90,7 @@ public class TestNewStyleStuff
     }
 
     @Test
+    @Ignore
     public void testFromExternal() throws Exception
     {
         DeploymentPlan dp = DeploymentPlan.fromExternal("", env);

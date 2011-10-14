@@ -131,7 +131,7 @@ provisioner com.ning.atlas.aws.EC2Provisioner, {
 
 ### Base element
 
-The base element defines blueprints for servers which is provisioned and initialized. The system 
+The base element defines blueprints for servers which is provisioned and initialized. The system
 configuration contains the corresponding server elements which 'instantiates' the base element blueprint
 and deploys services via installers.
 
@@ -173,7 +173,7 @@ A provisioner is responsible for provisioning bare machines/instances. Atlas cur
 these provisioners:
 
 * ``com.ning.atlas.aws.EC2Provisioner`` for provisioning on Amazon EC2
-* ``com.ning.atlas.aws.RDSProvisioner`` for provisioning on Amazon RDS 
+* ``com.ning.atlas.aws.RDSProvisioner`` for provisioning on Amazon RDS
 * ``com.ning.atlas.virtualbox.VBoxProvisioner`` for provisioning VirtualBox instances.
 * ``com.ning.atlas.StaticTaggedServerProvisioner`` for incorporating already provisioned machines.
 
@@ -253,11 +253,11 @@ base "oracle", {
 
 ##### com.ning.atlas.virtualbox.VBoxProvisioner
 
-The ``VBoxProvisioner`` provisions [VirtualBox](http://www.virtualbox.org/) instances. For more information about VirtualBox 
+The ``VBoxProvisioner`` provisions [VirtualBox](http://www.virtualbox.org/) instances. For more information about VirtualBox
 see the [VirtualBox user documentation](http://www.virtualbox.org/manual/UserManual.html).
 
 For this provisioner to work, Oracle VirtualBox 4.1.0 or newer is required, and you'll need to create the appropriate
-image using either VirtualBox or VMWare, and then exported it in either the 
+image using either VirtualBox or VMWare, and then exported it in either the
 [Open Virtualization Format](http://en.wikipedia.org/wiki/Open_Virtualization_Format) (OVF) file with the hard disk separate,
 or an Open Virtualization Archive (OVA), which is a zipped copy of the hard disk and the OVF file.
 
@@ -423,7 +423,7 @@ The initializer needs these environment configuration options:
 * ``ssh_key_file``: The ssh private key file.
 * ``ugx_user``: The user to run uGalaxy as.
 
-The uGalaxy initializer is triggered by using 
+The uGalaxy initializer is triggered by using
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 <uGalaxy initializer name>:<url>
@@ -529,7 +529,7 @@ of the updates to the component: Ruby updates tend to be rare whereas you might 
 times a week or even more often. In this case, you would use an installer for the rails app.
 
 Installers are usually tied to a separate tool that manages deployments. Atlas currently only supports
-[Galaxy](https://github.com/ning/galaxy) but adding support for other tools such as 
+[Galaxy](https://github.com/ning/galaxy) but adding support for other tools such as
 [Capistrano](https://github.com/capistrano/capistrano/wiki/), [Deployinator](https://github.com/etsy/deployinator)
 or [Cast](http://cast-project.org/) should be straightforward.
 
@@ -591,7 +591,7 @@ This installer uses [Galaxy](https://github.com/ning/galaxy). It needs these env
 There are two ways to trigger the galaxy installer:
 
 * Specify a galaxy role via the ``galaxy`` property on the ``server`` element.
-* Use an ``install`` url of the form 
+* Use an ``install`` url of the form
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 <galaxy installer name>:<env>/<version>/<type>

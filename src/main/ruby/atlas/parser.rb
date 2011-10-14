@@ -58,7 +58,7 @@ module Atlas
 
     def base name, args={}
       attr = args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v.to_s; a }
-      inits = Array(args[:init]).map { |s| com.ning.atlas.badger.Uri.value_of(s) }
+      inits = Array(args[:init]).map { |s| com.ning.atlas.Uri.value_of(s) }
       base = com.ning.atlas.Base.new(name, @env, attr["provisioner"], inits, attr)
       @env.addBase(base)
     end
