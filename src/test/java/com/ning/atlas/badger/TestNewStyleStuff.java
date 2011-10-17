@@ -80,7 +80,7 @@ public class TestNewStyleStuff
     }
 
     @Test
-    public void testApiDesign() throws Exception
+    public void testDescribe() throws Exception
     {
         Deployment dp = env.planDeploymentFor(map, space);
         Description d = dp.describe();
@@ -97,23 +97,15 @@ public class TestNewStyleStuff
 
             assertThat(description.getSteps()
                                   .get(StepType.Install), equalTo(Arrays.asList("do nothing with foo:bar")));
-
-
         }
 
 
     }
 
     @Test
-    public void testFoo() throws Exception
+    public void testPerform() throws Exception
     {
         Deployment dp = env.planDeploymentFor(map, space);
-    }
-
-    @Test
-    @Ignore
-    public void testFromExternal() throws Exception
-    {
-        Deployment dp = Deployment.fromExternal("", env);
+        Result r = dp.perform();
     }
 }

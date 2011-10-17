@@ -64,8 +64,30 @@ public class Deployment
 
     public Result perform()
     {
-        // describe
         // perform
+
+        /**
+         * lifecycle: startDeploy ->
+         *            startProvision -> provision[] -> finishProvision ->
+         *            startInitialize -> initialize[] -> finishInitialize ->
+         *            startInstall -> install[] -> finishInstall ->
+         *            finishDeploy
+         *
+         *            start[action] is fired once per deployment
+         *            [action] is fired once per action
+         *            finish[action] is fired once per deployment
+         *
+         *            the idea is to be able to group together things, cosmos for instance
+         *            could accumulate everything being changed and on finishInstall actually
+         *            run cosmos. This, of course, means that finishInstall needs to be able to
+         *            report per-server failures, which can be a tricky alignment issue, I think.
+         *
+         *            This model implies we need some per-deployment state variable which can accumulate
+         *            stuff across stages in a given provisioner/installer. We could say "one component instance
+         *            per deployment stage (ie, same type, diff installer for init vs install)" and let it accumulate
+         *            whatever state it wants.
+         */
+
 
         ListeningExecutorService es = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
         try {
@@ -111,10 +133,5 @@ public class Deployment
     private void initialize(ListeningExecutorService es)
     {
 
-    }
-
-    public static Deployment fromExternal(String s, Environment env)
-    {
-        throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 }
