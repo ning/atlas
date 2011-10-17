@@ -22,4 +22,10 @@ public class ErrorProvisioner implements Provisioner
     {
         throw new IllegalStateException("No provisioner available!");
     }
+
+    @Override
+    public String describe(NormalizedServerTemplate server, Uri<Provisioner> uri, Space space)
+    {
+        return "raise an error";
+    }
 }

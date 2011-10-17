@@ -4,6 +4,9 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
 import com.amazonaws.services.elasticloadbalancing.model.Instance;
 import com.amazonaws.services.elasticloadbalancing.model.RegisterInstancesWithLoadBalancerRequest;
+import com.ning.atlas.NormalizedServerTemplate;
+import com.ning.atlas.Space;
+import com.ning.atlas.Uri;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Server;
 import com.ning.atlas.spi.Node;
@@ -35,5 +38,11 @@ public class ELBInstaller implements Installer
         RegisterInstancesWithLoadBalancerRequest req = new RegisterInstancesWithLoadBalancerRequest(fragment,
                                                                                                     asList(i));
         elb.registerInstancesWithLoadBalancer(req);
+    }
+
+    @Override
+    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
+    {
+        return String.format("provision an elastic load balancer as %s", uri);
     }
 }

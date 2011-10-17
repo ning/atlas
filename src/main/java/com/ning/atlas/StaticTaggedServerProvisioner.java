@@ -45,4 +45,10 @@ public class StaticTaggedServerProvisioner implements Provisioner
         return new Server(host, host);
 
     }
+
+    @Override
+    public String describe(NormalizedServerTemplate server, Uri<Provisioner> uri, Space space)
+    {
+        return "provision a server out of a static pool, with tag <tag>";
+    }
 }

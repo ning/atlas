@@ -12,8 +12,11 @@ import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.ning.atlas.NormalizedServerTemplate;
+import com.ning.atlas.Space;
 import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.Base;
+import com.ning.atlas.Uri;
 import com.ning.atlas.spi.Node;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Server;
@@ -96,6 +99,12 @@ public class EC2Provisioner implements Provisioner
                 }
             }
         }
+    }
+
+    @Override
+    public String describe(NormalizedServerTemplate server, Uri<Provisioner> uri, Space space)
+    {
+        return String.format("provision ec2 instance");
     }
 
     public void destroy(Server server)

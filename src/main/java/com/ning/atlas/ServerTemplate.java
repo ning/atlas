@@ -1,10 +1,13 @@
 package com.ning.atlas;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Node;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -64,6 +67,14 @@ public class ServerTemplate extends Template
      */
     public void setInstall(List<String> installs)
     {
+        this.installations.addAll(Lists.transform(installs, new Function<String, Uri<Installer>>()
+        {
+            @Override
+            public Uri<Installer> apply(@Nullable String input)
+            {
+                return Uri.valueOf(input);
+            }
+        }));
 //        this.installations = new ArrayList<String>(installs);
     }
 

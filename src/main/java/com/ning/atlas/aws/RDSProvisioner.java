@@ -11,7 +11,10 @@ import com.amazonaws.services.rds.model.DescribeDBInstancesResult;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.ning.atlas.Base;
+import com.ning.atlas.NormalizedServerTemplate;
+import com.ning.atlas.Space;
 import com.ning.atlas.UnableToProvisionServerException;
+import com.ning.atlas.Uri;
 import com.ning.atlas.spi.Node;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Server;
@@ -104,6 +107,12 @@ public class RDSProvisioner implements Provisioner
 
         log.info("Finished provisioning %s", node.getId().toExternalForm());
         return new Server(instance.getEndpoint().getAddress(), instance.getEndpoint().getAddress(), attrs);
+    }
+
+    @Override
+    public String describe(NormalizedServerTemplate server, Uri<Provisioner> uri, Space space)
+    {
+        return "provision an rds database";
     }
 
 

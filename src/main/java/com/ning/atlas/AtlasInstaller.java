@@ -63,4 +63,10 @@ public class AtlasInstaller implements Installer
             ssh.close();
         }
     }
+
+    @Override
+    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
+    {
+        return "populate /etc/atlas with legacy cruft";
+    }
 }

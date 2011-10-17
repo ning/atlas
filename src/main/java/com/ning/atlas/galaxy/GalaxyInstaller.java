@@ -1,5 +1,8 @@
 package com.ning.atlas.galaxy;
 
+import com.ning.atlas.NormalizedServerTemplate;
+import com.ning.atlas.Space;
+import com.ning.atlas.Uri;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Node;
 import com.ning.atlas.spi.Server;
@@ -92,5 +95,11 @@ public class GalaxyInstaller implements Installer
 //        finally {
 //            ssh.close();
 //        }
+    }
+
+    @Override
+    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
+    {
+        return "install <thing> via galaxy";
     }
 }

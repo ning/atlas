@@ -1,18 +1,25 @@
 package com.ning.atlas.badger;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.ning.atlas.Base;
+import com.ning.atlas.Description;
+import com.ning.atlas.HostDeploymentDescription;
+import com.ning.atlas.Result;
 import com.ning.atlas.Deployment;
-import com.ning.atlas.DeploymentPlan;
 import com.ning.atlas.Environment;
 import com.ning.atlas.ServerTemplate;
+import com.ning.atlas.Space;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.SystemTemplate;
 import com.ning.atlas.Uri;
 import com.ning.atlas.noop.NoOpInstaller;
 import com.ning.atlas.noop.NoOpProvisioner;
+import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.spi.StepType;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -21,11 +28,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+
 public class TestNewStyleStuff
 {
     private Environment env;
-    private SystemMap map;
-    private Deployment emptyDeployment;
+    private SystemMap   map;
+    private Result      emptyDeployment;
+    private Space       space;
 
     /**
      * TODO:
@@ -48,51 +59,61 @@ public class TestNewStyleStuff
         child.setCardinality(Arrays.asList("a", "b"));
         root.addChild(child);
 
-        Map<Uri<Provisioner>, Provisioner> provisioners =
-            ImmutableMap.<Uri<Provisioner>, Provisioner>of(Uri.<Provisioner>valueOf("noop"), new NoOpProvisioner());
+        Map<String, Provisioner> provisioners =
+            ImmutableMap.<String, Provisioner>of("noop", new NoOpProvisioner());
 
-        Map<Uri<Installer>, Installer> installers =
-            ImmutableMap.<Uri<Installer>, Installer>of(Uri.<Installer>valueOf("foo"), new NoOpInstaller());
+        Map<String, Installer> installers =
+            ImmutableMap.<String, Installer>of("foo", new NoOpInstaller());
 
-        env = new Environment("local",
-                                          provisioners,
-                                          installers);
+        env = new Environment("local", provisioners, installers);
 
         env.addBase(new Base("base",
                              Uri.<Provisioner>valueOf("noop"),
-                             Collections.<Uri<Installer>>emptyList(),
+                             Arrays.asList(Uri.<Installer>valueOf("foo:say-hello")),
                              Collections.<String, String>emptyMap()));
 
         map = root.normalize();
 
-        emptyDeployment = Deployment.nil();
+        emptyDeployment = Result.nil();
+
+        space = Space.emptySpace();
     }
 
     @Test
     public void testApiDesign() throws Exception
     {
-        DeploymentPlan dp = env.planDeploymentFor(map, emptyDeployment);
-        Deployment d = dp.deploy();
+        Deployment dp = env.planDeploymentFor(map, space);
+        Description d = dp.describe();
+
+        assertThat(d.getDescriptors().size(), equalTo(2));
+        for (HostDeploymentDescription description : d.getDescriptors()) {
+            //provisioning
+            assertThat(description.getSteps().get(StepType.Provision), equalTo(Arrays.asList("do nothing")));
+
+            // initialization
+            assertThat(description.getSteps()
+                                  .get(StepType.Initialize), equalTo(Arrays.asList("do nothing with foo:say-hello")));
+
+
+            assertThat(description.getSteps()
+                                  .get(StepType.Install), equalTo(Arrays.asList("do nothing with foo:bar")));
+
+
+        }
+
+
     }
 
     @Test
     public void testFoo() throws Exception
     {
-        DeploymentPlan dp = env.planDeploymentFor(map, emptyDeployment);
-    }
-
-    @Test
-    @Ignore
-    public void testDescribe() throws Exception
-    {
-        DeploymentPlan dp = env.planDeploymentFor(map, emptyDeployment);
-        String externalized = dp.describe();
+        Deployment dp = env.planDeploymentFor(map, space);
     }
 
     @Test
     @Ignore
     public void testFromExternal() throws Exception
     {
-        DeploymentPlan dp = DeploymentPlan.fromExternal("", env);
+        Deployment dp = Deployment.fromExternal("", env);
     }
 }

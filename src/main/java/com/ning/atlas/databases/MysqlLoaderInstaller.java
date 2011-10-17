@@ -1,5 +1,8 @@
 package com.ning.atlas.databases;
 
+import com.ning.atlas.NormalizedServerTemplate;
+import com.ning.atlas.Space;
+import com.ning.atlas.Uri;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Server;
 import com.ning.atlas.spi.Node;
@@ -83,6 +86,12 @@ public class MysqlLoaderInstaller implements Installer
 //        finally {
 //            ssh.close();
 //        }
+    }
+
+    @Override
+    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
+    {
+        return "install <stuff> on rds instance";
     }
 
 }

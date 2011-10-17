@@ -27,6 +27,12 @@ public class Uri<T>
     }
 
     @Override
+    public String toString()
+    {
+        return new StringBuilder().append(scheme).append(":").append(fragment).toString();
+    }
+
+    @Override
     public boolean equals(Object o)
     {
         if (this == o) return true;

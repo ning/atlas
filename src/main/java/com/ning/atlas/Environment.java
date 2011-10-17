@@ -19,8 +19,8 @@ public class Environment
 {
     private final List<Base>                         bases        = new CopyOnWriteArrayList<Base>();
     private final List<Environment>                  children     = new CopyOnWriteArrayList<Environment>();
-    private final Map<Uri<Provisioner>, Provisioner> provisioners = Maps.newConcurrentMap();
-    private final Map<Uri<Installer>, Installer>     installers   = Maps.newConcurrentMap();
+    private final Map<String, Provisioner> provisioners = Maps.newConcurrentMap();
+    private final Map<String, Installer>     installers   = Maps.newConcurrentMap();
     private final Map<String, String>                properties   = Maps.newConcurrentMap();
 
     private final String             name;
@@ -29,30 +29,31 @@ public class Environment
     public Environment(String name)
     {
         this(name,
-             Collections.<Uri<Provisioner>, Provisioner>emptyMap(),
-             Collections.<Uri<Installer>, Installer>emptyMap(), null);
+             Collections.<String, Provisioner>emptyMap(),
+             Collections.<String, Installer>emptyMap(), null);
     }
 
     public Environment(String name,
-                       Map<Uri<Provisioner>, Provisioner> provisioners,
-                       Map<Uri<Installer>, Installer> initializers)
+                       Map<String, Provisioner> provisioners,
+                       Map<String, Installer> installers)
     {
-        this(name, provisioners, initializers, null);
+        this(name, provisioners, installers, null);
     }
 
     public Environment(String name,
-                       Map<Uri<Provisioner>, Provisioner> provisioners,
-                       Map<Uri<Installer>, Installer> initializers,
+                       Map<String, Provisioner> provisioners,
+                       Map<String, Installer> installers,
                        @Nullable Environment parent)
     {
         this.name = name;
         this.parent = Maybe.elideNull(parent);
         this.provisioners.putAll(provisioners);
+        this.installers.putAll(installers);
     }
 
     public void addProvisioner(String name, Provisioner p)
     {
-        this.provisioners.put(Uri.<Provisioner>valueOf(name), p);
+        this.provisioners.put(name, p);
     }
 
     @Override
@@ -73,10 +74,10 @@ public class Environment
 
     public Provisioner getProvisioner(Uri<Provisioner> name)
     {
-        return provisioners.get(name);
+        return provisioners.get(name.getScheme());
     }
 
-    public void addInstaller(Uri<Installer> name, Installer installer)
+    public void addInstaller(String name, Installer installer)
     {
         installers.put(name, installer);
     }
@@ -104,7 +105,7 @@ public class Environment
         bases.add(base);
     }
 
-    public Map<Uri<Installer>, Installer> getInstallers()
+    public Map<String, Installer> getInstallers()
     {
         return Maps.newHashMap(installers);
     }
@@ -136,12 +137,12 @@ public class Environment
         return rs;
     }
 
-    public Map<Uri<Provisioner>, Provisioner> getProvisioners()
+    public Map<String, Provisioner> getProvisioners()
     {
         return provisioners;
     }
 
-    public DeploymentPlan planDeploymentFor(SystemMap map, Deployment from)
+    public Deployment planDeploymentFor(SystemMap map, Space state)
     {
         List<Host> hosts = Lists.newArrayList();
         for (NormalizedTemplate root : map.getRoots()) {
@@ -151,16 +152,35 @@ public class Environment
                 hosts.add(h);
             }
         }
-        return new DeploymentPlan(hosts, map, this);
+        return new Deployment(hosts, map, this);
     }
 
     public Maybe<Provisioner> findProvisioner(Uri<Provisioner> provisioner)
     {
-        if (provisioners.containsKey(provisioner)) {
-            return Maybe.definitely(provisioners.get(provisioner));
+        if (provisioners.containsKey(provisioner.getScheme())) {
+            return Maybe.definitely(provisioners.get(provisioner.getScheme()));
         }
         else {
             return Maybe.unknown();
         }
+    }
+
+    public Maybe<Installer> findInstaller(Uri<Installer> uri) {
+        if (installers.containsKey(uri.getScheme())) {
+            return Maybe.definitely(installers.get(uri.getScheme()));
+        }
+        else {
+            return Maybe.unknown();
+        }
+    }
+
+    public Provisioner resolveProvisioner(Uri<Provisioner> uri)
+    {
+        return findProvisioner(uri).otherwise(new ErrorProvisioner());
+    }
+
+    public Installer resolveInstaller(Uri<Installer> uri)
+    {
+        return findInstaller(uri).otherwise(new ErrorInstaller(Collections.<String, String>emptyMap()));
     }
 }

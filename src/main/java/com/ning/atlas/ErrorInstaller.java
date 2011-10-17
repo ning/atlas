@@ -19,4 +19,10 @@ public class ErrorInstaller implements Installer
     {
         throw new UnsupportedOperationException("Not Yet Implemented!");
     }
+
+    @Override
+    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
+    {
+        return "raise an error";
+    }
 }

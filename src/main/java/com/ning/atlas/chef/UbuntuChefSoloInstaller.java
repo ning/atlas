@@ -5,7 +5,10 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
+import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SSH;
+import com.ning.atlas.Space;
+import com.ning.atlas.Uri;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Server;
 import com.ning.atlas.base.Maybe;
@@ -104,6 +107,12 @@ public class UbuntuChefSoloInstaller implements Installer
             sys_map_file.delete();
         }
         while (!done);
+    }
+
+    @Override
+    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
+    {
+        return "install chef solo and assign it <roles>";
     }
 
     private void initServer(Server server, String nodeJson, File sysMapFile) throws IOException
