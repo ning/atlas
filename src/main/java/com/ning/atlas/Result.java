@@ -1,5 +1,8 @@
 package com.ning.atlas;
 
+import com.ning.atlas.space.InMemorySpace;
+import com.ning.atlas.spi.Space;
+
 public class Result
 {
     private final SystemMap map;
@@ -12,6 +15,6 @@ public class Result
 
     public static Result nil()
     {
-        return new Result(SystemMap.emptyMap(), Space.emptySpace());
+        return new Result(SystemMap.emptyMap(), InMemorySpace.newInstance());
     }
 }

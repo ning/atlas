@@ -12,7 +12,9 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
 import com.ning.atlas.Base;
 import com.ning.atlas.NormalizedServerTemplate;
-import com.ning.atlas.Space;
+import com.ning.atlas.SystemMap;
+import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Space;
 import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.Uri;
 import com.ning.atlas.spi.Node;
@@ -25,8 +27,9 @@ import org.skife.config.ConfigurationObjectFactory;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Future;
 
-public class RDSProvisioner implements Provisioner
+public class RDSProvisioner extends BaseComponent implements Provisioner
 {
 
     private static final Logger log = Logger.get(RDSProvisioner.class);
@@ -107,6 +110,12 @@ public class RDSProvisioner implements Provisioner
 
         log.info("Finished provisioning %s", node.getId().toExternalForm());
         return new Server(instance.getEndpoint().getAddress(), instance.getEndpoint().getAddress(), attrs);
+    }
+
+    @Override
+    public Future<?> provision(NormalizedServerTemplate node, Uri<Provisioner> uri, Space space, SystemMap map)
+    {
+        throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 
     @Override

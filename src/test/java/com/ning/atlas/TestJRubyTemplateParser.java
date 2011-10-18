@@ -22,7 +22,6 @@ import static com.ning.atlas.base.MorePredicates.beanPropertyEquals;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
-import static org.junit.matchers.JUnitMatchers.hasItem;
 
 public class TestJRubyTemplateParser
 {

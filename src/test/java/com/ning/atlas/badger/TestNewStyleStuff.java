@@ -1,8 +1,6 @@
 package com.ning.atlas.badger;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.ning.atlas.Base;
 import com.ning.atlas.Description;
 import com.ning.atlas.HostDeploymentDescription;
@@ -10,18 +8,19 @@ import com.ning.atlas.Result;
 import com.ning.atlas.Deployment;
 import com.ning.atlas.Environment;
 import com.ning.atlas.ServerTemplate;
-import com.ning.atlas.Space;
+import com.ning.atlas.space.InMemorySpace;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.Space;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.SystemTemplate;
 import com.ning.atlas.Uri;
 import com.ning.atlas.noop.NoOpInstaller;
 import com.ning.atlas.noop.NoOpProvisioner;
-import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.StepType;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -30,13 +29,16 @@ import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.matchers.JUnitMatchers.hasItem;
 
 public class TestNewStyleStuff
 {
-    private Environment env;
-    private SystemMap   map;
-    private Result      emptyDeployment;
-    private Space       space;
+    private Environment     env;
+    private SystemMap       map;
+    private Result          emptyDeployment;
+    private Space           space;
+    private NoOpProvisioner provisioner;
+    private NoOpInstaller   installer;
 
     /**
      * TODO:
@@ -59,16 +61,19 @@ public class TestNewStyleStuff
         child.setCardinality(Arrays.asList("a", "b"));
         root.addChild(child);
 
+        this.provisioner = new NoOpProvisioner();
         Map<String, Provisioner> provisioners =
-            ImmutableMap.<String, Provisioner>of("noop", new NoOpProvisioner());
+            ImmutableMap.<String, Provisioner>of("noop", provisioner);
 
+
+        this.installer = new NoOpInstaller();
         Map<String, Installer> installers =
-            ImmutableMap.<String, Installer>of("foo", new NoOpInstaller());
+            ImmutableMap.<String, Installer>of("foo", installer);
 
         env = new Environment("local", provisioners, installers);
 
         env.addBase(new Base("base",
-                             Uri.<Provisioner>valueOf("noop"),
+                             Uri.<Provisioner>valueOf("noop:happy"),
                              Arrays.asList(Uri.<Installer>valueOf("foo:say-hello")),
                              Collections.<String, String>emptyMap()));
 
@@ -76,7 +81,7 @@ public class TestNewStyleStuff
 
         emptyDeployment = Result.nil();
 
-        space = Space.emptySpace();
+        space = InMemorySpace.newInstance();
     }
 
     @Test
@@ -98,14 +103,30 @@ public class TestNewStyleStuff
             assertThat(description.getSteps()
                                   .get(StepType.Install), equalTo(Arrays.asList("do nothing with foo:bar")));
         }
-
-
     }
 
     @Test
-    public void testPerform() throws Exception
+    public void testPerformHitsProvisioner() throws Exception
     {
         Deployment dp = env.planDeploymentFor(map, space);
-        Result r = dp.perform();
+        dp.perform();
+
+        assertThat(this.provisioner.getProvisioned(),
+                   hasItem(Pair.of(Identity.valueOf("/root.0/child.a"), Uri.<Provisioner>valueOf("noop:happy"))));
+        assertThat(this.provisioner.getProvisioned(),
+                   hasItem(Pair.of(Identity.valueOf("/root.0/child.b"), Uri.<Provisioner>valueOf("noop:happy"))));
     }
+
+    @Test
+    public void testPerformHitsInitializations() throws Exception
+    {
+        Deployment dp = env.planDeploymentFor(map, space);
+        dp.perform();
+
+        assertThat(this.installer.getInstalled(),
+                   hasItem(Pair.of(Identity.valueOf("/root.0/child.a"), Uri.<Installer>valueOf("noop:happy"))));
+        assertThat(this.installer.getInstalled(),
+                   hasItem(Pair.of(Identity.valueOf("/root.0/child.b"), Uri.<Installer>valueOf("noop:happy"))));
+    }
+
 }

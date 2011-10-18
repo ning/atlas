@@ -1,12 +1,12 @@
 package com.ning.atlas;
 
-import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.spi.Space;
 import com.ning.atlas.tree.Trees;
 
 import javax.annotation.Nullable;
@@ -17,11 +17,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Environment
 {
-    private final List<Base>                         bases        = new CopyOnWriteArrayList<Base>();
-    private final List<Environment>                  children     = new CopyOnWriteArrayList<Environment>();
+    private final List<Base>               bases        = new CopyOnWriteArrayList<Base>();
+    private final List<Environment>        children     = new CopyOnWriteArrayList<Environment>();
     private final Map<String, Provisioner> provisioners = Maps.newConcurrentMap();
-    private final Map<String, Installer>     installers   = Maps.newConcurrentMap();
-    private final Map<String, String>                properties   = Maps.newConcurrentMap();
+    private final Map<String, Installer>   installers   = Maps.newConcurrentMap();
+    private final Map<String, String>      properties   = Maps.newConcurrentMap();
 
     private final String             name;
     private final Maybe<Environment> parent;
@@ -123,14 +123,10 @@ public class Environment
     public Map<String, String> getProperties()
     {
         Map<String, String> rs = Maps.newHashMap();
-        rs.putAll(parent.to(new Function<Environment, Map<String, String>>()
-        {
-            @Override
-            public Map<String, String> apply(@Nullable Environment input)
-            {
-                return input.getProperties();
-            }
-        }).otherwise(Collections.<String, String>emptyMap()));
+
+        if (parent.isKnown()) {
+            rs.putAll(parent.getValue().getProperties());
+        }
 
         // override parent props with ours
         rs.putAll(this.properties);
@@ -144,15 +140,7 @@ public class Environment
 
     public Deployment planDeploymentFor(SystemMap map, Space state)
     {
-        List<Host> hosts = Lists.newArrayList();
-        for (NormalizedTemplate root : map.getRoots()) {
-            for (NormalizedServerTemplate template : Trees.findInstancesOf(root, NormalizedServerTemplate.class)) {
-                Base base = findBase(template.getBase()).otherwise(Base.errorBase(template.getBase(), this));
-                Host h = new Host(template.getId(), template.getMy(), base, template.getInstallations(), getProperties());
-                hosts.add(h);
-            }
-        }
-        return new Deployment(hosts, map, this);
+        return new Deployment(map, this, state);
     }
 
     public Maybe<Provisioner> findProvisioner(Uri<Provisioner> provisioner)
@@ -165,7 +153,8 @@ public class Environment
         }
     }
 
-    public Maybe<Installer> findInstaller(Uri<Installer> uri) {
+    public Maybe<Installer> findInstaller(Uri<Installer> uri)
+    {
         if (installers.containsKey(uri.getScheme())) {
             return Maybe.definitely(installers.get(uri.getScheme()));
         }

@@ -4,14 +4,17 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Node;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Server;
+import com.ning.atlas.spi.Space;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.Future;
 
-public class StaticTaggedServerProvisioner implements Provisioner
+public class StaticTaggedServerProvisioner extends BaseComponent implements Provisioner
 {
     private final Multimap<String, String> availables = Multimaps.synchronizedListMultimap(ArrayListMultimap.<String, String>create());
 
@@ -44,6 +47,12 @@ public class StaticTaggedServerProvisioner implements Provisioner
         this.availables.remove(tag, host);
         return new Server(host, host);
 
+    }
+
+    @Override
+    public Future<?> provision(NormalizedServerTemplate node, Uri<Provisioner> uri, Space space, SystemMap map)
+    {
+        throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 
     @Override

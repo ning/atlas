@@ -7,7 +7,7 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SSH;
-import com.ning.atlas.Space;
+import com.ning.atlas.spi.Space;
 import com.ning.atlas.Uri;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Server;

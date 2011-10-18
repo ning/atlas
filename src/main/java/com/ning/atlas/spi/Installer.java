@@ -1,7 +1,6 @@
 package com.ning.atlas.spi;
 
 import com.ning.atlas.NormalizedServerTemplate;
-import com.ning.atlas.Space;
 import com.ning.atlas.Uri;
 
 public interface Installer

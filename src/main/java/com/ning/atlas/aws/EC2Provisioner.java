@@ -13,7 +13,9 @@ import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.ning.atlas.NormalizedServerTemplate;
-import com.ning.atlas.Space;
+import com.ning.atlas.SystemMap;
+import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Space;
 import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.Base;
 import com.ning.atlas.Uri;
@@ -23,10 +25,11 @@ import com.ning.atlas.spi.Server;
 import com.ning.atlas.logging.Logger;
 
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import static java.util.Arrays.asList;
 
-public class EC2Provisioner implements Provisioner
+public class EC2Provisioner extends BaseComponent implements Provisioner
 {
     private final static Logger logger = Logger.get(EC2Provisioner.class);
 
@@ -99,6 +102,12 @@ public class EC2Provisioner implements Provisioner
                 }
             }
         }
+    }
+
+    @Override
+    public Future<?> provision(NormalizedServerTemplate node, Uri<Provisioner> uri, Space space, SystemMap map)
+    {
+        throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 
     @Override

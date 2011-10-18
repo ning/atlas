@@ -2,35 +2,33 @@ package com.ning.atlas;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.collect.Sets;
+import com.google.common.eventbus.EventBus;
 import com.ning.atlas.base.Maybe;
+import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.spi.Server;
+import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.StepType;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class Deployment
 {
-    private final List<Host>  hosts;
     private final SystemMap   map;
     private final Environment environment;
     private final Space       space;
 
-    public Deployment(List<Host> hosts, SystemMap map, Environment environment)
+    public Deployment(SystemMap map, Environment environment, Space space)
     {
-        this.hosts = hosts;
         this.map = map;
         this.environment = environment;
-        this.space = Space.emptySpace();
+        this.space = space;
     }
 
     public Description describe()
@@ -62,7 +60,7 @@ public class Deployment
         return new Description(descriptors.values());
     }
 
-    public Result perform()
+    public void perform()
     {
         // perform
 
@@ -88,50 +86,68 @@ public class Deployment
          *            whatever state it wants.
          */
 
+        // find all components
 
-        ListeningExecutorService es = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
-        try {
-            provision(es);
-//            initialize(es);
-        }
-        finally {
-            es.shutdown();
-        }
+        // startDeploy (no one can listen for this yet)
 
-        return new Result(map, space);
+        provision();
+
+        // initialize
+
+        // install
+
+        // finishDeploy (no one can listen for this yet)
 
     }
 
-    private void provision(ListeningExecutorService es)
+    private void provision()
     {
-        final List<Pair<Host, ListenableFuture<Server>>> futures = Lists.newArrayList();
-        for (final Host host : hosts) {
-            final Maybe<Provisioner> m_prov = environment.findProvisioner(host.getProvisioner());
-            ListenableFuture<Server> f = es.submit(new Callable<Server>()
-            {
-                @Override
-                public Server call() throws UnableToProvisionServerException
-                {
-                    final Provisioner p = m_prov.otherwise(new ErrorProvisioner());
-                    return p.provision(host.getBase(), map.getSingleRoot());
-                }
-            });
-            futures.add(Pair.of(host, f));
+        final Set<NormalizedServerTemplate> servers = map.findLeaves();
+        final Set<Pair<String, Provisioner>> provisioners = Sets.newHashSet();
+        final Map<NormalizedServerTemplate, Base> bases = Maps.newHashMap();
+        for (final NormalizedServerTemplate server : servers) {
+            final Maybe<Base> mb = environment.findBase(server.getBase());
+            bases.put(server, mb.otherwise(Base.errorBase(server.getBase(), environment)));
+            if (mb.isKnown()) {
+                final Base b = mb.getValue();
+                provisioners.add(Pair.of(b.getProvisioner().getScheme(),
+                                         environment.getProvisioner(b.getProvisioner())));
+            }
         }
 
-        for (Pair<Host, ListenableFuture<Server>> future : futures) {
+        // startProvision
+        for (final Pair<String, Provisioner> provisioner : provisioners) {
+            provisioner.getRight().start(map, space);
+        }
+
+        // provision
+        final List<Future<?>> futures = Lists.newArrayListWithExpectedSize(servers.size());
+        for (final NormalizedServerTemplate server : servers) {
+            final Base b = bases.get(server);
+            final Provisioner p = environment.getProvisioner(b.getProvisioner());
             try {
-                Server s = future.getRight().get();
-                future.getLeft().setServer(s);
+                futures.add(p.provision(server, b.getProvisioner(), space, map));
             }
             catch (Exception e) {
-                future.getLeft().addError(e);
+                throw new UnsupportedOperationException("Not Yet Implemented!", e);
             }
         }
-    }
 
-    private void initialize(ListeningExecutorService es)
-    {
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            }
+            catch (InterruptedException e) {
+                throw new UnsupportedOperationException("Not Yet Implemented!", e);
+            }
+            catch (ExecutionException e) {
+                throw new UnsupportedOperationException("Not Yet Implemented!", e);
+            }
+        }
 
+        // finishProvision
+        for (Pair<String, Provisioner> provisioner : provisioners) {
+            provisioner.getRight().finish(map, space);
+        }
     }
 }

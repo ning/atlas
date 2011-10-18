@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import com.ning.atlas.Base;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SSH;
-import com.ning.atlas.Space;
+import com.ning.atlas.SystemMap;
+import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Space;
 import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.Uri;
 import com.ning.atlas.spi.Node;
@@ -18,11 +20,12 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class VBoxProvisioner implements Provisioner
+public class VBoxProvisioner extends BaseComponent implements Provisioner
 {
 	/*
 	 * Stuff to take note of:
@@ -222,6 +225,12 @@ public class VBoxProvisioner implements Provisioner
 
 		return vboxServer(base, vmname, internalIp, externalIp);
 	}
+
+    @Override
+    public Future<?> provision(NormalizedServerTemplate node, Uri<Provisioner> uri, Space space, SystemMap map)
+    {
+        throw new UnsupportedOperationException("Not Yet Implemented!");
+    }
 
     @Override
     public String describe(NormalizedServerTemplate server, Uri<Provisioner> uri, Space space)
