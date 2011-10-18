@@ -57,7 +57,7 @@ public class TestNewStyleStuff
         SystemTemplate root = new SystemTemplate("root", Collections.<String, Object>emptyMap());
         ServerTemplate child = new ServerTemplate("child", Collections.<String, Object>emptyMap());
         child.setBase("base");
-        child.setInstall(Arrays.asList("foo:bar"));
+        child.setInstall(Arrays.asList("foo:install"));
         child.setCardinality(Arrays.asList("a", "b"));
         root.addChild(child);
 
@@ -74,7 +74,7 @@ public class TestNewStyleStuff
 
         env.addBase(new Base("base",
                              Uri.<Provisioner>valueOf("noop:happy"),
-                             Arrays.asList(Uri.<Installer>valueOf("foo:say-hello")),
+                             Arrays.asList(Uri.<Installer>valueOf("foo:init")),
                              Collections.<String, String>emptyMap()));
 
         map = root.normalize();
@@ -97,11 +97,11 @@ public class TestNewStyleStuff
 
             // initialization
             assertThat(description.getSteps()
-                                  .get(StepType.Initialize), equalTo(Arrays.asList("do nothing with foo:say-hello")));
+                                  .get(StepType.Initialize), equalTo(Arrays.asList("do nothing with foo:init")));
 
 
             assertThat(description.getSteps()
-                                  .get(StepType.Install), equalTo(Arrays.asList("do nothing with foo:bar")));
+                                  .get(StepType.Install), equalTo(Arrays.asList("do nothing with foo:install")));
         }
     }
 
@@ -124,9 +124,9 @@ public class TestNewStyleStuff
         dp.perform();
 
         assertThat(this.installer.getInstalled(),
-                   hasItem(Pair.of(Identity.valueOf("/root.0/child.a"), Uri.<Installer>valueOf("noop:happy"))));
+                   hasItem(Pair.of(Identity.valueOf("/root.0/child.a"), Uri.<Installer>valueOf("foo:init"))));
         assertThat(this.installer.getInstalled(),
-                   hasItem(Pair.of(Identity.valueOf("/root.0/child.b"), Uri.<Installer>valueOf("noop:happy"))));
+                   hasItem(Pair.of(Identity.valueOf("/root.0/child.b"), Uri.<Installer>valueOf("foo:init"))));
     }
 
 }
