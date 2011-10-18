@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -11,7 +12,9 @@ import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.StepType;
 import org.apache.commons.lang3.tuple.Pair;
+import sun.jvm.hotspot.asm.sparc.SPARCTrapInstruction;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -92,12 +95,142 @@ public class Deployment
 
         provision();
 
-        // initialize
+        // initializers
+        install(new Function<NormalizedServerTemplate, List<Pair<Uri<Installer>, Installer>>>()
+        {
+            @Override
+            public List<Pair<Uri<Installer>, Installer>> apply(NormalizedServerTemplate input)
+            {
+                final String base_name = input.getBase();
+                final Base base = environment.findBase(base_name).otherwise(Base.errorBase(base_name, environment));
 
-        // install
+                final List<Pair<Uri<Installer>, Installer>> rs = Lists.newArrayList();
+                for (Uri<Installer> uri : base.getInitializations()) {
+                    rs.add(Pair.of(uri, environment.resolveInstaller(uri)));
+                }
+                return rs;
+            }
+        });
+
+        // installers
+        install(new Function<NormalizedServerTemplate, List<Pair<Uri<Installer>, Installer>>>()
+        {
+            @Override
+            public List<Pair<Uri<Installer>, Installer>> apply(NormalizedServerTemplate input)
+            {
+                final List<Pair<Uri<Installer>, Installer>> rs = Lists.newArrayList();
+                for (Uri<Installer> uri : input.getInstallations()) {
+                    rs.add(Pair.of(uri, environment.resolveInstaller(uri)));
+                }
+                return rs;
+            }
+        });
 
         // finishDeploy (no one can listen for this yet)
 
+    }
+
+    private void install(Function<NormalizedServerTemplate, List<Pair<Uri<Installer>, Installer>>> f)
+    {
+        final Set<NormalizedServerTemplate> servers = map.findLeaves();
+        final Set<Pair<String, Installer>> installers = Sets.newHashSet();
+        final Map<NormalizedServerTemplate, List<Pair<Uri<Installer>, Installer>>> t_to_i = Maps.newHashMap();
+        for (NormalizedServerTemplate server : servers) {
+            final List<Pair<Uri<Installer>, Installer>> xs = f.apply(server);
+            t_to_i.put(server, xs);
+            for (Pair<Uri<Installer>, Installer> x : xs) {
+                installers.add(Pair.of(x.getLeft().getScheme(), x.getRight()));
+            }
+        }
+
+        // start
+        for (Pair<String, Installer> installer : installers) {
+            installer.getRight().start(map, space);
+        }
+
+        // install
+        final List<Future<?>> futures = Lists.newArrayList();
+        for (Map.Entry<NormalizedServerTemplate, List<Pair<Uri<Installer>, Installer>>> entry : t_to_i.entrySet()) {
+            final NormalizedServerTemplate server = entry.getKey();
+            for (Pair<Uri<Installer>, Installer> pair : entry.getValue()) {
+                final Uri<Installer> uri = pair.getKey();
+                final Installer installer = pair.getRight();
+                futures.add(installer.install(server, uri, space, map));
+            }
+        }
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            }
+            catch (InterruptedException e) {
+                throw new UnsupportedOperationException("Not Yet Implemented!");
+            }
+            catch (ExecutionException e) {
+                throw new UnsupportedOperationException("Not Yet Implemented!");
+            }
+        }
+
+        // finish
+        for (Pair<String, Installer> installer : installers) {
+            installer.getRight().finish(map, space);
+        }
+
+    }
+
+    private void initialize()
+    {
+        final Set<NormalizedServerTemplate> servers = map.findLeaves();
+        final Set<Pair<String, Installer>> installers = Sets.newHashSet();
+        final Map<NormalizedServerTemplate, List<Pair<Uri<Installer>, Installer>>> t_to_i = Maps.newHashMap();
+
+        for (NormalizedServerTemplate server : servers) {
+            // wish java could have default values for map entries
+            t_to_i.put(server, Lists.<Pair<Uri<Installer>, Installer>>newArrayList());
+        }
+
+        for (final NormalizedServerTemplate server : servers) {
+            final Maybe<Base> mb = environment.findBase(server.getBase());
+            if (mb.isKnown()) {
+                final Base b = mb.getValue();
+                for (Uri<Installer> uri : b.getInitializations()) {
+                    Installer installer = environment.resolveInstaller(uri);
+                    installers.add(Pair.of(uri.getScheme(), installer));
+                    t_to_i.get(server).add(Pair.of(uri, installer));
+                }
+            }
+        }
+
+        // startInit
+        for (Pair<String, Installer> installer : installers) {
+            installer.getRight().start(map, space);
+        }
+
+        // init
+        final List<Future<?>> futures = Lists.newArrayList();
+        for (Map.Entry<NormalizedServerTemplate, List<Pair<Uri<Installer>, Installer>>> entry : t_to_i.entrySet()) {
+            final NormalizedServerTemplate server = entry.getKey();
+            for (Pair<Uri<Installer>, Installer> pair : entry.getValue()) {
+                final Uri<Installer> uri = pair.getKey();
+                final Installer installer = pair.getRight();
+                futures.add(installer.install(server, uri, space, map));
+            }
+        }
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            }
+            catch (InterruptedException e) {
+                throw new UnsupportedOperationException("Not Yet Implemented!");
+            }
+            catch (ExecutionException e) {
+                throw new UnsupportedOperationException("Not Yet Implemented!");
+            }
+        }
+
+        // finishInit
+        for (Pair<String, Installer> installer : installers) {
+            installer.getRight().finish(map, space);
+        }
     }
 
     private void provision()
@@ -111,7 +244,7 @@ public class Deployment
             if (mb.isKnown()) {
                 final Base b = mb.getValue();
                 provisioners.add(Pair.of(b.getProvisioner().getScheme(),
-                                         environment.getProvisioner(b.getProvisioner())));
+                                         environment.resolveProvisioner(b.getProvisioner())));
             }
         }
 
@@ -125,12 +258,7 @@ public class Deployment
         for (final NormalizedServerTemplate server : servers) {
             final Base b = bases.get(server);
             final Provisioner p = environment.getProvisioner(b.getProvisioner());
-            try {
-                futures.add(p.provision(server, b.getProvisioner(), space, map));
-            }
-            catch (Exception e) {
-                throw new UnsupportedOperationException("Not Yet Implemented!", e);
-            }
+            futures.add(p.provision(server, b.getProvisioner(), space, map));
         }
 
         for (Future<?> future : futures) {

@@ -7,6 +7,8 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SSH;
+import com.ning.atlas.SystemMap;
+import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.Uri;
 import com.ning.atlas.spi.Installer;
@@ -25,12 +27,13 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Arrays.asList;
 
-public class UbuntuChefSoloInstaller implements Installer
+public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
 {
     private final static ObjectMapper mapper = new ObjectMapper();
 
@@ -113,6 +116,12 @@ public class UbuntuChefSoloInstaller implements Installer
     public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
     {
         return "install chef solo and assign it <roles>";
+    }
+
+    @Override
+    public Future<?> install(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)
+    {
+        throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 
     private void initServer(Server server, String nodeJson, File sysMapFile) throws IOException

@@ -2,6 +2,8 @@ package com.ning.atlas.galaxy;
 
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SSH;
+import com.ning.atlas.SystemMap;
+import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.Uri;
 import com.ning.atlas.spi.Installer;
@@ -13,11 +15,12 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
-public class MicroGalaxyInstaller implements Installer
+public class MicroGalaxyInstaller extends BaseComponent implements Installer
 {
     private final Logger log = LoggerFactory.getLogger(MicroGalaxyInstaller.class);
 
@@ -69,6 +72,12 @@ public class MicroGalaxyInstaller implements Installer
     public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
     {
         return "install <thing> via microgalaxy";
+    }
+
+    @Override
+    public Future<?> install(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)
+    {
+        throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 
     @Override

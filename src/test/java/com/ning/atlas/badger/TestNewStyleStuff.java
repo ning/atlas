@@ -129,4 +129,15 @@ public class TestNewStyleStuff
                    hasItem(Pair.of(Identity.valueOf("/root.0/child.b"), Uri.<Installer>valueOf("foo:init"))));
     }
 
+    @Test
+    public void testPerformHitsInstalls() throws Exception
+    {
+        Deployment dp = env.planDeploymentFor(map, space);
+        dp.perform();
+
+        assertThat(this.installer.getInstalled(),
+                   hasItem(Pair.of(Identity.valueOf("/root.0/child.a"), Uri.<Installer>valueOf("foo:install"))));
+        assertThat(this.installer.getInstalled(),
+                   hasItem(Pair.of(Identity.valueOf("/root.0/child.b"), Uri.<Installer>valueOf("foo:install"))));
+    }
 }

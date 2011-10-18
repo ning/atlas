@@ -1,6 +1,8 @@
 package com.ning.atlas.databases;
 
 import com.ning.atlas.NormalizedServerTemplate;
+import com.ning.atlas.SystemMap;
+import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.Uri;
 import com.ning.atlas.spi.Installer;
@@ -10,12 +12,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.filter;
 import static java.lang.String.format;
 
-public class MysqlLoaderInstaller implements Installer
+public class MysqlLoaderInstaller extends BaseComponent implements Installer
 {
     private final Logger log = LoggerFactory.getLogger(MysqlLoaderInstaller.class);
     private final String sshUser;
@@ -92,6 +95,12 @@ public class MysqlLoaderInstaller implements Installer
     public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
     {
         return "install <stuff> on rds instance";
+    }
+
+    @Override
+    public Future<?> install(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)
+    {
+        throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 
 }

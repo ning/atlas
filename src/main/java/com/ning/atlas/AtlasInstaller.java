@@ -1,6 +1,7 @@
 package com.ning.atlas;
 
 import com.google.common.io.Files;
+import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Node;
 import com.ning.atlas.spi.Server;
@@ -13,10 +14,11 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class AtlasInstaller implements Installer
+public class AtlasInstaller extends BaseComponent implements Installer
 {
     private final static ObjectMapper mapper = new ObjectMapper();
 
@@ -69,5 +71,11 @@ public class AtlasInstaller implements Installer
     public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
     {
         return "populate /etc/atlas with legacy cruft";
+    }
+
+    @Override
+    public Future<?> install(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)
+    {
+        throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 }
