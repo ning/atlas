@@ -5,7 +5,6 @@ import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -24,7 +23,7 @@ public class TestSpace
         t.setName("Freddy");
         t.setAgeOfPetDog(14);
 
-        space.put(id, t);
+        space.store(id, t);
 
         Maybe<Thing> t2 = space.get(id, Thing.class, Missing.RequireAll);
 
@@ -41,7 +40,7 @@ public class TestSpace
         t.setName("Freddy");
         t.setAgeOfPetDog(14);
 
-        space.put(id, t);
+        space.store(id, t);
 
         NameOnly no = space.get(id, NameOnly.class, Missing.RequireAll).getValue();
         assertThat(no.getName(), equalTo(t.getName()));
@@ -56,7 +55,7 @@ public class TestSpace
         NameOnly t = new NameOnly();
         t.setName("Freddy");
 
-        space.put(id, t);
+        space.store(id, t);
 
         Maybe<Thing> t2 = space.get(id, Thing.class, Missing.RequireAll);
 
@@ -72,7 +71,7 @@ public class TestSpace
         NameOnly t = new NameOnly();
         t.setName("Freddy");
 
-        space.put(id, t);
+        space.store(id, t);
 
         Maybe<Thing> t2 = space.get(id, Thing.class, Missing.NullProperty);
 

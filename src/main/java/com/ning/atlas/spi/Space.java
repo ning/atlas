@@ -8,9 +8,9 @@ import com.ning.atlas.space.Missing;
  */
 public interface Space
 {
-    void put(Identity id, Object it);
+    void store(Identity id, Object it);
 
-    void put(String key, String value);
+    void scratch(String key, String value);
 
     Maybe<String> get(String key);
 

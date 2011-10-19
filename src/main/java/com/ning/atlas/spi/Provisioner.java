@@ -2,11 +2,7 @@ package com.ning.atlas.spi;
 
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
-import com.ning.atlas.UnableToProvisionServerException;
-import com.ning.atlas.Base;
-import com.ning.atlas.Uri;
 
-import java.util.Map;
 import java.util.concurrent.Future;
 
 /**

@@ -3,6 +3,7 @@ package com.ning.atlas;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
+import com.ning.atlas.spi.Uri;
 
 import java.util.Collections;
 import java.util.List;

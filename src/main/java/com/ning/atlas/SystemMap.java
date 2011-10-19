@@ -33,11 +33,6 @@ public class SystemMap
         return roots;
     }
 
-    public Node getSingleRoot()
-    {
-        return roots.get(0);
-    }
-
     public Set<NormalizedServerTemplate> findLeaves()
     {
         final Set<NormalizedServerTemplate> rs = Sets.newLinkedHashSet();

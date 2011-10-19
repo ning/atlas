@@ -9,6 +9,7 @@ import com.ning.atlas.noop.NoOpProvisioner;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.StepType;
+import com.ning.atlas.spi.Uri;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,17 +29,6 @@ public class TestDeployment
     private Space           space;
     private NoOpProvisioner provisioner;
     private NoOpInstaller   installer;
-
-    /**
-     * TODO:
-     * - Pass space into provisioners
-     * - Pass space into installers
-     * - handle the upgrade path
-     * - initializations
-     * - installations
-     * - get rid of "single root hack" for passing system map to provisioners and installers (ie, a Node)
-     * - make NormalizedTemplate *not* be a node (node needs to die die die)
-     */
 
     @Before
     public void setUp() throws Exception

@@ -15,7 +15,7 @@ import com.ning.atlas.Base;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.UnableToProvisionServerException;
-import com.ning.atlas.Uri;
+import com.ning.atlas.spi.Uri;
 import com.ning.atlas.base.MapConfigSource;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.BaseComponent;

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.spi.Uri;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.Collections;

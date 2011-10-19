@@ -7,12 +7,8 @@ import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
-import com.ning.atlas.UnableToProvisionServerException;
-import com.ning.atlas.Base;
-import com.ning.atlas.Uri;
-import com.ning.atlas.spi.Node;
+import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.spi.Server;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collection;

@@ -2,24 +2,18 @@ package com.ning.atlas.aws;
 
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
-import com.amazonaws.services.elasticloadbalancing.model.Instance;
-import com.amazonaws.services.elasticloadbalancing.model.RegisterInstancesWithLoadBalancerRequest;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Space;
-import com.ning.atlas.Uri;
+import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.Server;
-import com.ning.atlas.spi.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.Future;
-
-import static java.util.Arrays.asList;
 
 public class ELBInstaller extends BaseComponent implements Installer
 {

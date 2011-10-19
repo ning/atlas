@@ -7,6 +7,7 @@ import com.ning.atlas.base.MorePredicates;
 import com.ning.atlas.galaxy.MicroGalaxyInstaller;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
+import com.ning.atlas.spi.Uri;
 import com.ning.atlas.tree.Trees;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;

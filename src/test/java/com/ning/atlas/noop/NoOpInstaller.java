@@ -7,10 +7,8 @@ import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
-import com.ning.atlas.Uri;
+import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.Server;
-import com.ning.atlas.spi.Node;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collection;

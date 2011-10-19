@@ -26,7 +26,7 @@ public class InMemorySpace implements Space
     }
 
     @Override
-    public void put(Identity id, Object it)
+    public void store(Identity id, Object it)
     {
         PropertyDescriptor[] pds = PropertyUtils.getPropertyDescriptors(it.getClass());
         for (PropertyDescriptor pd : pds) {
@@ -45,7 +45,7 @@ public class InMemorySpace implements Space
     }
 
     @Override
-    public void put(String key, String value)
+    public void scratch(String key, String value)
     {
         this.values.put(key, value);
     }

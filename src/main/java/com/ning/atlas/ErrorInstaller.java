@@ -3,9 +3,8 @@ package com.ning.atlas;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.Node;
-import com.ning.atlas.spi.Server;
 import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.Uri;
 
 import java.util.Map;
 import java.util.concurrent.Future;

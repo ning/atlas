@@ -9,6 +9,7 @@ import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.StepType;
+import com.ning.atlas.spi.Uri;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;

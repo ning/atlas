@@ -6,6 +6,7 @@ import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Node;
+import com.ning.atlas.spi.Uri;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

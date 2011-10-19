@@ -1,13 +1,12 @@
 package com.ning.atlas;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Space;
-import com.ning.atlas.tree.Trees;
+import com.ning.atlas.spi.Uri;
 
 import javax.annotation.Nullable;
 import java.util.Collections;

@@ -7,6 +7,7 @@ import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Node;
 import com.ning.atlas.spi.Server;
 import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.Uri;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
