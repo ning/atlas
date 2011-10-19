@@ -10,13 +10,15 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
-import com.google.common.collect.ImmutableMap;
+import com.amazonaws.services.ec2.model.TerminateInstancesResult;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
+import com.ning.atlas.base.Maybe;
 import com.ning.atlas.logging.Logger;
+import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Provisioner;
@@ -27,7 +29,6 @@ import com.ning.atlas.spi.Uri;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static java.util.Arrays.asList;
@@ -47,12 +48,13 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
                                                                   attributes.get("secret_key"));
         keypairId = attributes.get("keypair_id");
         ec2 = new AmazonEC2AsyncClient(credentials);
+
     }
 
     public EC2Provisioner(AWSConfig config)
     {
         BasicAWSCredentials credentials = new BasicAWSCredentials(config.getAccessKey(), config.getSecretKey());
-        ec2 = new AmazonEC2Client(credentials);
+        ec2 = new AmazonEC2AsyncClient(credentials);
         keypairId = config.getKeyPairId();
 
     }
@@ -63,61 +65,72 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
                                     final Space space,
                                     final SystemMap map)
     {
-        return es.submit(new Callable<Server>()
-        {
-            @Override
-            public Server call() throws Exception
+        final Maybe<Server> s = space.get(node.getId(), Server.class, Missing.RequireAll);
+        if (s.isKnown() && space.get(node.getId(), EC2InstanceInfo.class, Missing.RequireAll).isKnown()) {
+            // we have an ec2 instance for this node already
+            return Futures.immediateFuture(s.getValue());
+        }
+        else {
+            // spin up an ec2 instance for this node
+
+            return es.submit(new Callable<Server>()
             {
-                logger.info("Provisioning server for %s", node.getId());
-                final String ami_name = uri.getFragment();
-                RunInstancesRequest req = new RunInstancesRequest(ami_name, 1, 1);
+                @Override
+                public Server call() throws Exception
+                {
+                    logger.info("Provisioning server for %s", node.getId());
+                    final String ami_name = uri.getFragment();
+                    RunInstancesRequest req = new RunInstancesRequest(ami_name, 1, 1);
 
-                req.setKeyName(keypairId);
-                RunInstancesResult rs = ec2.runInstances(req);
+                    req.setKeyName(keypairId);
+                    RunInstancesResult rs = ec2.runInstances(req);
 
-                final Instance i = rs.getReservation().getInstances().get(0);
+                    final Instance i = rs.getReservation().getInstances().get(0);
 
-                logger.debug("obtained ec2 instance {}", i.getInstanceId());
+                    logger.debug("obtained ec2 instance {}", i.getInstanceId());
 
-                while (true) {
-                    DescribeInstancesRequest dreq = new DescribeInstancesRequest();
-                    dreq.setInstanceIds(Lists.newArrayList(i.getInstanceId()));
-                    DescribeInstancesResult res = null;
-                    try {
-                        res = ec2.describeInstances(dreq);
-                    }
-                    catch (AmazonServiceException e) {
-                        // sometimes amazon says the instance doesn't exist yet,
-                        if (!e.getMessage().contains("does not exist")) {
-                            throw new UnsupportedOperationException("Not Yet Implemented!", e);
+                    while (true) {
+                        DescribeInstancesRequest dreq = new DescribeInstancesRequest();
+                        dreq.setInstanceIds(Lists.newArrayList(i.getInstanceId()));
+                        DescribeInstancesResult res = null;
+                        try {
+                            res = ec2.describeInstances(dreq);
                         }
-                    }
-                    if (res != null) {
-                        Instance i2 = res.getReservations().get(0).getInstances().get(0);
-                        if ("running".equals(i2.getState().getName())) {
-                            space.scratch(node.getId(), "ec2-instance-id", i2.getInstanceId());
-
-                            logger.info("Obtained instance %s at %s for %s",
-                                        i2.getInstanceId(), i2.getPublicDnsName(), node.getId());
-                            Server server = new Server();
-                            server.setExternalAddress(i2.getPublicIpAddress());
-                            server.setInternalAddress(i2.getPublicIpAddress());
-                            space.store(node.getId(), server);
-                            return server;
-                        }
-                        else {
-                            try {
-                                Thread.sleep(1000);
-                            }
-                            catch (InterruptedException e) {
-                                Thread.currentThread().interrupt();
+                        catch (AmazonServiceException e) {
+                            // sometimes amazon says the instance doesn't exist yet,
+                            if (!e.getMessage().contains("does not exist")) {
                                 throw new UnsupportedOperationException("Not Yet Implemented!", e);
+                            }
+                        }
+                        if (res != null) {
+                            Instance i2 = res.getReservations().get(0).getInstances().get(0);
+                            if ("running".equals(i2.getState().getName())) {
+                                logger.info("Obtained instance %s at %s for %s",
+                                            i2.getInstanceId(), i2.getPublicDnsName(), node.getId());
+                                Server server = new Server();
+                                server.setExternalAddress(i2.getPublicIpAddress());
+                                server.setInternalAddress(i2.getPublicIpAddress());
+
+                                EC2InstanceInfo info = new EC2InstanceInfo();
+                                info.setEc2InstanceId(i2.getInstanceId());
+                                space.store(node.getId(), info);
+                                space.store(node.getId(), server);
+                                return server;
+                            }
+                            else {
+                                try {
+                                    Thread.sleep(1000);
+                                }
+                                catch (InterruptedException e) {
+                                    Thread.currentThread().interrupt();
+                                    throw new UnsupportedOperationException("Not Yet Implemented!", e);
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override
@@ -137,7 +150,23 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
 
     public void destroy(Identity id, Space space)
     {
-        String ec2_instance_id = space.get(id, "ec2-instance-id").getValue();
-        ec2.terminateInstances(new TerminateInstancesRequest(asList(ec2_instance_id)));
+        EC2InstanceInfo info = space.get(id, EC2InstanceInfo.class, Missing.RequireAll).getValue();
+        ec2.terminateInstances(new TerminateInstancesRequest(asList(info.getEc2InstanceId())));
+        logger.info("destroyed ec2 instance %s", info.getEc2InstanceId());
+    }
+
+    public static class EC2InstanceInfo
+    {
+        private String ec2InstanceId;
+
+        public String getEc2InstanceId()
+        {
+            return ec2InstanceId;
+        }
+
+        public void setEc2InstanceId(String ec2InstanceId)
+        {
+            this.ec2InstanceId = ec2InstanceId;
+        }
     }
 }

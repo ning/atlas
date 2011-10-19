@@ -15,18 +15,16 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.1.2</version>
+        </dependency>
 
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils-core</artifactId>
             <version>1.8.3</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>4.1.2</version>
         </dependency>
 
         <dependency>
@@ -79,7 +77,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk</artifactId>
-            <version>1.2.9</version>
+            <version>1.2.2</version>
             <!-- if updating version, check amazon sdk pom to make sure we override the open ended versions -->
             <exclusions>
                 <!-- amazon leaves these versions open ended, and we don't want that -->
@@ -94,6 +92,10 @@
                 <exclusion>
                     <groupId>commons-httpclient</groupId>
                     <artifactId>commons-httpclient</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.httpcomponents</groupId>
+                    <artifactId>httpclient</artifactId>
                 </exclusion>
                 <exclusion>
                     <groupId>org.codehaus.jackson</groupId>
@@ -119,13 +121,13 @@
             <!-- ASL -->
         </dependency>
 
-        <!-- added to override open ended version required by amazon sdk -->
-        <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-            <version>3.1</version>
-            <!-- ASL -->
-        </dependency>
+        <!--&lt;!&ndash; added to override open ended version required by amazon sdk &ndash;&gt;-->
+        <!--<dependency>-->
+        <!--<groupId>commons-httpclient</groupId>-->
+        <!--<artifactId>commons-httpclient</artifactId>-->
+        <!--<version>3.1</version>-->
+        <!--&lt;!&ndash; ASL &ndash;&gt;-->
+        <!--</dependency>-->
 
         <!-- added to override open ended version required by amazon sdk -->
         <dependency>

@@ -4,6 +4,7 @@ import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.NormalizedTemplate;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.space.InMemorySpace;
+import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
@@ -24,6 +25,7 @@ import java.util.Properties;
 import java.util.concurrent.Future;
 
 import static com.ning.atlas.testing.AtlasMatchers.exists;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -73,5 +75,25 @@ public class TestEC2Provisioner
         Server s = f.get();
 
         assertThat(s, not(nullValue()));
+    }
+
+    @Test
+    public void testIdempotentProvision() throws Exception
+    {
+        Uri<Provisioner> uri = Uri.valueOf("ec2:ami-a7f539ce");
+        Future<Server> f = ec2.provision(node, uri, space, map);
+        f.get();
+
+        EC2Provisioner.EC2InstanceInfo info = space.get(node.getId(),
+                                                        EC2Provisioner.EC2InstanceInfo.class,
+                                                        Missing.RequireAll).getValue();
+        ec2.provision(node, uri, space, map).get();
+
+        EC2Provisioner.EC2InstanceInfo info2 = space.get(node.getId(),
+                                                         EC2Provisioner.EC2InstanceInfo.class,
+                                                         Missing.RequireAll).getValue();
+
+        assertThat(info2.getEc2InstanceId(), equalTo(info.getEc2InstanceId()));
+
     }
 }
