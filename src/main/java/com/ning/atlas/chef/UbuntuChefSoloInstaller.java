@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
+import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SSH;
 import com.ning.atlas.SystemMap;
@@ -95,7 +96,7 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
 
     }
 
-    @Override
+//    @Override
     public void install(final Server server,
                         final String arg,
                         com.ning.atlas.spi.Node root,
@@ -113,9 +114,12 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
     }
 
     @Override
-    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
+    public Future<String> describe(NormalizedServerTemplate server,
+                                   Uri<Installer> uri,
+                                   Space space,
+                                   SystemMap map)
     {
-        return "install chef solo and assign it <roles>";
+        return Futures.immediateFuture("install chef solo and assign it <roles>");
     }
 
     @Override

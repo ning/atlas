@@ -1,5 +1,6 @@
 package com.ning.atlas.databases;
 
+import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
@@ -38,7 +39,7 @@ public class MysqlLoaderInstaller extends BaseComponent implements Installer
     }
 
 
-    @Override
+//    @Override
     public void install(Server server, String fragment, Node root, Node node) throws Exception
     {
 //        Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()
@@ -92,9 +93,9 @@ public class MysqlLoaderInstaller extends BaseComponent implements Installer
     }
 
     @Override
-    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
+    public Future<String> describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)
     {
-        return "install <stuff> on rds instance";
+        return Futures.immediateFuture("install <stuff> on rds instance");
     }
 
     @Override

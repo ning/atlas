@@ -4,16 +4,21 @@ import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.Uri;
 
+import java.util.Map;
 import java.util.concurrent.Future;
 
+/**
+ * TODO merge with Installer on Component
+ */
 public interface Installer extends Component
 {
-    public void install(Server server,
-                        String fragment,
-                        Node root,
-                        Node node) throws Exception;
+    public Future<?> install(NormalizedServerTemplate server,
+                      Uri<Installer> uri,
+                      Space space,
+                      SystemMap map);
 
-    String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space);
-
-    Future<?> install(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map);
+    public Future<String> describe(NormalizedServerTemplate server,
+                            Uri<Installer> uri,
+                            Space space,
+                            SystemMap map);
 }

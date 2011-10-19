@@ -21,15 +21,9 @@ public class NoOpInstaller extends BaseComponent implements Installer
     private Collection<Pair<Identity, Uri<Installer>>> installed = Lists.newArrayList();
 
     @Override
-    public void install(Server server, String fragment, Node root, Node node) throws Exception
+    public Future<String> describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)
     {
-
-    }
-
-    @Override
-    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
-    {
-        return "do nothing with " + uri;
+        return Futures.immediateFuture("do nothing with " + uri);
     }
 
     @Override

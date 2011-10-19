@@ -1,5 +1,6 @@
 package com.ning.atlas.galaxy;
 
+import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SSH;
 import com.ning.atlas.SystemMap;
@@ -40,7 +41,7 @@ public class MicroGalaxyInstaller extends BaseComponent implements Installer
         checkNotNull(microGalaxyUser, "ugx_user attribute required");
     }
 
-    @Override
+//    @Override
     public void install(Server server, String fragment, Node root, Node node)
     {
         SSH ssh = null;
@@ -69,9 +70,9 @@ public class MicroGalaxyInstaller extends BaseComponent implements Installer
     }
 
     @Override
-    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
+    public Future<String> describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)
     {
-        return "install <thing> via microgalaxy";
+        return Futures.immediateFuture("install <thing> via microgalaxy");
     }
 
     @Override

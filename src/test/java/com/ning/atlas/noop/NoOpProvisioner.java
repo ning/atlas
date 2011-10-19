@@ -23,12 +23,6 @@ public class NoOpProvisioner extends BaseComponent implements Provisioner
     private Collection<Pair<Identity, Uri<Provisioner>>> provisioned = Lists.newArrayList();
 
     @Override
-    public Server provision(Base base, Node node) throws UnableToProvisionServerException
-    {
-        return new Server("1.1.1.1", "2.2.2.2");
-    }
-
-    @Override
     public Future<?> provision(NormalizedServerTemplate node, Uri<Provisioner> uri, Space space, SystemMap map)
     {
         provisioned.add(Pair.of(node.getId(), uri));
@@ -36,9 +30,9 @@ public class NoOpProvisioner extends BaseComponent implements Provisioner
     }
 
     @Override
-    public String describe(NormalizedServerTemplate server, Uri<Provisioner> uri, Space space)
+    public Future<String> describe(NormalizedServerTemplate server, Uri<Provisioner> uri, Space space, SystemMap map)
     {
-        return "do nothing";
+        return Futures.immediateFuture("do nothing");
     }
 
     public Collection<Pair<Identity, Uri<Provisioner>>> getProvisioned()

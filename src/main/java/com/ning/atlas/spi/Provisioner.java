@@ -6,18 +6,21 @@ import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.Base;
 import com.ning.atlas.Uri;
 
+import java.util.Map;
 import java.util.concurrent.Future;
 
+/**
+ * TODO merge with Installer on Component
+ */
 public interface Provisioner extends Component
 {
-    @Deprecated
-    Server provision(Base base, Node node) throws UnableToProvisionServerException;
+    public Future<?> provision(NormalizedServerTemplate node,
+                               Uri<Provisioner> uri,
+                               Space space,
+                               SystemMap map);
 
-
-    Future<?> provision(NormalizedServerTemplate node, Uri<Provisioner> uri, Space space, SystemMap map);
-
-    /**
-     * Human useful description of what is going to happen here
-     */
-    String describe(NormalizedServerTemplate server, Uri<Provisioner> uri, Space space);
+    public Future<String> describe(NormalizedServerTemplate server,
+                                   Uri<Provisioner> uri,
+                                   Space space,
+                                   SystemMap map);
 }

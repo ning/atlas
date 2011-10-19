@@ -4,6 +4,7 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
 import com.amazonaws.services.elasticloadbalancing.model.Instance;
 import com.amazonaws.services.elasticloadbalancing.model.RegisterInstancesWithLoadBalancerRequest;
+import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
@@ -33,20 +34,23 @@ public class ELBInstaller extends BaseComponent implements Installer
     }
 
 
-    @Override
-    public void install(Server s, String fragment, Node root, Node node)
-    {
+//    @Override
+//    public void install(Server s, String fragment, Node root, Node node)
+//    {
+//
+//        Instance i = new Instance(s.getAttributes().get("instanceId"));
+//        RegisterInstancesWithLoadBalancerRequest req = new RegisterInstancesWithLoadBalancerRequest(fragment,
+//                                                                                                    asList(i));
+//        elb.registerInstancesWithLoadBalancer(req);
+//    }
 
-        Instance i = new Instance(s.getAttributes().get("instanceId"));
-        RegisterInstancesWithLoadBalancerRequest req = new RegisterInstancesWithLoadBalancerRequest(fragment,
-                                                                                                    asList(i));
-        elb.registerInstancesWithLoadBalancer(req);
-    }
-
     @Override
-    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
+    public Future<String> describe(NormalizedServerTemplate server,
+                                   Uri<Installer> uri,
+                                   Space space,
+                                   SystemMap map)
     {
-        return String.format("provision an elastic load balancer as %s", uri);
+        return Futures.immediateFuture(String.format("provision an elastic load balancer as %s", uri));
     }
 
     @Override

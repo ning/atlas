@@ -1,5 +1,6 @@
 package com.ning.atlas.galaxy;
 
+import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
@@ -32,7 +33,7 @@ public class GalaxyInstaller extends BaseComponent implements Installer
         checkNotNull(sshKeyFile, "ssh_key_file attribute required");
     }
 
-    @Override
+//    @Override
     public void install(Server server, String fragment, Node root, Node node) throws Exception
     {
 //        log.info("using galaxy to install {} on {}", server, fragment);
@@ -101,9 +102,9 @@ public class GalaxyInstaller extends BaseComponent implements Installer
     }
 
     @Override
-    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
+    public Future<String> describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)
     {
-        return "install <thing> via galaxy";
+        return Futures.immediateFuture("install <thing> via galaxy");
     }
 
     @Override

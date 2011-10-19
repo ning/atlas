@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Node;
 import com.ning.atlas.spi.Provisioner;
@@ -21,11 +22,6 @@ public class ErrorProvisioner extends BaseComponent implements Provisioner
 
     }
 
-    public Server provision(Base base, Node node)
-    {
-        throw new IllegalStateException("No provisioner available!");
-    }
-
     @Override
     public Future<?> provision(NormalizedServerTemplate node, Uri<Provisioner> uri, Space space, SystemMap map)
     {
@@ -33,8 +29,8 @@ public class ErrorProvisioner extends BaseComponent implements Provisioner
     }
 
     @Override
-    public String describe(NormalizedServerTemplate server, Uri<Provisioner> uri, Space space)
+    public Future<String> describe(NormalizedServerTemplate server, Uri<Provisioner> uri, Space space, SystemMap map)
     {
-        return "raise an error";
+        return Futures.immediateFuture("raise an error");
     }
 }

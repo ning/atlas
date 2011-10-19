@@ -1,6 +1,7 @@
 package com.ning.atlas;
 
 import com.google.common.io.Files;
+import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Node;
@@ -39,7 +40,7 @@ public class AtlasInstaller extends BaseComponent implements Installer
         checkNotNull(sshKeyFile, "ssh_key_file attribute required");
     }
 
-    @Override
+//    @Override
     public void install(Server server, String arg, Node root, Node node) throws Exception
     {
         SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
@@ -68,9 +69,9 @@ public class AtlasInstaller extends BaseComponent implements Installer
     }
 
     @Override
-    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
+    public Future<String> describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)
     {
-        return "populate /etc/atlas with legacy cruft";
+        return Futures.immediateFuture("populate /etc/atlas with legacy cruft");
     }
 
     @Override

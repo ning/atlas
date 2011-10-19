@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Node;
@@ -18,15 +19,9 @@ public class ErrorInstaller extends BaseComponent implements Installer
     }
 
     @Override
-    public void install(Server server, String arg, Node root, Node node)
+    public Future<String> describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)
     {
-        throw new UnsupportedOperationException("Not Yet Implemented!");
-    }
-
-    @Override
-    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
-    {
-        return "raise an error";
+        return Futures.immediateFuture("raise an error");
     }
 
     @Override

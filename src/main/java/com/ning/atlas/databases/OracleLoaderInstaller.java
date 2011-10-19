@@ -1,5 +1,6 @@
 package com.ning.atlas.databases;
 
+import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
@@ -38,9 +39,9 @@ public class OracleLoaderInstaller extends BaseComponent implements Installer
     }
 
 
-    @Override
-    public void install(Server server, String fragment, Node root, Node node) throws Exception
-    {
+//    @Override
+//    public void install(Server server, String fragment, Node root, Node node) throws Exception
+//    {
 //        Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()
 //        {
 //            @Override
@@ -89,12 +90,15 @@ public class OracleLoaderInstaller extends BaseComponent implements Installer
 //        finally {
 //            ssh.close();
 //        }
-    }
+//    }
 
     @Override
-    public String describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space)
+    public Future<String> describe(NormalizedServerTemplate server,
+                                   Uri<Installer> uri,
+                                   Space space,
+                                   SystemMap map)
     {
-        return "load the <file> into the rds instance";
+        return Futures.immediateFuture("load the <file> into the rds instance");
     }
 
     @Override

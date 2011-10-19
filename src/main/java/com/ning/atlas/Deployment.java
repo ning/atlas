@@ -4,17 +4,13 @@ import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.eventbus.EventBus;
 import com.ning.atlas.base.Maybe;
-import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.StepType;
 import org.apache.commons.lang3.tuple.Pair;
-import sun.jvm.hotspot.asm.sparc.SPARCTrapInstruction;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,22 +38,59 @@ public class Deployment
             descriptors.put(server, new HostDeploymentDescription(server.getId()));
         }
 
+        List<Pair<NormalizedServerTemplate, Future<String>>> provision_futures = Lists.newArrayList();
+        List<Pair<NormalizedServerTemplate, Future<String>>> init_futures = Lists.newArrayList();
+        List<Pair<NormalizedServerTemplate, Future<String>>> install_futures = Lists.newArrayList();
         for (NormalizedServerTemplate server : servers) {
-            Base base = environment.findBase(server.getBase()).otherwise(Base.errorBase(server.getBase(), environment));
+            Base base = environment.findBase(server.getBase()).otherwise(Base.errorBase(server.getBase()));
 
-            Provisioner p = environment.resolveProvisioner(base.getProvisioner());
-            descriptors.get(server).addStep(StepType.Provision, p.describe(server, base.getProvisioner(), space));
+            Provisioner p = environment.resolveProvisioner(base.getProvisionUri());
+            provision_futures.add(Pair.of(server, p.describe(server, base.getProvisionUri(), space, map)));
 
             for (Uri<Installer> uri : base.getInitializations()) {
                 Installer i = environment.resolveInstaller(uri);
-                descriptors.get(server).addStep(StepType.Initialize, i.describe(server, uri, space));
+                init_futures.add(Pair.of(server, i.describe(server, uri, space, map)));
             }
 
             for (Uri<Installer> uri : server.getInstallations()) {
                 Installer i = environment.resolveInstaller(uri);
-                descriptors.get(server).addStep(StepType.Install, i.describe(server, uri, space));
+                install_futures.add(Pair.of(server, i.describe(server, uri, space, map)));
             }
+        }
+        for (Pair<NormalizedServerTemplate, Future<String>> pair : provision_futures) {
+            try {
+                descriptors.get(pair.getLeft()).addStep(StepType.Provision, pair.getRight().get());
+            }
+            catch (InterruptedException e) {
+                throw new UnsupportedOperationException("Not Yet Implemented!");
+            }
+            catch (ExecutionException e) {
+                throw new UnsupportedOperationException("Not Yet Implemented!");
+            }
+        }
 
+        for (Pair<NormalizedServerTemplate, Future<String>> pair : init_futures) {
+            try {
+                descriptors.get(pair.getLeft()).addStep(StepType.Initialize, pair.getRight().get());
+            }
+            catch (InterruptedException e) {
+                throw new UnsupportedOperationException("Not Yet Implemented!");
+            }
+            catch (ExecutionException e) {
+                throw new UnsupportedOperationException("Not Yet Implemented!");
+            }
+        }
+
+        for (Pair<NormalizedServerTemplate, Future<String>> pair : install_futures) {
+            try {
+                descriptors.get(pair.getLeft()).addStep(StepType.Install, pair.getRight().get());
+            }
+            catch (InterruptedException e) {
+                throw new UnsupportedOperationException("Not Yet Implemented!");
+            }
+            catch (ExecutionException e) {
+                throw new UnsupportedOperationException("Not Yet Implemented!");
+            }
         }
 
         return new Description(descriptors.values());
@@ -89,8 +122,6 @@ public class Deployment
          *            whatever state it wants.
          */
 
-        // find all components
-
         // startDeploy (no one can listen for this yet)
 
         provision();
@@ -102,7 +133,7 @@ public class Deployment
             public List<Pair<Uri<Installer>, Installer>> apply(NormalizedServerTemplate input)
             {
                 final String base_name = input.getBase();
-                final Base base = environment.findBase(base_name).otherwise(Base.errorBase(base_name, environment));
+                final Base base = environment.findBase(base_name).otherwise(Base.errorBase(base_name));
 
                 final List<Pair<Uri<Installer>, Installer>> rs = Lists.newArrayList();
                 for (Uri<Installer> uri : base.getInitializations()) {
@@ -177,62 +208,6 @@ public class Deployment
 
     }
 
-    private void initialize()
-    {
-        final Set<NormalizedServerTemplate> servers = map.findLeaves();
-        final Set<Pair<String, Installer>> installers = Sets.newHashSet();
-        final Map<NormalizedServerTemplate, List<Pair<Uri<Installer>, Installer>>> t_to_i = Maps.newHashMap();
-
-        for (NormalizedServerTemplate server : servers) {
-            // wish java could have default values for map entries
-            t_to_i.put(server, Lists.<Pair<Uri<Installer>, Installer>>newArrayList());
-        }
-
-        for (final NormalizedServerTemplate server : servers) {
-            final Maybe<Base> mb = environment.findBase(server.getBase());
-            if (mb.isKnown()) {
-                final Base b = mb.getValue();
-                for (Uri<Installer> uri : b.getInitializations()) {
-                    Installer installer = environment.resolveInstaller(uri);
-                    installers.add(Pair.of(uri.getScheme(), installer));
-                    t_to_i.get(server).add(Pair.of(uri, installer));
-                }
-            }
-        }
-
-        // startInit
-        for (Pair<String, Installer> installer : installers) {
-            installer.getRight().start(map, space);
-        }
-
-        // init
-        final List<Future<?>> futures = Lists.newArrayList();
-        for (Map.Entry<NormalizedServerTemplate, List<Pair<Uri<Installer>, Installer>>> entry : t_to_i.entrySet()) {
-            final NormalizedServerTemplate server = entry.getKey();
-            for (Pair<Uri<Installer>, Installer> pair : entry.getValue()) {
-                final Uri<Installer> uri = pair.getKey();
-                final Installer installer = pair.getRight();
-                futures.add(installer.install(server, uri, space, map));
-            }
-        }
-        for (Future<?> future : futures) {
-            try {
-                future.get();
-            }
-            catch (InterruptedException e) {
-                throw new UnsupportedOperationException("Not Yet Implemented!");
-            }
-            catch (ExecutionException e) {
-                throw new UnsupportedOperationException("Not Yet Implemented!");
-            }
-        }
-
-        // finishInit
-        for (Pair<String, Installer> installer : installers) {
-            installer.getRight().finish(map, space);
-        }
-    }
-
     private void provision()
     {
         final Set<NormalizedServerTemplate> servers = map.findLeaves();
@@ -240,11 +215,11 @@ public class Deployment
         final Map<NormalizedServerTemplate, Base> bases = Maps.newHashMap();
         for (final NormalizedServerTemplate server : servers) {
             final Maybe<Base> mb = environment.findBase(server.getBase());
-            bases.put(server, mb.otherwise(Base.errorBase(server.getBase(), environment)));
+            bases.put(server, mb.otherwise(Base.errorBase(server.getBase())));
             if (mb.isKnown()) {
                 final Base b = mb.getValue();
-                provisioners.add(Pair.of(b.getProvisioner().getScheme(),
-                                         environment.resolveProvisioner(b.getProvisioner())));
+                provisioners.add(Pair.of(b.getProvisionUri().getScheme(),
+                                         environment.resolveProvisioner(b.getProvisionUri())));
             }
         }
 
@@ -257,8 +232,8 @@ public class Deployment
         final List<Future<?>> futures = Lists.newArrayListWithExpectedSize(servers.size());
         for (final NormalizedServerTemplate server : servers) {
             final Base b = bases.get(server);
-            final Provisioner p = environment.getProvisioner(b.getProvisioner());
-            futures.add(p.provision(server, b.getProvisioner(), space, map));
+            final Provisioner p = environment.getProvisioner(b.getProvisionUri());
+            futures.add(p.provision(server, b.getProvisionUri(), space, map));
         }
 
         for (Future<?> future : futures) {

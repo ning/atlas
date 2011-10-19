@@ -10,18 +10,19 @@ import com.amazonaws.services.rds.model.DescribeDBInstancesRequest;
 import com.amazonaws.services.rds.model.DescribeDBInstancesResult;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.Base;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
-import com.ning.atlas.spi.BaseComponent;
-import com.ning.atlas.spi.Space;
 import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.Uri;
+import com.ning.atlas.base.MapConfigSource;
+import com.ning.atlas.logging.Logger;
+import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Node;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Server;
-import com.ning.atlas.base.MapConfigSource;
-import com.ning.atlas.logging.Logger;
+import com.ning.atlas.spi.Space;
 import org.skife.config.Config;
 import org.skife.config.ConfigurationObjectFactory;
 
@@ -47,7 +48,7 @@ public class RDSProvisioner extends BaseComponent implements Provisioner
         this(attributes.get("access_key"), attributes.get("secret_key"));
     }
 
-    @Override
+//    @Override
     public Server provision(Base b, Node node) throws UnableToProvisionServerException
     {
         log.info("Started provisioning %s, this could take a while", node.getId().toExternalForm());
@@ -119,9 +120,12 @@ public class RDSProvisioner extends BaseComponent implements Provisioner
     }
 
     @Override
-    public String describe(NormalizedServerTemplate server, Uri<Provisioner> uri, Space space)
+    public Future<String> describe(NormalizedServerTemplate server,
+                                   Uri<Provisioner> uri,
+                                   Space space,
+                                   SystemMap map)
     {
-        return "provision an rds database";
+        return Futures.immediateFuture("provision an rds database");
     }
 
 

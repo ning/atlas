@@ -1,19 +1,9 @@
-package com.ning.atlas.badger;
+package com.ning.atlas;
 
 import com.google.common.collect.ImmutableMap;
-import com.ning.atlas.Base;
-import com.ning.atlas.Description;
-import com.ning.atlas.HostDeploymentDescription;
-import com.ning.atlas.Result;
-import com.ning.atlas.Deployment;
-import com.ning.atlas.Environment;
-import com.ning.atlas.ServerTemplate;
 import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
-import com.ning.atlas.SystemMap;
-import com.ning.atlas.SystemTemplate;
-import com.ning.atlas.Uri;
 import com.ning.atlas.noop.NoOpInstaller;
 import com.ning.atlas.noop.NoOpProvisioner;
 import com.ning.atlas.spi.Installer;
@@ -31,11 +21,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.hasItem;
 
-public class TestNewStyleStuff
+public class TestDeployment
 {
     private Environment     env;
     private SystemMap       map;
-    private Result          emptyDeployment;
     private Space           space;
     private NoOpProvisioner provisioner;
     private NoOpInstaller   installer;
@@ -78,9 +67,6 @@ public class TestNewStyleStuff
                              Collections.<String, String>emptyMap()));
 
         map = root.normalize();
-
-        emptyDeployment = Result.nil();
-
         space = InMemorySpace.newInstance();
     }
 

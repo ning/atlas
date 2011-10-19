@@ -12,9 +12,11 @@ import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.Base;
@@ -52,7 +54,6 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
 
     }
 
-    @Override
     public Server provision(Base base, Node node) throws UnableToProvisionServerException
     {
         logger.info("Provisioning server for %s", node.getId());
@@ -104,6 +105,7 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
         }
     }
 
+
     @Override
     public Future<?> provision(NormalizedServerTemplate node, Uri<Provisioner> uri, Space space, SystemMap map)
     {
@@ -111,9 +113,12 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
     }
 
     @Override
-    public String describe(NormalizedServerTemplate server, Uri<Provisioner> uri, Space space)
+    public Future<String> describe(NormalizedServerTemplate server,
+                            Uri<Provisioner> uri,
+                            Space space,
+                            SystemMap map)
     {
-        return String.format("provision ec2 instance");
+        return Futures.immediateFuture("provision ec2 instance");
     }
 
     public void destroy(Server server)

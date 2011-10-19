@@ -13,10 +13,7 @@ import java.util.Map;
 
 public class Base
 {
-    public static final ThreadLocal<Environment> DESERIALIZATION_HACK = new ThreadLocal<Environment>();
-
     private final Map<String, String> attributes = Maps.newConcurrentMap();
-
     private final String               name;
     private final List<Uri<Installer>> initializations;
     private final Uri<Provisioner>     provisioner;
@@ -48,7 +45,7 @@ public class Base
     }
 
     @JsonIgnore
-    public Uri<Provisioner> getProvisioner()
+    public Uri<Provisioner> getProvisionUri()
     {
         return provisioner;
     }
@@ -83,7 +80,7 @@ public class Base
     }
 
 
-    public static Base errorBase(String base, Environment env)
+    public static Base errorBase(String base)
     {
         return new Base(base,
                         Uri.<Provisioner>valueOf("provisioner:UNKNOWN"),
