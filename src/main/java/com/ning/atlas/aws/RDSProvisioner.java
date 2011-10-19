@@ -1,33 +1,19 @@
 package com.ning.atlas.aws;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.rds.AmazonRDSClient;
-import com.amazonaws.services.rds.model.CreateDBInstanceRequest;
-import com.amazonaws.services.rds.model.DBInstance;
 import com.amazonaws.services.rds.model.DeleteDBInstanceRequest;
-import com.amazonaws.services.rds.model.DescribeDBInstancesRequest;
-import com.amazonaws.services.rds.model.DescribeDBInstancesResult;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Futures;
-import com.ning.atlas.Base;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
-import com.ning.atlas.UnableToProvisionServerException;
-import com.ning.atlas.spi.Uri;
-import com.ning.atlas.base.MapConfigSource;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.BaseComponent;
-import com.ning.atlas.spi.Node;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.spi.Server;
 import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.Uri;
 import org.skife.config.Config;
-import org.skife.config.ConfigurationObjectFactory;
 
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.Future;
 
 public class RDSProvisioner extends BaseComponent implements Provisioner
@@ -49,9 +35,9 @@ public class RDSProvisioner extends BaseComponent implements Provisioner
     }
 
 //    @Override
-    public Server provision(Base b, Node node) throws UnableToProvisionServerException
-    {
-        throw new UnsupportedOperationException("Not Yet Implemented!");
+//    public Server provision(Base b, Node node) throws UnableToProvisionServerException
+//    {
+//        throw new UnsupportedOperationException("Not Yet Implemented!");
 //        log.info("Started provisioning %s, this could take a while", node.getId().toExternalForm());
 //        RDSConfig cfg = new ConfigurationObjectFactory(new MapConfigSource(b.getAttributes())).build(RDSConfig.class);
 //
@@ -112,7 +98,7 @@ public class RDSProvisioner extends BaseComponent implements Provisioner
 //
 //        log.info("Finished provisioning %s", node.getId().toExternalForm());
 //        return new Server(instance.getEndpoint().getAddress(), instance.getEndpoint().getAddress(), attrs);
-    }
+//    }
 
     @Override
     public Future<?> provision(NormalizedServerTemplate node, Uri<Provisioner> uri, Space space, SystemMap map)
@@ -130,12 +116,12 @@ public class RDSProvisioner extends BaseComponent implements Provisioner
     }
 
 
-    public void destroy(Server server)
-    {
-        DeleteDBInstanceRequest req = new DeleteDBInstanceRequest(server.getAttributes().get("instanceId"));
-        req.setSkipFinalSnapshot(true);
-        rds.deleteDBInstance(req);
-    }
+//    public void destroy(Server server)
+//    {
+//        DeleteDBInstanceRequest req = new DeleteDBInstanceRequest(server.getAttributes().get("instanceId"));
+//        req.setSkipFinalSnapshot(true);
+//        rds.deleteDBInstance(req);
+//    }
 
     public interface RDSConfig
     {

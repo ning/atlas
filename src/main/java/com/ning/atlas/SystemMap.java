@@ -2,13 +2,11 @@ package com.ning.atlas;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
-import com.ning.atlas.spi.Node;
 import com.ning.atlas.tree.Trees;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 
 public class SystemMap
 {

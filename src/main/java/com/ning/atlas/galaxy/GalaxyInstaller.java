@@ -4,11 +4,9 @@ import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
-import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.Node;
-import com.ning.atlas.spi.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +32,8 @@ public class GalaxyInstaller extends BaseComponent implements Installer
     }
 
 //    @Override
-    public void install(Server server, String fragment, Node root, Node node) throws Exception
-    {
+//    public void install(Server server, String fragment, Node root, Node node) throws Exception
+//    {
 //        log.info("using galaxy to install {} on {}", server, fragment);
 //        Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()
 //        {
@@ -99,7 +97,7 @@ public class GalaxyInstaller extends BaseComponent implements Installer
 //        finally {
 //            ssh.close();
 //        }
-    }
+//    }
 
     @Override
     public Future<String> describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)

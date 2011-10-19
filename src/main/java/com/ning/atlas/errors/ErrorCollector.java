@@ -4,8 +4,6 @@ import com.ning.atlas.logging.Logger;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

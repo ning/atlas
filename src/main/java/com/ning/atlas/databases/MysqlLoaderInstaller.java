@@ -4,11 +4,9 @@ import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
-import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.Server;
-import com.ning.atlas.spi.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +14,6 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.filter;
-import static java.lang.String.format;
 
 public class MysqlLoaderInstaller extends BaseComponent implements Installer
 {
@@ -40,8 +36,8 @@ public class MysqlLoaderInstaller extends BaseComponent implements Installer
 
 
 //    @Override
-    public void install(Server server, String fragment, Node root, Node node) throws Exception
-    {
+//    public void install(Server server, String fragment, Node root, Node node) throws Exception
+//    {
 //        Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()
 //        {
 //            @Override
@@ -90,7 +86,7 @@ public class MysqlLoaderInstaller extends BaseComponent implements Installer
 //        finally {
 //            ssh.close();
 //        }
-    }
+//    }
 
     @Override
     public Future<String> describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)

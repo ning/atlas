@@ -2,13 +2,12 @@ package com.ning.atlas;
 
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.My;
-import com.ning.atlas.spi.Node;
 import com.ning.atlas.tree.Tree;
 
 import java.util.Collection;
 import java.util.List;
 
-public class NormalizedTemplate implements Tree, Node
+public class NormalizedTemplate implements Tree
 {
     private final Identity id;
     private final My my;
@@ -22,7 +21,7 @@ public class NormalizedTemplate implements Tree, Node
     }
 
     @Override
-    public Collection<? extends Node> getChildren()
+    public Collection<? extends NormalizedTemplate> getChildren()
     {
         return children;
     }
@@ -32,13 +31,11 @@ public class NormalizedTemplate implements Tree, Node
         return id;
     }
 
-    @Override
     public String getType()
     {
         return id.getType();
     }
 
-    @Override
     public String getName()
     {
         return id.getName();

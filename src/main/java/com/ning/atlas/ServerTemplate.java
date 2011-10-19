@@ -3,7 +3,6 @@ package com.ning.atlas;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
-import com.ning.atlas.spi.Node;
 import com.ning.atlas.spi.Uri;
 
 import java.util.ArrayList;
@@ -41,7 +40,7 @@ public class ServerTemplate extends Template
         return rs;
     }
 
-    public Collection<? extends Node> getChildren()
+    public Collection<? extends NormalizedTemplate> getChildren()
     {
         return Collections.emptyList();
     }

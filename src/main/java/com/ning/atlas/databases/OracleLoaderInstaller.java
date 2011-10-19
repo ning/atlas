@@ -4,9 +4,9 @@ import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
-import com.ning.atlas.spi.Installer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,8 +14,6 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.filter;
-import static java.lang.String.format;
 
 public class OracleLoaderInstaller extends BaseComponent implements Installer
 {

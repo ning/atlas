@@ -10,7 +10,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 public class InMemorySpace implements Space

@@ -1,11 +1,8 @@
 package com.ning.atlas;
 
-import com.google.common.io.Files;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.Node;
-import com.ning.atlas.spi.Server;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -13,8 +10,6 @@ import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -42,32 +37,32 @@ public class AtlasInstaller extends BaseComponent implements Installer
     }
 
 //    @Override
-    public void install(Server server, String arg, Node root, Node node) throws Exception
-    {
-        SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
-        try {
-            log.info("initializing {} to become a {}", server.getExternalAddress(), node.getType());
-
-            ssh.exec("sudo mkdir /etc/atlas");
-
-            // upload the system map
-            String sys_map = mapper.writeValueAsString(root);
-            File sys_map_file = File.createTempFile("system", "map");
-            Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
-            ssh.scpUpload(sys_map_file, "/tmp/system_map.json");
-            ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
-
-            // upload node info
-            String node_info = mapper.writeValueAsString(node);
-            File node_info_file = File.createTempFile("node", "info");
-            Files.write(node_info, node_info_file, Charset.forName("UTF-8"));
-            ssh.scpUpload(node_info_file, "/tmp/node_info.json");
-            ssh.exec("sudo mv /tmp/node_info.json /etc/atlas/node_info.json");
-        }
-        finally {
-            ssh.close();
-        }
-    }
+//    public void install(Server server, String arg, Node root, Node node) throws Exception
+//    {
+//        SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
+//        try {
+//            log.info("initializing {} to become a {}", server.getExternalAddress(), node.getType());
+//
+//            ssh.exec("sudo mkdir /etc/atlas");
+//
+//            // upload the system map
+//            String sys_map = mapper.writeValueAsString(root);
+//            File sys_map_file = File.createTempFile("system", "map");
+//            Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
+//            ssh.scpUpload(sys_map_file, "/tmp/system_map.json");
+//            ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
+//
+//            // upload node info
+//            String node_info = mapper.writeValueAsString(node);
+//            File node_info_file = File.createTempFile("node", "info");
+//            Files.write(node_info, node_info_file, Charset.forName("UTF-8"));
+//            ssh.scpUpload(node_info_file, "/tmp/node_info.json");
+//            ssh.exec("sudo mv /tmp/node_info.json /etc/atlas/node_info.json");
+//        }
+//        finally {
+//            ssh.close();
+//        }
+//    }
 
     @Override
     public Future<String> describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)

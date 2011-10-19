@@ -2,24 +2,18 @@ package com.ning.atlas.galaxy;
 
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.NormalizedServerTemplate;
-import com.ning.atlas.SSH;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
-import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.Server;
-import com.ning.atlas.spi.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
 
 public class MicroGalaxyInstaller extends BaseComponent implements Installer
 {
@@ -42,32 +36,32 @@ public class MicroGalaxyInstaller extends BaseComponent implements Installer
     }
 
 //    @Override
-    public void install(Server server, String fragment, Node root, Node node)
-    {
-        SSH ssh = null;
-        try {
-            ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
-            log.debug("installing {} on {}", fragment, server.getExternalAddress());
-            ssh.exec(format("cd ~%s; sudo -u %s ugx -b %s deploy; sudo -u %s ugx start",
-                            microGalaxyUser,
-                            microGalaxyUser,
-                            fragment,
-                            microGalaxyUser));
-        }
-        catch (IOException e) {
-            log.warn("unable to install {}", fragment, e);
-        }
-        finally {
-            if (ssh != null) {
-                try {
-                    ssh.close();
-                }
-                catch (IOException e) {
-                    log.warn("unable to close ssh connection", e);
-                }
-            }
-        }
-    }
+//    public void install(Server server, String fragment, Node root, Node node)
+//    {
+//        SSH ssh = null;
+//        try {
+//            ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
+//            log.debug("installing {} on {}", fragment, server.getExternalAddress());
+//            ssh.exec(format("cd ~%s; sudo -u %s ugx -b %s deploy; sudo -u %s ugx start",
+//                            microGalaxyUser,
+//                            microGalaxyUser,
+//                            fragment,
+//                            microGalaxyUser));
+//        }
+//        catch (IOException e) {
+//            log.warn("unable to install {}", fragment, e);
+//        }
+//        finally {
+//            if (ssh != null) {
+//                try {
+//                    ssh.close();
+//                }
+//                catch (IOException e) {
+//                    log.warn("unable to close ssh connection", e);
+//                }
+//            }
+//        }
+//    }
 
     @Override
     public Future<String> describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)

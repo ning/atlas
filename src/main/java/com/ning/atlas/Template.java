@@ -1,7 +1,6 @@
 package com.ning.atlas;
 
 import com.google.common.base.Function;
-import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.ning.atlas.spi.Identity;
@@ -11,7 +10,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.google.common.base.Preconditions.checkArgument;
 

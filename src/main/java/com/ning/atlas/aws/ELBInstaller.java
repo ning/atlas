@@ -6,9 +6,9 @@ import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
-import com.ning.atlas.spi.Installer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

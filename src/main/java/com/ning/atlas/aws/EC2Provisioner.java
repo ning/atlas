@@ -5,15 +5,11 @@ import com.amazonaws.services.ec2.AmazonEC2AsyncClient;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.util.concurrent.Futures;
-import com.ning.atlas.Base;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
-import com.ning.atlas.UnableToProvisionServerException;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.BaseComponent;
-import com.ning.atlas.spi.Node;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.spi.Server;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
 
@@ -45,8 +41,8 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
 
     }
 
-    public Server provision(Base base, Node node) throws UnableToProvisionServerException
-    {
+//    public Server provision(Base base, Node node) throws UnableToProvisionServerException
+//    {
 //        logger.info("Provisioning server for %s", node.getId());
 //        RunInstancesRequest req = new RunInstancesRequest(base.getAttributes().get("ami"), 1, 1);
 //
@@ -94,8 +90,8 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
 //                }
 //            }
 //        }
-        throw new UnsupportedOperationException("Not Yet Implemented!");
-    }
+//        throw new UnsupportedOperationException("Not Yet Implemented!");
+//    }
 
 
     @Override
@@ -113,8 +109,8 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
         return Futures.immediateFuture("provision ec2 instance");
     }
 
-    public void destroy(Server server)
-    {
-        ec2.terminateInstances(new TerminateInstancesRequest(asList(server.getAttributes().get("instanceId"))));
-    }
+//    public void destroy(Server server)
+//    {
+//        ec2.terminateInstances(new TerminateInstancesRequest(asList(server.getAttributes().get("instanceId"))));
+//    }
 }

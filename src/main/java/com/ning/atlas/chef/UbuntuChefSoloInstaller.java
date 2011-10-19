@@ -7,14 +7,12 @@ import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.NormalizedServerTemplate;
-import com.ning.atlas.SSH;
 import com.ning.atlas.SystemMap;
+import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
-import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.Server;
-import com.ning.atlas.base.Maybe;
 import org.antlr.stringtemplate.StringTemplate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -25,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -97,21 +94,21 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
     }
 
 //    @Override
-    public void install(final Server server,
-                        final String arg,
-                        com.ning.atlas.spi.Node root,
-                        com.ning.atlas.spi.Node node) throws Exception
-    {
-        boolean done = true;
-        do {
-            String sys_map = mapper.writeValueAsString(root);
-            File sys_map_file = File.createTempFile("system", "map");
-            Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
-            initServer(server, createNodeJsonFor(arg), sys_map_file);
-            sys_map_file.delete();
-        }
-        while (!done);
-    }
+//    public void install(final Server server,
+//                        final String arg,
+//                        com.ning.atlas.spi.Node root,
+//                        com.ning.atlas.spi.Node node) throws Exception
+//    {
+//        boolean done = true;
+//        do {
+//            String sys_map = mapper.writeValueAsString(root);
+//            File sys_map_file = File.createTempFile("system", "map");
+//            Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
+//            initServer(server, createNodeJsonFor(arg), sys_map_file);
+//            sys_map_file.delete();
+//        }
+//        while (!done);
+//    }
 
     @Override
     public Future<String> describe(NormalizedServerTemplate server,
@@ -128,45 +125,45 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
         throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 
-    private void initServer(Server server, String nodeJson, File sysMapFile) throws IOException
-    {
-        SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
-        try {
-            String remote_path = "/home/" + sshUser + "/ubuntu-chef-solo-init.sh";
-            ssh.scpUpload(this.chefSoloInitFile, remote_path);
-            ssh.exec("chmod +x " + remote_path);
-
-            logger.debug("about to execute chef init script remotely");
-            ssh.exec(remote_path);
-
-            File node_json = File.createTempFile("node", "json");
-            Files.write(nodeJson, node_json, Charset.forName("UTF-8"));
-            ssh.scpUpload(node_json, "/tmp/node.json");
-            ssh.exec("sudo mv /tmp/node.json /etc/chef/node.json");
-
-            ssh.scpUpload(soloRbFile, "/tmp/solo.rb");
-            ssh.exec("sudo mv /tmp/solo.rb /etc/chef/solo.rb");
-
-            ssh.scpUpload(s3InitFile, "/tmp/s3_init.rb");
-            ssh.exec("sudo mv /tmp/s3_init.rb /etc/chef/s3_init.rb");
-
-            // we require that the /etc/atlas/system_map.json file exist
-            String out = ssh.exec("ls /etc/atlas/");
-            if (!out.contains("system_map.json")) {
-                ssh.exec("sudo mkdir /etc/atlas");
-                logger.info("AtlasInitializer was not run, placing system map on {}", server.getExternalAddress());
-                ssh.scpUpload(sysMapFile, "/tmp/system_map.json");
-                ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
-            }
-
-            logger.debug("about to execute initial chef-solo");
-            ssh.exec("sudo chef-solo");
-            ssh.exec("sudo chef-solo");
-        }
-        finally {
-            ssh.close();
-        }
-    }
+//    private void initServer(Server server, String nodeJson, File sysMapFile) throws IOException
+//    {
+//        SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
+//        try {
+//            String remote_path = "/home/" + sshUser + "/ubuntu-chef-solo-init.sh";
+//            ssh.scpUpload(this.chefSoloInitFile, remote_path);
+//            ssh.exec("chmod +x " + remote_path);
+//
+//            logger.debug("about to execute chef init script remotely");
+//            ssh.exec(remote_path);
+//
+//            File node_json = File.createTempFile("node", "json");
+//            Files.write(nodeJson, node_json, Charset.forName("UTF-8"));
+//            ssh.scpUpload(node_json, "/tmp/node.json");
+//            ssh.exec("sudo mv /tmp/node.json /etc/chef/node.json");
+//
+//            ssh.scpUpload(soloRbFile, "/tmp/solo.rb");
+//            ssh.exec("sudo mv /tmp/solo.rb /etc/chef/solo.rb");
+//
+//            ssh.scpUpload(s3InitFile, "/tmp/s3_init.rb");
+//            ssh.exec("sudo mv /tmp/s3_init.rb /etc/chef/s3_init.rb");
+//
+//            we require that the /etc/atlas/system_map.json file exist
+//            String out = ssh.exec("ls /etc/atlas/");
+//            if (!out.contains("system_map.json")) {
+//                ssh.exec("sudo mkdir /etc/atlas");
+//                logger.info("AtlasInitializer was not run, placing system map on {}", server.getExternalAddress());
+//                ssh.scpUpload(sysMapFile, "/tmp/system_map.json");
+//                ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
+//            }
+//
+//            logger.debug("about to execute initial chef-solo");
+//            ssh.exec("sudo chef-solo");
+//            ssh.exec("sudo chef-solo");
+//        }
+//        finally {
+//            ssh.close();
+//        }
+//    }
 
     public String createNodeJsonFor(String literal)
     {
