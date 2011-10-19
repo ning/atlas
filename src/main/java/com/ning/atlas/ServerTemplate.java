@@ -1,14 +1,11 @@
 package com.ning.atlas;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Node;
 import com.ning.atlas.spi.Uri;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,17 +14,18 @@ import java.util.Map;
 
 public class ServerTemplate extends Template
 {
-    private List<Uri<Installer>> installations = new ArrayList<Uri<Installer>>();
-    private String base;
+    private final List<Uri<Installer>> installations = new ArrayList<Uri<Installer>>();
+    private final String base;
 
-    @Deprecated
-    public ServerTemplate(String name) {
-        this(name, Collections.<String, Object>emptyMap());
-    }
-
-    public ServerTemplate(String name, Map<String, Object> my)
+    public ServerTemplate(String name,
+                          String base,
+                          List<?> cardinality,
+                          List<Uri<Installer>> installers,
+                          Map<String, Object> my)
     {
-        super(name, new My(my));
+        super(name, new My(my), cardinality);
+        this.installations.addAll(installers);
+        this.base = base;
     }
 
     @Override
@@ -53,30 +51,8 @@ public class ServerTemplate extends Template
         return installations;
     }
 
-    public void setBase(String base)
-    {
-        this.base = base;
-    }
-
     public String getBase()
     {
         return base;
     }
-
-    /**
-     * called by jruby template parser
-     */
-    public void setInstall(List<String> installs)
-    {
-        this.installations.addAll(Lists.transform(installs, new Function<String, Uri<Installer>>()
-        {
-            @Override
-            public Uri<Installer> apply(@Nullable String input)
-            {
-                return Uri.valueOf(input);
-            }
-        }));
-//        this.installations = new ArrayList<String>(installs);
-    }
-
 }

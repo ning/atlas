@@ -56,7 +56,8 @@ system "root" do
 
     system "aclu", :cardinality => 2  do
       server "appcore", :base => "java-core",
-                        :order => 20
+                        :order => 20,
+                        :waffle => 7
     end
   end
 end

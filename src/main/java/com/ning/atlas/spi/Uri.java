@@ -15,6 +15,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
 
+import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
@@ -95,10 +96,13 @@ public class Uri<T>
         return HashCodeBuilder.reflectionHashCode(this);
     }
 
-    public static <T> Uri<T> valueOf2(String uri, Map additionalParams) {
+    public static <T> Uri<T> valueOf2(String uri, @Nullable Map<Object, Object> additionalParams)
+    {
         Multimap<String, String> mmap = ArrayListMultimap.create();
-        for (Map.Entry entry : (Set< Map.Entry>)additionalParams.entrySet()) {
-            mmap.put(entry.getKey().toString(), entry.getValue().toString());
+        if (additionalParams != null) {
+            for (Map.Entry<Object, Object> entry : additionalParams.entrySet()) {
+                mmap.put(entry.getKey().toString(), entry.getValue().toString());
+            }
         }
         return valueOf(uri, mmap.asMap());
     }

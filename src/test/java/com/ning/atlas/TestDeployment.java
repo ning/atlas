@@ -1,7 +1,6 @@
 package com.ning.atlas;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.ning.atlas.noop.NoOpInstaller;
 import com.ning.atlas.noop.NoOpProvisioner;
 import com.ning.atlas.space.InMemorySpace;
@@ -15,11 +14,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.concurrent.Immutable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.hasItem;
@@ -33,12 +32,16 @@ public class TestDeployment
     @Before
     public void setUp() throws Exception
     {
-        SystemTemplate root = new SystemTemplate("root", Collections.<String, Object>emptyMap());
-        ServerTemplate child = new ServerTemplate("child", Collections.<String, Object>emptyMap());
-        child.setBase("base");
-        child.setInstall(Arrays.asList("foo:install"));
-        child.setCardinality(Arrays.asList("a", "b"));
-        root.addChild(child);
+        ServerTemplate child = new ServerTemplate("child",
+                                                  "base",
+                                                  asList("a", "b"),
+                                                  asList(Uri.<Installer>valueOf("foo:install")),
+                                                  Collections.<String, Object>emptyMap());
+
+        SystemTemplate root = new SystemTemplate("root",
+                                                 Collections.<String, Object>emptyMap(),
+                                                 asList("0"),
+                                                 Arrays.<Template>asList(child));
 
         NoOpProvisioner.reset();
         Map<String, Pair<Class<? extends Provisioner>, Map<String, String>>> provisioners =

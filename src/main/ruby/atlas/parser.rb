@@ -115,14 +115,16 @@ module Atlas
 
     def __parse
       eval @template, binding, @path, 1
-      root = com.ning.atlas.SystemTemplate.new @name
-      @children.each { |t| root.addChild(t) }
+      root = com.ning.atlas.SystemTemplate.new @name,
+                                               {},
+                                               [0],
+                                               @children
+
       if root.type == "__ROOT__" and root.children.size == 1
         root.children[0]
       else
         root
       end
-
     end
 
     def server name, args={}, &block
@@ -146,6 +148,8 @@ module Atlas
   end
 
   class SystemParser
+    java_import 'com.ning.atlas.spi.Uri'
+
     def initialize name, args, block
       @name, @args, @block = name, args, block
       @children            = []
@@ -153,14 +157,19 @@ module Atlas
 
     def __parse
       instance_eval &@block
-      my = @args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v; a }
-      s  = com.ning.atlas.SystemTemplate.new @name, my
-      @args.each do |k, v|
-        sym = "#{k}=".to_sym
-        s.send(sym, v) if s.respond_to? sym
-      end
-      @children.each { |child| s.addChild(child) }
-      s
+      # cardinality can be nil, a number, or an array
+      cardinality = case it = @args[:cardinality]
+                      when Array
+                        it
+                      when Integer
+                        it.downto(1).map { |i| i - 1 }.reverse
+                      else
+                        ["0"]
+                    end
+      com.ning.atlas.SystemTemplate.new @name,
+                                        @args.inject({}){|a, (k, v)| a[k.to_s] = v; a },
+                                        cardinality,
+                                        @children
     end
 
     def system name, args={}, &block
@@ -170,24 +179,27 @@ module Atlas
       end
     end
 
-    def server name, args={}, &block
-      @children << ServerParser.new(name, args, block).__parse
-    end
-  end
-
-  class ServerParser
-    def initialize name, args, block
-      @name, @args, @block = name, args, block
-    end
-
-    def __parse
-      my = @args.inject(Hash.new) { |a, (k, v)| a[k.to_s] = v; a }
-      s  = com.ning.atlas.ServerTemplate.new @name, my
-      @args.each do |k, v|
-        setter = "#{k}=".to_sym
-        s.send(setter, v) if s.respond_to? setter
+    def server name, args={}
+      installers  = Array(args[:install]).map do |uri, params|
+        Uri.value_of2(uri, params)
       end
-      s
+
+      # cardinality can be nil, a number, or an array
+      cardinality = case it = args[:cardinality]
+                      when Array
+                        it
+                      when Integer
+                        it.downto(1).map { |i| i - 1 }.reverse
+                      else
+                        ["0"]
+                    end
+
+      @children << com.ning.atlas.ServerTemplate.new(name,
+                                                     args[:base].to_s,
+                                                     cardinality,
+                                                     installers,
+                                                     args.inject({}){|a, (k, v)| a[k.to_s] = v; a })
     end
   end
+
 end

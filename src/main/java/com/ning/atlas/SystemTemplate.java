@@ -1,10 +1,12 @@
 package com.ning.atlas;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.My;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -12,27 +14,15 @@ import java.util.Map;
 
 public class SystemTemplate extends Template
 {
-    private final List<Template> children = Lists.newArrayList();
+    private final List<Template> children;
 
-    @Deprecated
-    public SystemTemplate(String name)
+    public SystemTemplate(String name,
+                          Map<String, Object> my,
+                          List<?> cardinality,
+                          List<Template> children)
     {
-        this(name, Collections.<String, Object>emptyMap());
-    }
-
-    public SystemTemplate(String name, Map<String, Object> my)
-    {
-        super(name, new My(my));
-    }
-
-    public void addChildren(Iterable<? extends Template> normalize)
-    {
-        Iterables.addAll(children, normalize);
-    }
-
-    public void addChild(Template child)
-    {
-        children.add(child);
+        super(name, new My(my), cardinality);
+        this.children = ImmutableList.copyOf(children);
     }
 
     public Collection<? extends Template> getChildren()
