@@ -14,6 +14,25 @@ module Atlas
     RootSystemParser.new(name, path).__parse
   end
 
+  def self.parse_install_list xs
+
+    # handle case of ["uri:stuff", { :param => 7}] is single uri
+    _, p =  Array(xs)
+    if p and p.is_a? Hash
+      xs = [xs]
+    end
+
+    Array(xs).map do |x|
+      i, params = Array(x)
+      params    = if params then
+                    Atlas.stringify params
+                  else
+                    Hash.new
+                  end
+      com.ning.atlas.spi.Uri.value_of2(i, params)
+    end
+  end
+
   def self.parse_env path
     RootEnvParser.new(path).__parse
   end
@@ -65,17 +84,7 @@ module Atlas
                end
       uri    = com.ning.atlas.spi.Uri.valueOf2(p, params)
 
-
-      inits = Array(args[:init]).map do |x|
-        i, params = Array(x)
-        params    = if params then
-                      Atlas.stringify params
-                    else
-                      Hash.new
-                    end
-        com.ning.atlas.spi.Uri.value_of2(i, params)
-      end
-
+      inits = Atlas.parse_install_list(args[:init])
       @bases[name] = com.ning.atlas.Base.new(uri, inits)
     end
 
@@ -167,7 +176,7 @@ module Atlas
                         ["0"]
                     end
       com.ning.atlas.SystemTemplate.new @name,
-                                        @args.inject({}){|a, (k, v)| a[k.to_s] = v; a },
+                                        @args.inject({}) { |a, (k, v)| a[k.to_s] = v; a },
                                         cardinality,
                                         @children
     end
@@ -180,9 +189,7 @@ module Atlas
     end
 
     def server name, args={}
-      installers  = Array(args[:install]).map do |uri, params|
-        Uri.value_of2(uri, params)
-      end
+      installers  = Atlas.parse_install_list(args[:install])
 
       # cardinality can be nil, a number, or an array
       cardinality = case it = args[:cardinality]
@@ -198,7 +205,7 @@ module Atlas
                                                      args[:base].to_s,
                                                      cardinality,
                                                      installers,
-                                                     args.inject({}){|a, (k, v)| a[k.to_s] = v; a })
+                                                     args.inject({}) { |a, (k, v)| a[k.to_s] = v; a })
     end
   end
 

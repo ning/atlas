@@ -1,7 +1,9 @@
 package com.ning.atlas;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.base.MorePredicates;
 import com.ning.atlas.galaxy.MicroGalaxyInstaller;
@@ -36,7 +38,7 @@ public class TestJRubyTemplateParser
         Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
         assertThat(t, notNullValue());
         List<Template> leaves = Trees.leaves(t);
-        assertThat(leaves.size(), equalTo(3));
+        assertThat(leaves.size(), equalTo(7));
 
         Template rslv_t = Iterables.find(leaves, beanPropertyEquals("type", "resolver"));
 
@@ -69,7 +71,6 @@ public class TestJRubyTemplateParser
         Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
 
         List<Template> leaves = Trees.leaves(t);
-        assertThat(leaves.size(), equalTo(3));
 
         Template appc = Iterables.find(leaves, beanPropertyEquals("type", "appcore"));
         My my = appc.getMy();
@@ -93,6 +94,47 @@ public class TestJRubyTemplateParser
         Base b = cs.getValue();
         Uri<Installer> u = Uri.valueOf("chef-solo:{ \"run_list\": \"role[java-core]\" }");
         assertThat(b.getInitializations(), equalTo(asList(u)));
+    }
+
+    @Test
+    public void testParameterizedInstallersPopulated() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
+
+        ServerTemplate st = Iterables.find(Trees.findInstancesOf(t, ServerTemplate.class),
+                                           MorePredicates.<ServerTemplate>beanPropertyEquals("type",
+                                                                                             "single-param-install"));
+        List<Uri<Installer>> xs = st.getInstallations();
+        assertThat(xs, equalTo(asList(Uri.<Installer>valueOf("foo:bar?size=7"))));
+
+    }
+
+    @Test
+    public void testInstallers2() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
+
+        ServerTemplate st = Iterables.find(Trees.findInstancesOf(t, ServerTemplate.class),
+                                           MorePredicates.<ServerTemplate>beanPropertyEquals("type",
+                                                                                             "single-param-install2"));
+        List<Uri<Installer>> xs = st.getInstallations();
+        assertThat(xs, equalTo(asList(Uri.<Installer>valueOf("foo:bar?size=7"))));
+
+    }
+
+    @Test
+    public void testInstallers3() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
+
+        ServerTemplate st = Iterables.find(Trees.findInstancesOf(t, ServerTemplate.class),
+                                           MorePredicates.<ServerTemplate>beanPropertyEquals("type",
+                                                                                             "single-param-install4"));
+        List<Uri<Installer>> xs = st.getInstallations();
+        assertThat(xs, equalTo(asList(Uri.<Installer>valueOf("hello:world"))));
     }
 
 //    @Test

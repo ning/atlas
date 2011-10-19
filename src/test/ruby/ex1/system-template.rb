@@ -16,6 +16,12 @@ system "ning" do
                      :install => ["cast:load-balancer-9.3"],
                      :cardinality => 8
 
+  server "single-param-install", :install => ["foo:bar", { :size => 7 } ]
+  server "single-param-install2", :install => [["foo:bar", { :size => 7 } ]]
+  server "single-param-install3", :install => ["hello:world",
+                                               ["foo:bar", { :size => 7 } ]]
+  server "single-param-install4", :install => "hello:world"
+
   system "aclu", :cardinality => ["aclu0", "aclu1"] do
     server "appcore", :base => "ubuntu-small",
                       :count => 5,
