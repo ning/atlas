@@ -10,10 +10,8 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
-import com.amazonaws.services.ec2.model.TerminateInstancesResult;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.NormalizedServerTemplate;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.base.Maybe;
@@ -29,6 +27,7 @@ import com.ning.atlas.spi.Uri;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static java.util.Arrays.asList;
@@ -37,11 +36,15 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
 {
     private final static Logger logger = Logger.get(EC2Provisioner.class);
 
-    private final ExecutorService es = MoreExecutors.sameThreadExecutor();
+    private final ExecutorService es = Executors.newCachedThreadPool();
 
     private final AmazonEC2Client ec2;
     private final String          keypairId;
 
+    /**
+     * used by jruby template parsing
+     * @param attributes
+     */
     public EC2Provisioner(Map<String, String> attributes)
     {
         BasicAWSCredentials credentials = new BasicAWSCredentials(attributes.get("access_key"),
