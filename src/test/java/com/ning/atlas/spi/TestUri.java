@@ -5,6 +5,7 @@ import com.ning.atlas.spi.Uri;
 import org.junit.Test;
 
 
+import javax.annotation.concurrent.Immutable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -66,6 +67,27 @@ public class TestUri
     public void testParams3() throws Exception
     {
         Uri uri = Uri.valueOf("hello:?a=1&b=2");
+        Map<String, Collection<String>> params = uri.getParams();
+        assertThat(params.get("a"), hasItem("1"));
+        assertThat(params.get("b"), hasItem("2"));
+    }
+
+    @Test
+    public void testAdditionalParams() throws Exception
+    {
+        Uri uri = Uri.valueOf("hello:?a=1",
+                              ImmutableMap.<String, Collection<String>>of("b", Arrays.asList("2")));
+        Map<String, Collection<String>> params = uri.getParams();
+        assertThat(params.get("a"), hasItem("1"));
+        assertThat(params.get("b"), hasItem("2"));
+    }
+
+    @Test
+    public void testAdditionalParams2() throws Exception
+    {
+        Uri uri = Uri.valueOf("hello",
+                              ImmutableMap.<String, Collection<String>>of("a", Arrays.asList("1"),
+                                                                          "b", Arrays.asList("2")));
         Map<String, Collection<String>> params = uri.getParams();
         assertThat(params.get("a"), hasItem("1"));
         assertThat(params.get("b"), hasItem("2"));

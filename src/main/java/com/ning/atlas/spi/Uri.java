@@ -1,9 +1,13 @@
 package com.ning.atlas.spi;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -16,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -90,32 +95,46 @@ public class Uri<T>
         return HashCodeBuilder.reflectionHashCode(this);
     }
 
-    public static <T> Uri<T> valueOf(String uri)
+    public static <T> Uri<T> valueOf2(String uri, Map additionalParams) {
+        Multimap<String, String> mmap = ArrayListMultimap.create();
+        for (Map.Entry entry : (Set< Map.Entry>)additionalParams.entrySet()) {
+            mmap.put(entry.getKey().toString(), entry.getValue().toString());
+        }
+        return valueOf(uri, mmap.asMap());
+    }
+
+    public static <T> Uri<T> valueOf(String uri, Map<String, Collection<String>> additionalParams)
     {
         checkNotNull(uri);
 
         int q_index = uri.indexOf('?');
-        Map<String, Collection<String>> params = Maps.newLinkedHashMap();
+        Multimap<String, String> p = ArrayListMultimap.create();
+
         if (q_index >= 0) {
             List<NameValuePair> pairs = URLEncodedUtils.parse(URI.create(uri.substring(q_index)), "UTF8");
             for (NameValuePair pair : pairs) {
-                if (!params.containsKey(pair.getName())) {
-                    params.put(pair.getName(), Lists.<String>newArrayList());
-                }
-                params.get(pair.getName()).add(pair.getValue());
+                p.put(pair.getName(), pair.getValue());
             }
+        }
+        for (Map.Entry<String, Collection<String>> entry : additionalParams.entrySet()) {
+            p.putAll(entry.getKey(), entry.getValue());
         }
 
         int colon_index = uri.indexOf(':');
         if (colon_index > 0 && q_index > 0) {
-            return new Uri<T>(uri.substring(0, colon_index), uri.substring(colon_index + 1, q_index), params);
+            return new Uri<T>(uri.substring(0, colon_index), uri.substring(colon_index + 1, q_index), p.asMap());
         }
         else if (colon_index > 0) {
-            return new Uri<T>(uri.substring(0, colon_index), uri.substring(colon_index + 1), params);
+            return new Uri<T>(uri.substring(0, colon_index), uri.substring(colon_index + 1), p.asMap());
         }
         else {
-            return new Uri<T>(uri, "", params);
+            return new Uri<T>(uri, "", p.asMap());
         }
+    }
+
+    public static <T> Uri<T> valueOf(String uri)
+    {
+        return valueOf(uri, Collections.<String, Collection<String>>emptyMap());
     }
 
     public Map<String, Collection<String>> getParams()

@@ -51,66 +51,67 @@ public class RDSProvisioner extends BaseComponent implements Provisioner
 //    @Override
     public Server provision(Base b, Node node) throws UnableToProvisionServerException
     {
-        log.info("Started provisioning %s, this could take a while", node.getId().toExternalForm());
-        RDSConfig cfg = new ConfigurationObjectFactory(new MapConfigSource(b.getAttributes())).build(RDSConfig.class);
-
-        String name = "db-" + UUID.randomUUID().toString();
-        CreateDBInstanceRequest req = new CreateDBInstanceRequest(name,
-                                                                  cfg.getStorageSize(),
-                                                                  cfg.getInstanceClass(),
-                                                                  cfg.getEngine(),
-                                                                  cfg.getUsername(),
-                                                                  cfg.getPassword());
-        String license_model = b.getAttributes().containsKey("license_model")
-                               ? b.getAttributes().get("license_model")
-                               : "general-public-license";
-
-        req.setLicenseModel(license_model);
-        DBInstance db = rds.createDBInstance(req);
-
-        DBInstance instance = null;
-        String last_state = "";
-        do {
-            try {
-                Thread.sleep(10000);
-            }
-            catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw Throwables.propagate(e);
-            }
-            DescribeDBInstancesRequest rdy = new DescribeDBInstancesRequest();
-            rdy.setDBInstanceIdentifier(db.getDBInstanceIdentifier());
-            DescribeDBInstancesResult rs;
-            try {
-                rs = rds.describeDBInstances(rdy);
-            }
-            catch (AmazonServiceException e) {
-                continue;
-            }
-            instance = rs.getDBInstances().get(0);
-            String state = instance.getDBInstanceStatus();
-            if (!last_state.equals(state)) {
-                log.debug("database instance %s achieved state %s", instance.getDBInstanceIdentifier(), state);
-                last_state = state;
-            }
-        }
-        while (!(instance != null
-                 && instance.getDBInstanceStatus().equals("available")
-                 && instance.getEndpoint() != null));
-
-        Map<String, String> attrs = Maps.newHashMap();
-        attrs.put("port", instance.getEndpoint().getPort().toString());
-        attrs.put("instanceId", instance.getDBInstanceIdentifier());
-        attrs.put("instanceClass", instance.getDBInstanceClass());
-        attrs.put("name", instance.getDBName() == null ? "" : instance.getDBName());
-        attrs.put("engine", instance.getEngine());
-        attrs.put("engineVersion", instance.getEngineVersion());
-        attrs.put("password", cfg.getPassword());
-        attrs.put("username", cfg.getUsername());
-        attrs.put("storageSize", String.valueOf(cfg.getStorageSize()));
-
-        log.info("Finished provisioning %s", node.getId().toExternalForm());
-        return new Server(instance.getEndpoint().getAddress(), instance.getEndpoint().getAddress(), attrs);
+        throw new UnsupportedOperationException("Not Yet Implemented!");
+//        log.info("Started provisioning %s, this could take a while", node.getId().toExternalForm());
+//        RDSConfig cfg = new ConfigurationObjectFactory(new MapConfigSource(b.getAttributes())).build(RDSConfig.class);
+//
+//        String name = "db-" + UUID.randomUUID().toString();
+//        CreateDBInstanceRequest req = new CreateDBInstanceRequest(name,
+//                                                                  cfg.getStorageSize(),
+//                                                                  cfg.getInstanceClass(),
+//                                                                  cfg.getEngine(),
+//                                                                  cfg.getUsername(),
+//                                                                  cfg.getPassword());
+//        String license_model = b.getAttributes().containsKey("license_model")
+//                               ? b.getAttributes().get("license_model")
+//                               : "general-public-license";
+//
+//        req.setLicenseModel(license_model);
+//        DBInstance db = rds.createDBInstance(req);
+//
+//        DBInstance instance = null;
+//        String last_state = "";
+//        do {
+//            try {
+//                Thread.sleep(10000);
+//            }
+//            catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//                throw Throwables.propagate(e);
+//            }
+//            DescribeDBInstancesRequest rdy = new DescribeDBInstancesRequest();
+//            rdy.setDBInstanceIdentifier(db.getDBInstanceIdentifier());
+//            DescribeDBInstancesResult rs;
+//            try {
+//                rs = rds.describeDBInstances(rdy);
+//            }
+//            catch (AmazonServiceException e) {
+//                continue;
+//            }
+//            instance = rs.getDBInstances().get(0);
+//            String state = instance.getDBInstanceStatus();
+//            if (!last_state.equals(state)) {
+//                log.debug("database instance %s achieved state %s", instance.getDBInstanceIdentifier(), state);
+//                last_state = state;
+//            }
+//        }
+//        while (!(instance != null
+//                 && instance.getDBInstanceStatus().equals("available")
+//                 && instance.getEndpoint() != null));
+//
+//        Map<String, String> attrs = Maps.newHashMap();
+//        attrs.put("port", instance.getEndpoint().getPort().toString());
+//        attrs.put("instanceId", instance.getDBInstanceIdentifier());
+//        attrs.put("instanceClass", instance.getDBInstanceClass());
+//        attrs.put("name", instance.getDBName() == null ? "" : instance.getDBName());
+//        attrs.put("engine", instance.getEngine());
+//        attrs.put("engineVersion", instance.getEngineVersion());
+//        attrs.put("password", cfg.getPassword());
+//        attrs.put("username", cfg.getUsername());
+//        attrs.put("storageSize", String.valueOf(cfg.getStorageSize()));
+//
+//        log.info("Finished provisioning %s", node.getId().toExternalForm());
+//        return new Server(instance.getEndpoint().getAddress(), instance.getEndpoint().getAddress(), attrs);
     }
 
     @Override

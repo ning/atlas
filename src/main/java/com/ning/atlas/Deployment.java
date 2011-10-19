@@ -43,7 +43,7 @@ public class Deployment
         List<Pair<NormalizedServerTemplate, Future<String>>> init_futures = Lists.newArrayList();
         List<Pair<NormalizedServerTemplate, Future<String>>> install_futures = Lists.newArrayList();
         for (NormalizedServerTemplate server : servers) {
-            Base base = environment.findBase(server.getBase()).otherwise(Base.errorBase(server.getBase()));
+            Base base = environment.findBase(server.getBase()).otherwise(Base.errorBase());
 
             Provisioner p = environment.resolveProvisioner(base.getProvisionUri());
             provision_futures.add(Pair.of(server, p.describe(server, base.getProvisionUri(), space, map)));
@@ -134,7 +134,7 @@ public class Deployment
             public List<Pair<Uri<Installer>, Installer>> apply(NormalizedServerTemplate input)
             {
                 final String base_name = input.getBase();
-                final Base base = environment.findBase(base_name).otherwise(Base.errorBase(base_name));
+                final Base base = environment.findBase(base_name).otherwise(Base.errorBase());
 
                 final List<Pair<Uri<Installer>, Installer>> rs = Lists.newArrayList();
                 for (Uri<Installer> uri : base.getInitializations()) {
@@ -216,7 +216,7 @@ public class Deployment
         final Map<NormalizedServerTemplate, Base> bases = Maps.newHashMap();
         for (final NormalizedServerTemplate server : servers) {
             final Maybe<Base> mb = environment.findBase(server.getBase());
-            bases.put(server, mb.otherwise(Base.errorBase(server.getBase())));
+            bases.put(server, mb.otherwise(Base.errorBase()));
             if (mb.isKnown()) {
                 final Base b = mb.getValue();
                 provisioners.add(Pair.of(b.getProvisionUri().getScheme(),
@@ -233,7 +233,7 @@ public class Deployment
         final List<Future<?>> futures = Lists.newArrayListWithExpectedSize(servers.size());
         for (final NormalizedServerTemplate server : servers) {
             final Base b = bases.get(server);
-            final Provisioner p = environment.getProvisioner(b.getProvisionUri());
+            final Provisioner p = environment.resolveProvisioner(b.getProvisionUri());
             futures.add(p.provision(server, b.getProvisionUri(), space, map));
         }
 

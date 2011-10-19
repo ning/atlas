@@ -16,7 +16,7 @@ import java.util.concurrent.Future;
 
 public class NoOpProvisioner extends BaseComponent implements Provisioner
 {
-    private Collection<Pair<Identity, Uri<Provisioner>>> provisioned = Lists.newArrayList();
+    private static Collection<Pair<Identity, Uri<Provisioner>>> provisioned = Lists.newArrayList();
 
     @Override
     public Future<?> provision(NormalizedServerTemplate node, Uri<Provisioner> uri, Space space, SystemMap map)
@@ -31,8 +31,12 @@ public class NoOpProvisioner extends BaseComponent implements Provisioner
         return Futures.immediateFuture("do nothing");
     }
 
-    public Collection<Pair<Identity, Uri<Provisioner>>> getProvisioned()
+    public static Collection<Pair<Identity, Uri<Provisioner>>> getProvisioned()
     {
         return provisioned;
+    }
+
+    public static void reset() {
+        provisioned.clear();
     }
 }

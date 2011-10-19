@@ -16,7 +16,7 @@ import java.util.concurrent.Future;
 
 public class NoOpInstaller extends BaseComponent implements Installer
 {
-    private Collection<Pair<Identity, Uri<Installer>>> installed = Lists.newArrayList();
+    private static Collection<Pair<Identity, Uri<Installer>>> installed = Lists.newArrayList();
 
     @Override
     public Future<String> describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)
@@ -31,8 +31,12 @@ public class NoOpInstaller extends BaseComponent implements Installer
         return Futures.immediateFuture(null);
     }
 
-    public Iterable<Pair<Identity,Uri<Installer>>> getInstalled()
+    public static Iterable<Pair<Identity,Uri<Installer>>> getInstalled()
     {
         return installed;
+    }
+
+    public static void reset() {
+        installed.clear();
     }
 }

@@ -1,140 +1,64 @@
 package com.ning.atlas;
 
-import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.tuple.Pair;
 
-import javax.annotation.Nullable;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Environment
 {
-    private final List<Base>               bases        = new CopyOnWriteArrayList<Base>();
-    private final List<Environment>        children     = new CopyOnWriteArrayList<Environment>();
-    private final Map<String, Provisioner> provisioners = Maps.newConcurrentMap();
-    private final Map<String, Installer>   installers   = Maps.newConcurrentMap();
-    private final Map<String, String>      properties   = Maps.newConcurrentMap();
+    private final Map<String, Pair<Class<? extends Provisioner>, Map<String, String>>> provisioners = Maps.newConcurrentMap();
+    private final Map<String, Pair<Class<? extends Installer>, Map<String, String>>>   installers   = Maps.newConcurrentMap();
 
-    private final String             name;
-    private final Maybe<Environment> parent;
+    private final Map<String, Base>   bases      = Maps.newConcurrentMap();
+    private final Map<String, String> properties = Maps.newConcurrentMap();
 
-    public Environment(String name)
+    public Environment()
     {
-        this(name,
-             Collections.<String, Provisioner>emptyMap(),
-             Collections.<String, Installer>emptyMap(), null);
+        this(Collections.<String, Pair<Class<? extends Provisioner>, Map<String, String>>>emptyMap(),
+             Collections.<String, Pair<Class<? extends Installer>, Map<String, String>>>emptyMap(),
+             Collections.<String, Base>emptyMap(),
+             Collections.<String, String>emptyMap());
     }
 
-    public Environment(String name,
-                       Map<String, Provisioner> provisioners,
-                       Map<String, Installer> installers)
+    public Environment(Map<String, Pair<Class<? extends Provisioner>, Map<String, String>>> provisioners,
+                       Map<String, Pair<Class<? extends Installer>, Map<String, String>>> installers,
+                       Map<String, Base> bases,
+                       Map<String, String> properties)
     {
-        this(name, provisioners, installers, null);
-    }
-
-    public Environment(String name,
-                       Map<String, Provisioner> provisioners,
-                       Map<String, Installer> installers,
-                       @Nullable Environment parent)
-    {
-        this.name = name;
-        this.parent = Maybe.elideNull(parent);
         this.provisioners.putAll(provisioners);
         this.installers.putAll(installers);
-    }
-
-    public void addProvisioner(String name, Provisioner p)
-    {
-        this.provisioners.put(name, p);
+        this.bases.putAll(bases);
+        this.properties.putAll(properties);
     }
 
     @Override
     public String toString()
     {
-        return Objects.toStringHelper(this)
-                      .add("name", name)
-                      .add("provisioners", provisioners)
-                      .add("children", children)
-                      .add("bases", bases)
-                      .toString();
-    }
-
-    public void addChild(Environment e)
-    {
-        this.children.add(e);
-    }
-
-    public Provisioner getProvisioner(Uri<Provisioner> name)
-    {
-        return provisioners.get(name.getScheme());
-    }
-
-    public void addInstaller(String name, Installer installer)
-    {
-        installers.put(name, installer);
+        return ToStringBuilder.reflectionToString(this);
     }
 
     public Maybe<Base> findBase(final String base)
     {
-        for (Base candidate : bases) {
-            if (candidate.getName().equals(base)) {
-                return Maybe.definitely(candidate);
-            }
+        if (bases.containsKey(base)) {
+            return Maybe.definitely(bases.get(base));
         }
-
-        for (Environment child : children) {
-            Maybe<Base> rs = child.findBase(base);
-            if (rs.isKnown()) {
-                return rs;
-            }
+        else {
+            return Maybe.unknown();
         }
-
-        return Maybe.unknown();
-    }
-
-    public void addBase(Base base)
-    {
-        bases.add(base);
-    }
-
-    public Map<String, Installer> getInstallers()
-    {
-        return Maps.newHashMap(installers);
-    }
-
-    public List<Environment> getChildren()
-    {
-        return children;
-    }
-
-    public void addProperties(Map<String, String> props)
-    {
-        this.properties.putAll(props);
     }
 
     public Map<String, String> getProperties()
     {
-        Map<String, String> rs = Maps.newHashMap();
-
-        if (parent.isKnown()) {
-            rs.putAll(parent.getValue().getProperties());
-        }
-
-        // override parent props with ours
-        rs.putAll(this.properties);
-        return rs;
-    }
-
-    public Map<String, Provisioner> getProvisioners()
-    {
-        return provisioners;
+        return ImmutableMap.copyOf(this.properties);
     }
 
     public Deployment planDeploymentFor(SystemMap map, Space state)
@@ -145,7 +69,13 @@ public class Environment
     public Maybe<Provisioner> findProvisioner(Uri<Provisioner> provisioner)
     {
         if (provisioners.containsKey(provisioner.getScheme())) {
-            return Maybe.definitely(provisioners.get(provisioner.getScheme()));
+            Pair<Class<? extends Provisioner>, Map<String, String>> pair = provisioners.get(provisioner.getScheme());
+            try {
+                return Maybe.definitely(Instantiator.create(pair.getLeft(), pair.getRight()));
+            }
+            catch (Exception e) {
+                throw new IllegalStateException("Unable to instantiate provisioner", e);
+            }
         }
         else {
             return Maybe.unknown();
@@ -155,7 +85,13 @@ public class Environment
     public Maybe<Installer> findInstaller(Uri<Installer> uri)
     {
         if (installers.containsKey(uri.getScheme())) {
-            return Maybe.definitely(installers.get(uri.getScheme()));
+            Pair<Class<? extends Installer>, Map<String, String>> pair = installers.get(uri.getScheme());
+            try {
+                return Maybe.definitely(Instantiator.create(pair.getLeft(), pair.getRight()));
+            }
+            catch (Exception e) {
+                throw new IllegalStateException("Unable to instantiate provisioner", e);
+            }
         }
         else {
             return Maybe.unknown();
