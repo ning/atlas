@@ -14,7 +14,6 @@ import java.util.Map;
 
 public class InMemorySpace implements Space
 {
-
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private final Map<String, String> values = Maps.newConcurrentMap();
@@ -44,15 +43,39 @@ public class InMemorySpace implements Space
     }
 
     @Override
+    public void store(Identity id, String key, String value)
+    {
+        this.values.put(id.toExternalForm() + ":" + key, value);
+    }
+
+    @Override
     public void scratch(String key, String value)
     {
         this.values.put(key, value);
     }
 
     @Override
+    public void scratch(Identity id, String key, String value)
+    {
+        this.values.put(id.toExternalForm() + ":" + key, value);
+    }
+
+    @Override
+    public void scratch(Identity id, Object it)
+    {
+        store(id, it);
+    }
+
+    @Override
     public Maybe<String> get(String key)
     {
         return Maybe.elideNull(this.values.get(key));
+    }
+
+    @Override
+    public Maybe<String> get(Identity id, String key)
+    {
+        return Maybe.elideNull(values.get(id.toExternalForm() + ":" + key));
     }
 
     @Override
