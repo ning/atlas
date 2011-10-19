@@ -213,15 +213,13 @@ public class Deployment
     {
         final Set<NormalizedServerTemplate> servers = map.findLeaves();
         final Set<Pair<String, Provisioner>> provisioners = Sets.newHashSet();
-        final Map<NormalizedServerTemplate, Base> bases = Maps.newHashMap();
+        final Map<NormalizedServerTemplate, Pair<Provisioner, Uri<Provisioner>>> s_to_p = Maps.newHashMap();
         for (final NormalizedServerTemplate server : servers) {
             final Maybe<Base> mb = environment.findBase(server.getBase());
-            bases.put(server, mb.otherwise(Base.errorBase()));
-            if (mb.isKnown()) {
-                final Base b = mb.getValue();
-                provisioners.add(Pair.of(b.getProvisionUri().getScheme(),
-                                         environment.resolveProvisioner(b.getProvisionUri())));
-            }
+            final Base base = mb.otherwise(Base.errorBase());
+            Provisioner p = environment.resolveProvisioner(base.getProvisionUri());
+            provisioners.add(Pair.of(base.getProvisionUri().getScheme(), p));
+            s_to_p.put(server, Pair.of(p, base.getProvisionUri()));
         }
 
         // startProvision
@@ -232,9 +230,9 @@ public class Deployment
         // provision
         final List<Future<?>> futures = Lists.newArrayListWithExpectedSize(servers.size());
         for (final NormalizedServerTemplate server : servers) {
-            final Base b = bases.get(server);
-            final Provisioner p = environment.resolveProvisioner(b.getProvisionUri());
-            futures.add(p.provision(server, b.getProvisionUri(), space, map));
+            final Pair<Provisioner, Uri<Provisioner>> pair = s_to_p.get(server);
+            final Provisioner p = pair.getLeft();
+            futures.add(p.provision(server, pair.getRight(), space, map));
         }
 
         for (Future<?> future : futures) {

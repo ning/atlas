@@ -1,12 +1,8 @@
 package com.ning.atlas;
 
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.base.MorePredicates;
-import com.ning.atlas.galaxy.MicroGalaxyInstaller;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Uri;
@@ -17,9 +13,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.ning.atlas.base.MorePredicates.beanPropertyEquals;
 import static java.util.Arrays.asList;
@@ -136,22 +130,4 @@ public class TestJRubyTemplateParser
         List<Uri<Installer>> xs = st.getInstallations();
         assertThat(xs, equalTo(asList(Uri.<Installer>valueOf("hello:world"))));
     }
-
-//    @Test
-//    public void testInstallersAreRegistered() throws Exception
-//    {
-//        JRubyTemplateParser p = new JRubyTemplateParser();
-//        Environment e = p.parseEnvironment(new File("src/test/ruby/ex1/simple-environment.rb"));
-//        final Map<String, Installer> m = e.getInstallers();
-//
-//
-//        Map<String, Installer> target = new HashMap<String, Installer>();
-//        target.put("ugx", new MicroGalaxyInstaller(ImmutableMap.of("ssh_user", "ubuntu",
-//                                                                   "ssh_key_file", "~/.ec2/brianm-ning.pem",
-//                                                                   "ugx_user", "ugx",
-//                                                                   "ugx_path", "/home/ugx/deploy")));
-//        assertThat(m, equalTo(target));
-//    }
-
-
 }

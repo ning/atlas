@@ -50,7 +50,7 @@ public class TestDeployment
 
         NoOpInstaller.reset();
         Map<String, Pair<Class<? extends Installer>, Map<String, String>>> installers =
-            ImmutableMap.of("noop", Pair.<Class<? extends Installer>, Map<String, String>>of(NoOpInstaller.class, Collections
+            ImmutableMap.of("foo", Pair.<Class<? extends Installer>, Map<String, String>>of(NoOpInstaller.class, Collections
                 .<String, String>emptyMap()));
 
         Map<String, Base> bases = ImmutableMap.of("base", new Base(Uri.<Provisioner>valueOf("noop:happy"),
