@@ -53,7 +53,7 @@ module Atlas
       @env
     end
 
-    def environment name, &block
+    def environment name="environment", &block
       # name is unused, is there for pretty readability
       @env = EnvironmentParser.new(block).__parse
     end
@@ -140,7 +140,7 @@ module Atlas
       @children << ServerParser.new(name, args, block).__parse
     end
 
-    def system name, args={}, &block
+    def system name="system", args={}, &block
       st = if args[:external] then
              Atlas.parse_system(args[:external], name)
            else
@@ -181,7 +181,7 @@ module Atlas
                                         @children
     end
 
-    def system name, args={}, &block
+    def system name="system", args={}, &block
       if args[:external]
       else
         @children << SystemParser.new(name, args, block).__parse

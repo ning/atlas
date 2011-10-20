@@ -100,6 +100,5 @@ public class TestEC2Provisioner
                                                          Missing.RequireAll).getValue();
 
         assertThat(info2.getEc2InstanceId(), equalTo(info.getEc2InstanceId()));
-
     }
 }

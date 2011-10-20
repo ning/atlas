@@ -1,7 +1,9 @@
 package com.ning.atlas;
 
+import com.google.common.io.Files;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.base.Maybe;
+import com.ning.atlas.logging.Logger;
 import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Deployment;
@@ -17,19 +19,24 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.SerializerProvider;
 import org.codehaus.jackson.map.module.SimpleModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class AtlasInstaller extends BaseComponent implements Installer
 {
-    private final Logger log = LoggerFactory.getLogger(AtlasInstaller.class);
+    private final static Logger log = Logger.get(AtlasInstaller.class);
+
+    private final ExecutorService es = Executors.newCachedThreadPool();
     private final String sshUser;
     private final String sshKeyFile;
 
@@ -42,34 +49,6 @@ public class AtlasInstaller extends BaseComponent implements Installer
         checkNotNull(sshKeyFile, "ssh_key_file attribute required");
     }
 
-//    @Override
-//    public void install(Server server, String arg, Node root, Node node) throws Exception
-//    {
-//        SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
-//        try {
-//            log.info("initializing {} to become a {}", server.getExternalAddress(), node.getType());
-//
-//            ssh.exec("sudo mkdir /etc/atlas");
-//
-//            // upload the system map
-//            String sys_map = mapper.writeValueAsString(root);
-//            File sys_map_file = File.createTempFile("system", "map");
-//            Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
-//            ssh.scpUpload(sys_map_file, "/tmp/system_map.json");
-//            ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
-//
-//            // upload node info
-//            String node_info = mapper.writeValueAsString(node);
-//            File node_info_file = File.createTempFile("node", "info");
-//            Files.write(node_info, node_info_file, Charset.forName("UTF-8"));
-//            ssh.scpUpload(node_info_file, "/tmp/node_info.json");
-//            ssh.exec("sudo mv /tmp/node_info.json /etc/atlas/node_info.json");
-//        }
-//        finally {
-//            ssh.close();
-//        }
-//    }
-
     @Override
     public Future<String> describe(Host server, Uri<Installer> uri, Deployment deployment)
     {
@@ -77,9 +56,64 @@ public class AtlasInstaller extends BaseComponent implements Installer
     }
 
     @Override
-    public Future<?> install(Host server, Uri<Installer> uri, Deployment deployment)
+    public Future<String> install(final Host host, Uri<Installer> uri, final Deployment deployment)
     {
-        throw new UnsupportedOperationException("Not Yet Implemented!");
+        // this *always* runs
+        return es.submit(new Callable<String>()
+        {
+            @Override
+            public String call() throws Exception
+            {
+                final Server server = deployment.getSpace()
+                                                .get(host.getId(), Server.class, Missing.NullProperty)
+                                                .getValue();
+                final ObjectMapper mapper = makeMapper(deployment.getSpace(), deployment.getEnvironment());
+                SSH ssh;
+                try {
+                    ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
+                }
+                catch (IOException e) {
+                    log.warn(e, "unable to ssh into the server");
+                    throw new UnsupportedOperationException("Not Yet Implemented!", e);
+                }
+                try {
+                    ssh.exec("sudo mkdir /etc/atlas");
+
+                    // upload the system map
+                    String sys_map = mapper.writeValueAsString(deployment.getSystemMap().getSingleRoot());
+                    File sys_map_file = File.createTempFile("system", "map");
+                    Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
+                    ssh.scpUpload(sys_map_file, "/tmp/system_map.json");
+                    ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
+
+                    // upload node info
+                    String node_info = mapper.writeValueAsString(host);
+                    File node_info_file = File.createTempFile("node", "info");
+                    Files.write(node_info, node_info_file, Charset.forName("UTF-8"));
+                    ssh.scpUpload(node_info_file, "/tmp/node_info.json");
+                    ssh.exec("sudo mv /tmp/node_info.json /etc/atlas/node_info.json");
+                    return node_info;
+                }
+                catch (Exception e) {
+                    log.warn(e, "FAIELD!");
+                    throw new UnsupportedOperationException("Not Yet Implemented!", e);
+                }
+                finally {
+                    try {
+                        ssh.close();
+                    }
+                    catch (IOException e) {
+                        throw new UnsupportedOperationException("Not Yet Implemented!", e);
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void finishLocal(SystemMap map, Space space)
+    {
+        es.shutdown();
     }
 
     ObjectMapper makeMapper(Space space, Environment environment)

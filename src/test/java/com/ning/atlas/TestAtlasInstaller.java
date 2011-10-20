@@ -1,36 +1,36 @@
 package com.ning.atlas;
 
 import com.google.common.collect.ImmutableMap;
-import com.ning.atlas.base.Maybe;
+import com.ning.atlas.aws.AWSConfig;
+import com.ning.atlas.aws.EC2Provisioner;
 import com.ning.atlas.space.InMemorySpace;
-import com.ning.atlas.space.Missing;
+import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
+import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Server;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.Version;
-import org.codehaus.jackson.annotate.JsonAnyGetter;
-import org.codehaus.jackson.map.JsonSerializer;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.codehaus.jackson.map.SerializerProvider;
-import org.codehaus.jackson.map.module.SimpleModule;
+import org.junit.After;
 import org.junit.Test;
+import org.skife.config.ConfigurationObjectFactory;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.Future;
 
+import static com.ning.atlas.testing.AtlasMatchers.exists;
 import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
+import static org.junit.Assume.assumeThat;
 
 public class TestAtlasInstaller
 {
@@ -87,118 +87,45 @@ public class TestAtlasInstaller
     }
 
     @Test
-    public void testFoo() throws Exception
+    public void testOnEc2() throws Exception
     {
-        Host child1 = new Host(Identity.root().createChild("ning", "0").createChild("child", "0"),
-                               "base",
-                               new My(),
-                               asList(Uri.<Installer>valueOf("galaxy:rslv")));
+        // assumeThat(System.getProperty("RUN_EC2_TESTS"), not(nullValue()));
+        assumeThat(new File(".awscreds"), exists());
 
-        Host child2 = new Host(Identity.root().createChild("ning", "0").createChild("child", "1"),
-                               "base",
-                               new My(ImmutableMap.<String, Object>of("galaxy", "console")),
-                               asList(Uri.<Installer>valueOf("galaxy:proc")));
 
-        Bunch root = new Bunch(Identity.root()
-                                       .createChild("ning", "0"), new My(), Arrays.<Element>asList(child1, child2));
+        Properties props = new Properties();
+        props.load(new FileInputStream(".awscreds"));
+        ConfigurationObjectFactory f = new ConfigurationObjectFactory(props);
+        AWSConfig config = f.build(AWSConfig.class);
+        EC2Provisioner ec2 = new EC2Provisioner(config);
+        Space space = InMemorySpace.newInstance();
+        Host node = new Host(Identity.root().createChild("test", "a"),
+                             "ubuntu",
+                             new My(),
+                             Collections.<Uri<Installer>>emptyList());
 
-        final Environment e = new Environment();
-        SystemMap map = new SystemMap(Arrays.<Element>asList(root));
+        SystemMap map = new SystemMap(Arrays.<Element>asList(node));
+        ec2.start(map, space);
+        Environment environment = new Environment();
+        Deployment deployment = new ActualDeployment(map, environment, space);
 
-        final Space space = InMemorySpace.newInstance();
-        space.store(child1.getId(), new Server("10.0.0.1"));
-        space.store(child2.getId(), new Server("10.0.0.2"));
 
-        final ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-        SimpleModule module = new SimpleModule("waffles", new Version(1, 0, 0, ""));
-        module.addSerializer(new JsonSerializer<Host>()
-        {
-            @Override
-            public Class<Host> handledType()
-            {
-                return Host.class;
-            }
+        Uri<Provisioner> uri = Uri.valueOf("ec2:ami-a7f539ce");
+        Future<Server> future = ec2.provision(node, uri, deployment);
+        Server s = future.get();
 
-            @Override
-            public void serialize(Host value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException
-            {
-                Maybe<Server> s = space.get(value.getId(), Server.class, Missing.RequireAll);
-                if (s.isKnown()) {
-                    jgen.writeObject(new ExtraHost(value, s.getValue(), e.getProperties()));
-                }
-            }
-        });
+        assertThat(s, not(nullValue()));
 
-        mapper.registerModule(module);
+        AtlasInstaller ai = new AtlasInstaller(ImmutableMap.<String, String>of("ssh_user", props.getProperty("aws.ssh-user"),
+                                                                               "ssh_key_file", props.getProperty("aws.key-file-path")));
 
-        String json = mapper.writeValueAsString(map.getSingleRoot());
-        System.out.println(json);
+        String node_info = ai.install(node, Uri.<Installer>valueOf("atlas"), deployment).get();
+        System.out.println(node_info);
+        System.out.println(s.getExternalAddress());
 
+        ec2.destroy(node.getId(), space);
+        ec2.finish(map, space);
+        ai.finish(map, space);
     }
 
-    public static class ExtraHost
-    {
-
-        private final Host                host;
-        private final Server              server;
-        private final Map<String, String> environment;
-
-        private static final ObjectMapper mapper = new ObjectMapper();
-
-        @JsonAnyGetter
-        public Map getProperties() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
-        {
-            Map map = mapper.convertValue(host, Map.class);
-            map.remove("children");
-            return map;
-        }
-
-        public ExtraHost(Host host, Server server, Map<String, String> environment)
-        {
-            this.host = host;
-            this.server = server;
-            this.environment = environment;
-        }
-
-        public Map<String, String> getEnvironment()
-        {
-            return environment;
-        }
-
-        public Server getServer()
-        {
-            return server;
-        }
-    }
-
-    /*
-    @Test
-    public void testExplicitSpinUp() throws Exception
-    {
-        assumeThat(System.getProperty("RUN_EC2_TESTS"), notNullValue());
-
-        Template t = parser.parseSystem(new File("src/test/ruby/test_atlas_initializer.rb"));
-        Environment e = parser.parseEnvironment(new File("src/test/ruby/test_atlas_initializer.rb"));
-
-        final ErrorCollector ec = new ErrorCollector();
-        InitializedTemplate it = t.normalize(e).provision(ec, exec).get().initialize(ec,exec).get();
-
-        List<InitializedServer> leaves = Trees.findInstancesOf(it, InitializedServer.class);
-        assertThat(leaves.size(), equalTo(1));
-
-        InitializedServer ist = leaves.get(0);
-        SSH ssh = new SSH(new File(props.getProperty("aws.key-file-path")),
-                          "ubuntu",
-                          ist.getServer().getExternalAddress());
-
-        String node_info = ssh.exec("cat /etc/atlas/node_info.json");
-        assertThat(node_info, containsString("\"name\" : \"eshell\""));
-        assertThat(node_info, containsString("\"instanceId\""));
-
-        for (InitializedServer leave : leaves) {
-            ec2.destroy(leave.getServer());
-        }
-    }
-    */
 }
