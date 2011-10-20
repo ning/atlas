@@ -12,12 +12,14 @@ import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
+import com.ning.atlas.ActualDeployment;
 import com.ning.atlas.Host;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Server;
@@ -65,9 +67,9 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
     @Override
     public Future<Server> provision(final Host node,
                                     final Uri<Provisioner> uri,
-                                    final Space space,
-                                    final SystemMap map)
+                                    final Deployment deployment)
     {
+        final Space space = deployment.getSpace();
         final Maybe<Server> s = space.get(node.getId(), Server.class, Missing.RequireAll);
         if (s.isKnown() && space.get(node.getId(), EC2InstanceInfo.class, Missing.RequireAll).isKnown()) {
             // we have an ec2 instance for this node already
@@ -139,8 +141,7 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
     @Override
     public Future<String> describe(Host server,
                                    Uri<Provisioner> uri,
-                                   Space space,
-                                   SystemMap map)
+                                   Deployment deployment)
     {
         return Futures.immediateFuture("provision ec2 instance");
     }

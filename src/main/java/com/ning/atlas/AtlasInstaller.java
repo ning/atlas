@@ -2,8 +2,8 @@ package com.ning.atlas;
 
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
@@ -65,13 +65,13 @@ public class AtlasInstaller extends BaseComponent implements Installer
 //    }
 
     @Override
-    public Future<String> describe(Host server, Uri<Installer> uri, Space space, SystemMap map)
+    public Future<String> describe(Host server, Uri<Installer> uri, Deployment deployment)
     {
         return Futures.immediateFuture("populate /etc/atlas with legacy cruft");
     }
 
     @Override
-    public Future<?> install(Host server, Uri<Installer> uri, Space space, SystemMap map)
+    public Future<?> install(Host server, Uri<Installer> uri, Deployment deployment)
     {
         throw new UnsupportedOperationException("Not Yet Implemented!");
     }

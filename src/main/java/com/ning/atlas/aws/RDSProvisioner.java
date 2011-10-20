@@ -7,6 +7,7 @@ import com.ning.atlas.Host;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
@@ -100,7 +101,7 @@ public class RDSProvisioner extends BaseComponent implements Provisioner
 //    }
 
     @Override
-    public Future<?> provision(Host node, Uri<Provisioner> uri, Space space, SystemMap map)
+    public Future<?> provision(Host node, Uri<Provisioner> uri, Deployment deployment)
     {
         throw new UnsupportedOperationException("Not Yet Implemented!");
     }
@@ -108,8 +109,7 @@ public class RDSProvisioner extends BaseComponent implements Provisioner
     @Override
     public Future<String> describe(Host server,
                                    Uri<Provisioner> uri,
-                                   Space space,
-                                   SystemMap map)
+                                   Deployment deployment)
     {
         return Futures.immediateFuture("provision an rds database");
     }

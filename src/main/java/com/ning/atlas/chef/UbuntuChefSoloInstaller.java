@@ -10,6 +10,7 @@ import com.ning.atlas.Host;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
@@ -113,14 +114,13 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
     @Override
     public Future<String> describe(Host server,
                                    Uri<Installer> uri,
-                                   Space space,
-                                   SystemMap map)
+                                   Deployment deployment)
     {
         return Futures.immediateFuture("install chef solo and assign it <roles>");
     }
 
     @Override
-    public Future<?> install(Host server, Uri<Installer> uri, Space space, SystemMap map)
+    public Future<?> install(Host server, Uri<Installer> uri, Deployment deployment)
     {
         throw new UnsupportedOperationException("Not Yet Implemented!");
     }

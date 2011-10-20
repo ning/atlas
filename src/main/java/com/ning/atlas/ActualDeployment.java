@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.ning.atlas.base.Maybe;
+import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Space;
@@ -18,20 +19,20 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-public class Deployment
+public class ActualDeployment implements Deployment
 {
     private final SystemMap   map;
     private final Environment environment;
     private final Space       space;
 
-    public Deployment(SystemMap map, Environment environment, Space space)
+    public ActualDeployment(SystemMap map, Environment environment, Space space)
     {
         this.map = map;
         this.environment = environment;
         this.space = space;
     }
 
-    public Description describe()
+    Description describe()
     {
         final Set<Host> servers = map.findLeaves();
         final Map<Host, HostDeploymentDescription> descriptors = Maps.newLinkedHashMap();
@@ -46,16 +47,16 @@ public class Deployment
             Base base = environment.findBase(server.getBase()).otherwise(Base.errorBase());
 
             Provisioner p = environment.resolveProvisioner(base.getProvisionUri());
-            provision_futures.add(Pair.of(server, p.describe(server, base.getProvisionUri(), space, map)));
+            provision_futures.add(Pair.of(server, p.describe(server, base.getProvisionUri(), this)));
 
             for (Uri<Installer> uri : base.getInitializations()) {
                 Installer i = environment.resolveInstaller(uri);
-                init_futures.add(Pair.of(server, i.describe(server, uri, space, map)));
+                init_futures.add(Pair.of(server, i.describe(server, uri, this)));
             }
 
             for (Uri<Installer> uri : server.getInstallations()) {
                 Installer i = environment.resolveInstaller(uri);
-                install_futures.add(Pair.of(server, i.describe(server, uri, space, map)));
+                install_futures.add(Pair.of(server, i.describe(server, uri, this)));
             }
         }
         for (Pair<Host, Future<String>> pair : provision_futures) {
@@ -187,7 +188,7 @@ public class Deployment
             for (Pair<Uri<Installer>, Installer> pair : entry.getValue()) {
                 final Uri<Installer> uri = pair.getKey();
                 final Installer installer = pair.getRight();
-                futures.add(installer.install(server, uri, space, map));
+                futures.add(installer.install(server, uri, this));
             }
         }
         for (Future<?> future : futures) {
@@ -232,7 +233,7 @@ public class Deployment
         for (final Host server : servers) {
             final Pair<Provisioner, Uri<Provisioner>> pair = s_to_p.get(server);
             final Provisioner p = pair.getLeft();
-            futures.add(p.provision(server, pair.getRight(), space, map));
+            futures.add(p.provision(server, pair.getRight(), this));
         }
 
         for (Future<?> future : futures) {
@@ -251,5 +252,20 @@ public class Deployment
         for (Pair<String, Provisioner> provisioner : provisioners) {
             provisioner.getRight().finish(map, space);
         }
+    }
+
+    public SystemMap getSystemMap()
+    {
+        return map;
+    }
+
+    public Environment getEnvironment()
+    {
+        return environment;
+    }
+
+    public Space getSpace()
+    {
+        return space;
     }
 }

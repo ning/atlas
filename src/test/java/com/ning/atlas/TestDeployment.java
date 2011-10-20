@@ -65,7 +65,7 @@ public class TestDeployment
     @Test
     public void testDescribe() throws Exception
     {
-        Deployment dp = env.planDeploymentFor(map, space);
+        ActualDeployment dp = env.planDeploymentFor(map, space);
         Description d = dp.describe();
 
         assertThat(d.getDescriptors().size(), equalTo(2));
@@ -86,7 +86,7 @@ public class TestDeployment
     @Test
     public void testPerformHitsProvisioner() throws Exception
     {
-        Deployment dp = env.planDeploymentFor(map, space);
+        ActualDeployment dp = env.planDeploymentFor(map, space);
         dp.perform();
 
         assertThat(NoOpProvisioner.getProvisioned(),
@@ -98,7 +98,7 @@ public class TestDeployment
     @Test
     public void testPerformHitsInitializations() throws Exception
     {
-        Deployment dp = env.planDeploymentFor(map, space);
+        ActualDeployment dp = env.planDeploymentFor(map, space);
         dp.perform();
 
         assertThat(NoOpInstaller.getInstalled(),
@@ -110,7 +110,7 @@ public class TestDeployment
     @Test
     public void testPerformHitsInstalls() throws Exception
     {
-        Deployment dp = env.planDeploymentFor(map, space);
+        ActualDeployment dp = env.planDeploymentFor(map, space);
         dp.perform();
 
         assertThat(NoOpInstaller.getInstalled(),

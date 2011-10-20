@@ -61,9 +61,9 @@ public class Environment
         return ImmutableMap.copyOf(this.properties);
     }
 
-    public Deployment planDeploymentFor(SystemMap map, Space state)
+    public ActualDeployment planDeploymentFor(SystemMap map, Space state)
     {
-        return new Deployment(map, this, state);
+        return new ActualDeployment(map, this, state);
     }
 
     public Maybe<Provisioner> findProvisioner(Uri<Provisioner> provisioner)

@@ -1,5 +1,7 @@
 package com.ning.atlas.aws;
 
+import com.ning.atlas.ActualDeployment;
+import com.ning.atlas.Environment;
 import com.ning.atlas.Host;
 import com.ning.atlas.Element;
 import com.ning.atlas.SystemMap;
@@ -37,6 +39,8 @@ public class TestEC2Provisioner
     private Space                    space;
     private Host node;
     private SystemMap                map;
+    private Environment environment;
+    private ActualDeployment deployment;
 
     @Before
     public void setUp() throws Exception
@@ -58,6 +62,8 @@ public class TestEC2Provisioner
 
         this.map = new SystemMap(Arrays.<Element>asList(node));
         this.ec2.start(map, space);
+        this.environment = new Environment();
+        this.deployment = new ActualDeployment(map, environment, space);
     }
 
     @After
@@ -71,7 +77,7 @@ public class TestEC2Provisioner
     public void testProvision() throws Exception
     {
         Uri<Provisioner> uri = Uri.valueOf("ec2:ami-a7f539ce");
-        Future<Server> f = ec2.provision(node, uri, space, map);
+        Future<Server> f = ec2.provision(node, uri, deployment);
         Server s = f.get();
 
         assertThat(s, not(nullValue()));
@@ -81,13 +87,13 @@ public class TestEC2Provisioner
     public void testIdempotentProvision() throws Exception
     {
         Uri<Provisioner> uri = Uri.valueOf("ec2:ami-a7f539ce");
-        Future<Server> f = ec2.provision(node, uri, space, map);
+        Future<Server> f = ec2.provision(node, uri, deployment);
         f.get();
 
         EC2Provisioner.EC2InstanceInfo info = space.get(node.getId(),
                                                         EC2Provisioner.EC2InstanceInfo.class,
                                                         Missing.RequireAll).getValue();
-        ec2.provision(node, uri, space, map).get();
+        ec2.provision(node, uri, deployment).get();
 
         EC2Provisioner.EC2InstanceInfo info2 = space.get(node.getId(),
                                                          EC2Provisioner.EC2InstanceInfo.class,

@@ -3,11 +3,11 @@ package com.ning.atlas.aws;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
 import com.google.common.util.concurrent.Futures;
+import com.ning.atlas.ActualDeployment;
 import com.ning.atlas.Host;
-import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,14 +41,13 @@ public class ELBInstaller extends BaseComponent implements Installer
     @Override
     public Future<String> describe(Host server,
                                    Uri<Installer> uri,
-                                   Space space,
-                                   SystemMap map)
+                                   Deployment deployment)
     {
         return Futures.immediateFuture(String.format("provision an elastic load balancer as %s", uri));
     }
 
     @Override
-    public Future<?> install(Host server, Uri<Installer> uri, Space space, SystemMap map)
+    public Future<?> install(Host server, Uri<Installer> uri, Deployment deployment)
     {
         throw new UnsupportedOperationException("Not Yet Implemented!");
     }

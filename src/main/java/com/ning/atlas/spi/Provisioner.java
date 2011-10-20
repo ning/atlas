@@ -1,7 +1,6 @@
 package com.ning.atlas.spi;
 
 import com.ning.atlas.Host;
-import com.ning.atlas.SystemMap;
 
 import java.util.concurrent.Future;
 
@@ -12,11 +11,9 @@ public interface Provisioner extends Component
 {
     public Future<?> provision(Host node,
                                Uri<Provisioner> uri,
-                               Space space,
-                               SystemMap map);
+                               Deployment deployment);
 
     public Future<String> describe(Host server,
                                    Uri<Provisioner> uri,
-                                   Space space,
-                                   SystemMap map);
+                                   Deployment deployment);
 }
