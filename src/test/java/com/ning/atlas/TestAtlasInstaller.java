@@ -24,9 +24,13 @@ import org.junit.Test;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.junit.matchers.JUnitMatchers.containsString;
 
 public class TestAtlasInstaller
 {
@@ -51,9 +55,11 @@ public class TestAtlasInstaller
 
 
     @Test
-    public void testFoo() throws Exception
+    public void testSerializationInAtlasInstaller() throws Exception
     {
-
+        // the two props are required. Yea!
+        AtlasInstaller ai = new AtlasInstaller(ImmutableMap.<String, String>of("ssh_user", "brianm",
+                                                                               "ssh_key_file", "~/.ssh/id_rsa"));
 
         Host child1 = new Host(Identity.root().createChild("ning", "0").createChild("child", "0"),
                                "base",
@@ -65,7 +71,36 @@ public class TestAtlasInstaller
                                new My(ImmutableMap.<String, Object>of("galaxy", "console")),
                                asList(Uri.<Installer>valueOf("galaxy:proc")));
 
-        Bunch root = new Bunch(Identity.root().createChild("ning", "0") , new My(), Arrays.<Element>asList(child1, child2));
+        Bunch root = new Bunch(Identity.root()
+                                       .createChild("ning", "0"), new My(), Arrays.<Element>asList(child1, child2));
+
+        final Environment environment = new Environment();
+        SystemMap map = new SystemMap(Arrays.<Element>asList(root));
+
+        final Space space = InMemorySpace.newInstance();
+        space.store(child1.getId(), new Server("10.0.0.1"));
+        space.store(child2.getId(), new Server("10.0.0.2"));
+
+        ObjectMapper mapper = ai.makeMapper(space, environment);
+        String json = ai.generateSystemMap(mapper, map);
+        System.out.println(json);
+    }
+
+    @Test
+    public void testFoo() throws Exception
+    {
+        Host child1 = new Host(Identity.root().createChild("ning", "0").createChild("child", "0"),
+                               "base",
+                               new My(),
+                               asList(Uri.<Installer>valueOf("galaxy:rslv")));
+
+        Host child2 = new Host(Identity.root().createChild("ning", "0").createChild("child", "1"),
+                               "base",
+                               new My(ImmutableMap.<String, Object>of("galaxy", "console")),
+                               asList(Uri.<Installer>valueOf("galaxy:proc")));
+
+        Bunch root = new Bunch(Identity.root()
+                                       .createChild("ning", "0"), new My(), Arrays.<Element>asList(child1, child2));
 
         final Environment e = new Environment();
         SystemMap map = new SystemMap(Arrays.<Element>asList(root));
@@ -92,8 +127,6 @@ public class TestAtlasInstaller
                 if (s.isKnown()) {
                     jgen.writeObject(new ExtraHost(value, s.getValue(), e.getProperties()));
                 }
-
-
             }
         });
 
@@ -107,8 +140,8 @@ public class TestAtlasInstaller
     public static class ExtraHost
     {
 
-        private final Host   host;
-        private final Server server;
+        private final Host                host;
+        private final Server              server;
         private final Map<String, String> environment;
 
         private static final ObjectMapper mapper = new ObjectMapper();
@@ -116,7 +149,7 @@ public class TestAtlasInstaller
         @JsonAnyGetter
         public Map getProperties() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
         {
-            Map map =  mapper.convertValue(host, Map.class);
+            Map map = mapper.convertValue(host, Map.class);
             map.remove("children");
             return map;
         }

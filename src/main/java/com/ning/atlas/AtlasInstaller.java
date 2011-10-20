@@ -1,15 +1,27 @@
 package com.ning.atlas;
 
 import com.google.common.util.concurrent.Futures;
+import com.ning.atlas.base.Maybe;
+import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.Server;
+import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.Version;
+import org.codehaus.jackson.annotate.JsonAnyGetter;
+import org.codehaus.jackson.map.JsonSerializer;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
+import org.codehaus.jackson.map.SerializerProvider;
+import org.codehaus.jackson.map.module.SimpleModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.concurrent.Future;
 
@@ -17,12 +29,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class AtlasInstaller extends BaseComponent implements Installer
 {
-    private final static ObjectMapper mapper = new ObjectMapper();
-
-    static {
-        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-    }
-
     private final Logger log = LoggerFactory.getLogger(AtlasInstaller.class);
     private final String sshUser;
     private final String sshKeyFile;
@@ -74,5 +80,86 @@ public class AtlasInstaller extends BaseComponent implements Installer
     public Future<?> install(Host server, Uri<Installer> uri, Deployment deployment)
     {
         throw new UnsupportedOperationException("Not Yet Implemented!");
+    }
+
+    ObjectMapper makeMapper(Space space, Environment environment)
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+        SimpleModule module = new SimpleModule("host-thing", new Version(1, 0, 0, ""));
+        module.addSerializer(new HostSerializer(space, environment));
+        mapper.registerModule(module);
+        return mapper;
+    }
+
+    /**
+     * Generates a JSON string which is the system map
+     */
+    String generateSystemMap(ObjectMapper mapper, SystemMap map) throws IOException
+    {
+        return mapper.writeValueAsString(map.getSingleRoot());
+    }
+
+
+    public static class HostSerializer extends JsonSerializer<Host>
+    {
+        private final Space       space;
+        private final Environment environment;
+
+        HostSerializer(Space space, Environment environment)
+        {
+            this.space = space;
+            this.environment = environment;
+        }
+
+        @Override
+        public Class<Host> handledType()
+        {
+            return Host.class;
+        }
+
+        @Override
+        public void serialize(Host value, JsonGenerator jgen, SerializerProvider provider) throws IOException
+        {
+            Maybe<Server> s = space.get(value.getId(), Server.class, Missing.RequireAll);
+            if (s.isKnown()) {
+                jgen.writeObject(new ExtraHost(value, s.getValue(), environment.getProperties()));
+            }
+        }
+    }
+
+    public static class ExtraHost
+    {
+
+        private final Host                host;
+        private final Server              server;
+        private final Map<String, String> environment;
+
+        private static final ObjectMapper mapper = new ObjectMapper();
+
+        @JsonAnyGetter
+        public Map getProperties() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
+        {
+            Map map = mapper.convertValue(host, Map.class);
+            map.remove("children");
+            return map;
+        }
+
+        public ExtraHost(Host host, Server server, Map<String, String> environment)
+        {
+            this.host = host;
+            this.server = server;
+            this.environment = environment;
+        }
+
+        public Map<String, String> getEnvironment()
+        {
+            return environment;
+        }
+
+        public Server getServer()
+        {
+            return server;
+        }
     }
 }
