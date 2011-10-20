@@ -2,9 +2,8 @@ package com.ning.atlas.aws;
 
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.rds.AmazonRDSClient;
-import com.amazonaws.services.rds.model.DeleteDBInstanceRequest;
 import com.google.common.util.concurrent.Futures;
-import com.ning.atlas.NormalizedServerTemplate;
+import com.ning.atlas.Host;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.BaseComponent;
@@ -101,13 +100,13 @@ public class RDSProvisioner extends BaseComponent implements Provisioner
 //    }
 
     @Override
-    public Future<?> provision(NormalizedServerTemplate node, Uri<Provisioner> uri, Space space, SystemMap map)
+    public Future<?> provision(Host node, Uri<Provisioner> uri, Space space, SystemMap map)
     {
         throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 
     @Override
-    public Future<String> describe(NormalizedServerTemplate server,
+    public Future<String> describe(Host server,
                                    Uri<Provisioner> uri,
                                    Space space,
                                    SystemMap map)

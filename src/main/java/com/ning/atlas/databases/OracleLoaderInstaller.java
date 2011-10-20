@@ -1,7 +1,7 @@
 package com.ning.atlas.databases;
 
 import com.google.common.util.concurrent.Futures;
-import com.ning.atlas.NormalizedServerTemplate;
+import com.ning.atlas.Host;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Installer;
@@ -89,7 +89,7 @@ public class OracleLoaderInstaller extends BaseComponent implements Installer
 //    }
 
     @Override
-    public Future<String> describe(NormalizedServerTemplate server,
+    public Future<String> describe(Host server,
                                    Uri<Installer> uri,
                                    Space space,
                                    SystemMap map)
@@ -98,7 +98,7 @@ public class OracleLoaderInstaller extends BaseComponent implements Installer
     }
 
     @Override
-    public Future<?> install(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)
+    public Future<?> install(Host server, Uri<Installer> uri, Space space, SystemMap map)
     {
         throw new UnsupportedOperationException("Not Yet Implemented!");
     }

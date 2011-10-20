@@ -12,7 +12,7 @@ import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
-import com.ning.atlas.NormalizedServerTemplate;
+import com.ning.atlas.Host;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.logging.Logger;
@@ -63,7 +63,7 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
     }
 
     @Override
-    public Future<Server> provision(final NormalizedServerTemplate node,
+    public Future<Server> provision(final Host node,
                                     final Uri<Provisioner> uri,
                                     final Space space,
                                     final SystemMap map)
@@ -137,7 +137,7 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
     }
 
     @Override
-    public Future<String> describe(NormalizedServerTemplate server,
+    public Future<String> describe(Host server,
                                    Uri<Provisioner> uri,
                                    Space space,
                                    SystemMap map)

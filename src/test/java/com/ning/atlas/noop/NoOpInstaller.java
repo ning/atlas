@@ -2,7 +2,7 @@ package com.ning.atlas.noop;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
-import com.ning.atlas.NormalizedServerTemplate;
+import com.ning.atlas.Host;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Identity;
@@ -19,13 +19,13 @@ public class NoOpInstaller extends BaseComponent implements Installer
     private static Collection<Pair<Identity, Uri<Installer>>> installed = Lists.newArrayList();
 
     @Override
-    public Future<String> describe(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)
+    public Future<String> describe(Host server, Uri<Installer> uri, Space space, SystemMap map)
     {
         return Futures.immediateFuture("do nothing with " + uri);
     }
 
     @Override
-    public Future<?> install(NormalizedServerTemplate server, Uri<Installer> uri, Space space, SystemMap map)
+    public Future<?> install(Host server, Uri<Installer> uri, Space space, SystemMap map)
     {
         installed.add(Pair.of(server.getId(), uri));
         return Futures.immediateFuture(null);

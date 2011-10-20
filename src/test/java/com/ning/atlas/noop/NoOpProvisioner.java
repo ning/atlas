@@ -2,7 +2,7 @@ package com.ning.atlas.noop;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
-import com.ning.atlas.NormalizedServerTemplate;
+import com.ning.atlas.Host;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Identity;
@@ -19,14 +19,14 @@ public class NoOpProvisioner extends BaseComponent implements Provisioner
     private static Collection<Pair<Identity, Uri<Provisioner>>> provisioned = Lists.newArrayList();
 
     @Override
-    public Future<?> provision(NormalizedServerTemplate node, Uri<Provisioner> uri, Space space, SystemMap map)
+    public Future<?> provision(Host node, Uri<Provisioner> uri, Space space, SystemMap map)
     {
         provisioned.add(Pair.of(node.getId(), uri));
         return Futures.immediateFuture(null);
     }
 
     @Override
-    public Future<String> describe(NormalizedServerTemplate server, Uri<Provisioner> uri, Space space, SystemMap map)
+    public Future<String> describe(Host server, Uri<Provisioner> uri, Space space, SystemMap map)
     {
         return Futures.immediateFuture("do nothing");
     }

@@ -28,19 +28,19 @@ public class ServerTemplate extends Template
     }
 
     @Override
-    protected List<NormalizedTemplate> _nom(Identity parent)
+    protected List<Element> _nom(Identity parent)
     {
-        final List<NormalizedTemplate> rs = new ArrayList<NormalizedTemplate>();
+        final List<Element> rs = new ArrayList<Element>();
         List<String> node_names = getCardinality();
         for (String node_name : node_names) {
 
             Identity id = parent.createChild(getType(), node_name);
-            rs.add(new NormalizedServerTemplate(id, getBase(), getMy(), getInstallations()));
+            rs.add(new Host(id, getBase(), getMy(), getInstallations()));
         }
         return rs;
     }
 
-    public Collection<? extends NormalizedTemplate> getChildren()
+    public Collection<? extends Element> getChildren()
     {
         return Collections.emptyList();
     }

@@ -8,17 +8,17 @@ import com.ning.atlas.spi.Uri;
 import java.util.Collections;
 import java.util.List;
 
-public class NormalizedServerTemplate extends NormalizedTemplate
+public class Host extends Element
 {
     private final String base;
     private final List<Uri<Installer>> installations;
 
-    public NormalizedServerTemplate(Identity id,
-                                    String base,
-                                    My my,
-                                    List<Uri<Installer>> installations)
+    public Host(Identity id,
+                String base,
+                My my,
+                List<Uri<Installer>> installations)
     {
-        super(id, my, Collections.<NormalizedTemplate>emptyList());
+        super(id, my, Collections.<Element>emptyList());
         this.base = base;
         this.installations = installations;
     }

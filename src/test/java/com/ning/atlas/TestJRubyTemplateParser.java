@@ -10,6 +10,8 @@ import com.ning.atlas.tree.Trees;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -42,6 +44,18 @@ public class TestJRubyTemplateParser
         assertThat(rslv.getCardinality(), equalTo(asList("0", "1", "2", "3", "4", "5", "6", "7")));
         assertThat(rslv.getBase(), equalTo("ubuntu-small"));
         assertThat(rslv.getInstallations(), hasItem(Uri.<Installer>valueOf("cast:load-balancer-9.3")));
+    }
+
+    @Test
+    @Ignore
+    public void testJson() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
+        SystemMap map = t.normalize();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+        mapper.writeValue(System.out, map.getSingleRoot());
     }
 
     @Test

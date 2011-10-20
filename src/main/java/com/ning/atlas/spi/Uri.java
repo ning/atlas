@@ -11,8 +11,14 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.map.JsonSerializer;
+import org.codehaus.jackson.map.SerializerProvider;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
@@ -21,6 +27,7 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+@JsonSerialize(using = Uri.UriJsonSerializer.class)
 public class Uri<T>
 {
     private final String                          scheme;
@@ -140,5 +147,15 @@ public class Uri<T>
     public Map<String, Collection<String>> getParams()
     {
         return params;
+    }
+
+    public static class UriJsonSerializer extends JsonSerializer<Uri>
+    {
+
+        @Override
+        public void serialize(Uri value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException
+        {
+            jgen.writeString(value.toString());
+        }
     }
 }

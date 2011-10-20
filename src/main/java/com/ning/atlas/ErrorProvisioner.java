@@ -22,13 +22,13 @@ public class ErrorProvisioner extends BaseComponent implements Provisioner
     }
 
     @Override
-    public Future<?> provision(NormalizedServerTemplate node, Uri<Provisioner> uri, Space space, SystemMap map)
+    public Future<?> provision(Host node, Uri<Provisioner> uri, Space space, SystemMap map)
     {
         throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 
     @Override
-    public Future<String> describe(NormalizedServerTemplate server, Uri<Provisioner> uri, Space space, SystemMap map)
+    public Future<String> describe(Host server, Uri<Provisioner> uri, Space space, SystemMap map)
     {
         return Futures.immediateFuture("raise an error");
     }

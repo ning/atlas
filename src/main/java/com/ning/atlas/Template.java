@@ -65,6 +65,6 @@ public abstract class Template implements Tree
         return new SystemMap(_nom(Identity.root()));
     }
 
-    protected abstract List<NormalizedTemplate> _nom(Identity parent);
+    protected abstract List<Element> _nom(Identity parent);
 
 }

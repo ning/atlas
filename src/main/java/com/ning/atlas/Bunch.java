@@ -5,9 +5,9 @@ import com.ning.atlas.spi.My;
 
 import java.util.List;
 
-public class NormalizedSystemTemplate extends NormalizedTemplate
+public class Bunch extends Element
 {
-    public NormalizedSystemTemplate(Identity id, My my, List<NormalizedTemplate> children)
+    public Bunch(Identity id, My my, List<Element> children)
     {
         super(id, my, children);
     }

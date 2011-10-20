@@ -33,16 +33,16 @@ public class Deployment
 
     public Description describe()
     {
-        final Set<NormalizedServerTemplate> servers = map.findLeaves();
-        final Map<NormalizedServerTemplate, HostDeploymentDescription> descriptors = Maps.newLinkedHashMap();
-        for (NormalizedServerTemplate server : servers) {
+        final Set<Host> servers = map.findLeaves();
+        final Map<Host, HostDeploymentDescription> descriptors = Maps.newLinkedHashMap();
+        for (Host server : servers) {
             descriptors.put(server, new HostDeploymentDescription(server.getId()));
         }
 
-        List<Pair<NormalizedServerTemplate, Future<String>>> provision_futures = Lists.newArrayList();
-        List<Pair<NormalizedServerTemplate, Future<String>>> init_futures = Lists.newArrayList();
-        List<Pair<NormalizedServerTemplate, Future<String>>> install_futures = Lists.newArrayList();
-        for (NormalizedServerTemplate server : servers) {
+        List<Pair<Host, Future<String>>> provision_futures = Lists.newArrayList();
+        List<Pair<Host, Future<String>>> init_futures = Lists.newArrayList();
+        List<Pair<Host, Future<String>>> install_futures = Lists.newArrayList();
+        for (Host server : servers) {
             Base base = environment.findBase(server.getBase()).otherwise(Base.errorBase());
 
             Provisioner p = environment.resolveProvisioner(base.getProvisionUri());
@@ -58,7 +58,7 @@ public class Deployment
                 install_futures.add(Pair.of(server, i.describe(server, uri, space, map)));
             }
         }
-        for (Pair<NormalizedServerTemplate, Future<String>> pair : provision_futures) {
+        for (Pair<Host, Future<String>> pair : provision_futures) {
             try {
                 descriptors.get(pair.getLeft()).addStep(StepType.Provision, pair.getRight().get());
             }
@@ -70,7 +70,7 @@ public class Deployment
             }
         }
 
-        for (Pair<NormalizedServerTemplate, Future<String>> pair : init_futures) {
+        for (Pair<Host, Future<String>> pair : init_futures) {
             try {
                 descriptors.get(pair.getLeft()).addStep(StepType.Initialize, pair.getRight().get());
             }
@@ -82,7 +82,7 @@ public class Deployment
             }
         }
 
-        for (Pair<NormalizedServerTemplate, Future<String>> pair : install_futures) {
+        for (Pair<Host, Future<String>> pair : install_futures) {
             try {
                 descriptors.get(pair.getLeft()).addStep(StepType.Install, pair.getRight().get());
             }
@@ -128,10 +128,10 @@ public class Deployment
         provision();
 
         // initializers
-        install(new Function<NormalizedServerTemplate, List<Pair<Uri<Installer>, Installer>>>()
+        install(new Function<Host, List<Pair<Uri<Installer>, Installer>>>()
         {
             @Override
-            public List<Pair<Uri<Installer>, Installer>> apply(NormalizedServerTemplate input)
+            public List<Pair<Uri<Installer>, Installer>> apply(Host input)
             {
                 final String base_name = input.getBase();
                 final Base base = environment.findBase(base_name).otherwise(Base.errorBase());
@@ -145,10 +145,10 @@ public class Deployment
         });
 
         // installers
-        install(new Function<NormalizedServerTemplate, List<Pair<Uri<Installer>, Installer>>>()
+        install(new Function<Host, List<Pair<Uri<Installer>, Installer>>>()
         {
             @Override
-            public List<Pair<Uri<Installer>, Installer>> apply(NormalizedServerTemplate input)
+            public List<Pair<Uri<Installer>, Installer>> apply(Host input)
             {
                 final List<Pair<Uri<Installer>, Installer>> rs = Lists.newArrayList();
                 for (Uri<Installer> uri : input.getInstallations()) {
@@ -162,12 +162,12 @@ public class Deployment
 
     }
 
-    private void install(Function<NormalizedServerTemplate, List<Pair<Uri<Installer>, Installer>>> f)
+    private void install(Function<Host, List<Pair<Uri<Installer>, Installer>>> f)
     {
-        final Set<NormalizedServerTemplate> servers = map.findLeaves();
+        final Set<Host> servers = map.findLeaves();
         final Set<Pair<String, Installer>> installers = Sets.newHashSet();
-        final Map<NormalizedServerTemplate, List<Pair<Uri<Installer>, Installer>>> t_to_i = Maps.newHashMap();
-        for (NormalizedServerTemplate server : servers) {
+        final Map<Host, List<Pair<Uri<Installer>, Installer>>> t_to_i = Maps.newHashMap();
+        for (Host server : servers) {
             final List<Pair<Uri<Installer>, Installer>> xs = f.apply(server);
             t_to_i.put(server, xs);
             for (Pair<Uri<Installer>, Installer> x : xs) {
@@ -182,8 +182,8 @@ public class Deployment
 
         // install
         final List<Future<?>> futures = Lists.newArrayList();
-        for (Map.Entry<NormalizedServerTemplate, List<Pair<Uri<Installer>, Installer>>> entry : t_to_i.entrySet()) {
-            final NormalizedServerTemplate server = entry.getKey();
+        for (Map.Entry<Host, List<Pair<Uri<Installer>, Installer>>> entry : t_to_i.entrySet()) {
+            final Host server = entry.getKey();
             for (Pair<Uri<Installer>, Installer> pair : entry.getValue()) {
                 final Uri<Installer> uri = pair.getKey();
                 final Installer installer = pair.getRight();
@@ -211,10 +211,10 @@ public class Deployment
 
     private void provision()
     {
-        final Set<NormalizedServerTemplate> servers = map.findLeaves();
+        final Set<Host> servers = map.findLeaves();
         final Set<Pair<String, Provisioner>> provisioners = Sets.newHashSet();
-        final Map<NormalizedServerTemplate, Pair<Provisioner, Uri<Provisioner>>> s_to_p = Maps.newHashMap();
-        for (final NormalizedServerTemplate server : servers) {
+        final Map<Host, Pair<Provisioner, Uri<Provisioner>>> s_to_p = Maps.newHashMap();
+        for (final Host server : servers) {
             final Maybe<Base> mb = environment.findBase(server.getBase());
             final Base base = mb.otherwise(Base.errorBase());
             Provisioner p = environment.resolveProvisioner(base.getProvisionUri());
@@ -229,7 +229,7 @@ public class Deployment
 
         // provision
         final List<Future<?>> futures = Lists.newArrayListWithExpectedSize(servers.size());
-        for (final NormalizedServerTemplate server : servers) {
+        for (final Host server : servers) {
             final Pair<Provisioner, Uri<Provisioner>> pair = s_to_p.get(server);
             final Provisioner p = pair.getLeft();
             futures.add(p.provision(server, pair.getRight(), space, map));

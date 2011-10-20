@@ -1,5 +1,6 @@
 package com.ning.atlas.spi;
 
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.codehaus.jackson.JsonGenerator;
@@ -36,6 +37,10 @@ public class My
         catch (IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    public Map<String, Object> asMap() {
+        return ImmutableMap.copyOf(attributes);
     }
 
     public Object get(String key)

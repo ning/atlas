@@ -7,13 +7,13 @@ import com.ning.atlas.tree.Tree;
 import java.util.Collection;
 import java.util.List;
 
-public class NormalizedTemplate implements Tree
+public class Element implements Tree
 {
     private final Identity id;
     private final My my;
-    private final List<NormalizedTemplate> children;
+    private final List<Element> children;
 
-    public NormalizedTemplate(Identity id, My my, List<NormalizedTemplate> children)
+    public Element(Identity id, My my, List<Element> children)
     {
         this.id = id;
         this.my = my;
@@ -21,7 +21,7 @@ public class NormalizedTemplate implements Tree
     }
 
     @Override
-    public Collection<? extends NormalizedTemplate> getChildren()
+    public Collection<? extends Element> getChildren()
     {
         return children;
     }

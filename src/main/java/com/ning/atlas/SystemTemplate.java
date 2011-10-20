@@ -28,21 +28,21 @@ public class SystemTemplate extends Template
         return children;
     }
 
-    public List<NormalizedTemplate> _nom(Identity parent)
+    public List<Element> _nom(Identity parent)
     {
-        List<NormalizedTemplate> rs = Lists.newArrayList();
+        List<Element> rs = Lists.newArrayList();
         List<String> node_names = getCardinality();
         for (String node_name : node_names) {
 
             Identity id = parent.createChild(getType(), node_name);
 
-            List<NormalizedTemplate> chillins = Lists.newArrayListWithCapacity(getChildren().size());
+            List<Element> chillins = Lists.newArrayListWithCapacity(getChildren().size());
 
             for (Template child : getChildren()) {
-                Iterable<NormalizedTemplate> r2 = child._nom(id);
+                Iterable<Element> r2 = child._nom(id);
                 Iterables.addAll(chillins, r2);
             }
-            NormalizedSystemTemplate me = new NormalizedSystemTemplate(id, getMy(), chillins);
+            Bunch me = new Bunch(id, getMy(), chillins);
             rs.add(me);
         }
         return rs;

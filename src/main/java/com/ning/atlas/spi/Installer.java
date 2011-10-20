@@ -1,6 +1,6 @@
 package com.ning.atlas.spi;
 
-import com.ning.atlas.NormalizedServerTemplate;
+import com.ning.atlas.Host;
 import com.ning.atlas.SystemMap;
 
 import java.util.concurrent.Future;
@@ -10,12 +10,12 @@ import java.util.concurrent.Future;
  */
 public interface Installer extends Component
 {
-    public Future<?> install(NormalizedServerTemplate server,
+    public Future<?> install(Host server,
                       Uri<Installer> uri,
                       Space space,
                       SystemMap map);
 
-    public Future<String> describe(NormalizedServerTemplate server,
+    public Future<String> describe(Host server,
                             Uri<Installer> uri,
                             Space space,
                             SystemMap map);

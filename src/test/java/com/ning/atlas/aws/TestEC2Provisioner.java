@@ -1,7 +1,7 @@
 package com.ning.atlas.aws;
 
-import com.ning.atlas.NormalizedServerTemplate;
-import com.ning.atlas.NormalizedTemplate;
+import com.ning.atlas.Host;
+import com.ning.atlas.Element;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.space.Missing;
@@ -33,30 +33,30 @@ import static org.junit.Assume.assumeThat;
 
 public class TestEC2Provisioner
 {
-    private AWSConfig                config;
     private EC2Provisioner           ec2;
-    private Properties               props;
     private Space                    space;
-    private NormalizedServerTemplate node;
+    private Host node;
     private SystemMap                map;
 
     @Before
     public void setUp() throws Exception
     {
+        // assumeThat(System.getProperty("RUN_EC2_TESTS"), not(nullValue()));
         assumeThat(new File(".awscreds"), exists());
 
-        props = new Properties();
+
+        Properties props = new Properties();
         props.load(new FileInputStream(".awscreds"));
         ConfigurationObjectFactory f = new ConfigurationObjectFactory(props);
-        config = f.build(AWSConfig.class);
+        AWSConfig config = f.build(AWSConfig.class);
         this.ec2 = new EC2Provisioner(config);
         this.space = InMemorySpace.newInstance();
-        this.node = new NormalizedServerTemplate(Identity.root().createChild("test", "a"),
+        this.node = new Host(Identity.root().createChild("test", "a"),
                                                  "ubuntu",
                                                  new My(),
                                                  Collections.<Uri<Installer>>emptyList());
 
-        this.map = new SystemMap(Arrays.<NormalizedTemplate>asList(node));
+        this.map = new SystemMap(Arrays.<Element>asList(node));
         this.ec2.start(map, space);
     }
 

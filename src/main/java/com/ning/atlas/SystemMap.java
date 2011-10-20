@@ -10,13 +10,13 @@ import java.util.Set;
 
 public class SystemMap
 {
-    private final List<NormalizedTemplate> roots;
+    private final List<Element> roots;
 
     public SystemMap() {
-        this(Collections.<NormalizedTemplate>emptyList());
+        this(Collections.<Element>emptyList());
     }
 
-    public SystemMap(List<NormalizedTemplate> roots)
+    public SystemMap(List<Element> roots)
     {
         this.roots = ImmutableList.copyOf(roots);
     }
@@ -26,17 +26,22 @@ public class SystemMap
         return new SystemMap();
     }
 
-    public List<NormalizedTemplate> getRoots()
+    public List<Element> getRoots()
     {
         return roots;
     }
 
-    public Set<NormalizedServerTemplate> findLeaves()
+    public Set<Host> findLeaves()
     {
-        final Set<NormalizedServerTemplate> rs = Sets.newLinkedHashSet();
-        for (NormalizedTemplate root : roots) {
-            rs.addAll(Trees.findInstancesOf(root, NormalizedServerTemplate.class));
+        final Set<Host> rs = Sets.newLinkedHashSet();
+        for (Element root : roots) {
+            rs.addAll(Trees.findInstancesOf(root, Host.class));
         }
         return rs;
+    }
+
+    public Element getSingleRoot()
+    {
+        return roots.get(0);
     }
 }
