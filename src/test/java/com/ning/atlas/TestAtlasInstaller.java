@@ -3,6 +3,7 @@ package com.ning.atlas;
 import com.google.common.collect.ImmutableMap;
 import com.ning.atlas.aws.AWSConfig;
 import com.ning.atlas.aws.EC2Provisioner;
+import com.ning.atlas.aws.TestEC2Provisioner;
 import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
@@ -13,7 +14,6 @@ import com.ning.atlas.spi.Server;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.junit.After;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
 
@@ -21,7 +21,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
@@ -34,24 +33,6 @@ import static org.junit.Assume.assumeThat;
 
 public class TestAtlasInstaller
 {
-//    private static final JRubyTemplateParser parser = new JRubyTemplateParser();
-//    private static final ExecutorService exec   = MoreExecutors.sameThreadExecutor();
-//
-//    private AWSConfig      config;
-//    private EC2Provisioner ec2;
-//    private Properties     props;
-//
-//    @Before
-//    public void setUp() throws Exception
-//    {
-//        assumeThat(new File(".awscreds"), exists());
-//
-//        props = new Properties();
-//        props.load(new FileInputStream(".awscreds"));
-//        ConfigurationObjectFactory f = new ConfigurationObjectFactory(props);
-//        config = f.build(AWSConfig.class);
-//        this.ec2 = new EC2Provisioner(config);
-//    }
 
 
     @Test
@@ -89,8 +70,7 @@ public class TestAtlasInstaller
     @Test
     public void testOnEc2() throws Exception
     {
-        // assumeThat(System.getProperty("RUN_EC2_TESTS"), not(nullValue()));
-        assumeThat(new File(".awscreds"), exists());
+        TestEC2Provisioner.assumeEc2();
 
 
         Properties props = new Properties();
