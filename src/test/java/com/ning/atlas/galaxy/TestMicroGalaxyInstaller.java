@@ -22,6 +22,7 @@ import java.util.Properties;
 import static com.ning.atlas.aws.EC2Helper.loadSshPropertyThing;
 import static com.ning.atlas.testing.AtlasMatchers.containsInstanceOf;
 import static com.ning.atlas.testing.AtlasMatchers.exists;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
@@ -56,7 +57,7 @@ public class TestMicroGalaxyInstaller
     @After
     public void tearDown() throws Exception
     {
-//        EC2Helper.destroy(this.d);
+        EC2Helper.destroy(this.d);
         mgi.finish(d);
         chef.finish(d);
         this.atlas.finish(d);
@@ -68,6 +69,6 @@ public class TestMicroGalaxyInstaller
     {
         String uri = "mg:https://s3.amazonaws.com/atlas-resources/echo.tar.gz";
         String rs = this.mgi.install(host, Uri.<Installer>valueOf(uri), d).get();
-        System.out.println(rs);
+        assertThat("write a test for this code", equalTo("crap, haven't yet"));
     }
 }
