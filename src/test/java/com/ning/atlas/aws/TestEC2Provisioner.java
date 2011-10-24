@@ -1,9 +1,9 @@
 package com.ning.atlas.aws;
 
 import com.ning.atlas.ActualDeployment;
+import com.ning.atlas.Element;
 import com.ning.atlas.Environment;
 import com.ning.atlas.Host;
-import com.ning.atlas.Element;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.space.Missing;
@@ -14,6 +14,9 @@ import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Server;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +29,6 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
-import static com.ning.atlas.testing.AtlasMatchers.exists;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
@@ -41,15 +43,28 @@ public class TestEC2Provisioner
     private ActualDeployment deployment;
 
 
-    public static void assumeEc2() {
-        assumeThat(System.getProperty("RUN_EC2_TESTS"), notNullValue());
-        assumeThat(new File(".awscreds"), exists());
+    public static Matcher<String> isAvailable()
+    {
+        return new BaseMatcher<String>()
+        {
+            @Override
+            public boolean matches(Object item)
+            {
+                return System.getProperties().containsKey("RUN_EC2_TESTS") && new File(".awscreds").exists() ;
+            }
+
+            @Override
+            public void describeTo(Description description)
+            {
+                description.appendText("RUN_EC2_TESTS and .awscreds both need to be there to run ec2 tests");
+            }
+        };
     }
 
     @Before
     public void setUp() throws Exception
     {
-        assumeEc2();
+        assumeThat("ec2", isAvailable());
 
         Properties props = new Properties();
         props.load(new FileInputStream(".awscreds"));
@@ -71,7 +86,7 @@ public class TestEC2Provisioner
     @After
     public void tearDown() throws Exception
     {
-        assumeEc2();
+
         this.ec2.destroy(node.getId(), space);
         this.ec2.finish(map, space);
     }
@@ -79,7 +94,8 @@ public class TestEC2Provisioner
     @Test
     public void testProvision() throws Exception
     {
-        assumeEc2();
+        //assumeThat("ec2", isAvailable());
+
         Uri<Provisioner> uri = Uri.valueOf("ec2:ami-a7f539ce");
         Future<Server> f = ec2.provision(node, uri, deployment);
         Server s = f.get();
@@ -90,7 +106,7 @@ public class TestEC2Provisioner
     @Test
     public void testIdempotentProvision() throws Exception
     {
-        assumeEc2();
+        assumeThat("ec2", isAvailable());
 
         Uri<Provisioner> uri = Uri.valueOf("ec2:ami-a7f539ce");
         Future<Server> f = ec2.provision(node, uri, deployment);

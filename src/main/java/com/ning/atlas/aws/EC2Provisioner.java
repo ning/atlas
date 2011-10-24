@@ -113,8 +113,8 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
                                 logger.info("Obtained instance %s at %s for %s",
                                             i2.getInstanceId(), i2.getPublicDnsName(), node.getId());
                                 Server server = new Server();
-                                server.setExternalAddress(i2.getPublicIpAddress());
-                                server.setInternalAddress(i2.getPublicIpAddress());
+                                server.setExternalAddress(i2.getPublicDnsName());
+                                server.setInternalAddress(i2.getPrivateDnsName());
 
                                 EC2InstanceInfo info = new EC2InstanceInfo();
                                 info.setEc2InstanceId(i2.getInstanceId());

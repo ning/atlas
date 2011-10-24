@@ -6,12 +6,16 @@ import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.Host;
+import com.ning.atlas.SSH;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.base.Maybe;
+import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.Server;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
 import org.antlr.stringtemplate.StringTemplate;
@@ -24,8 +28,10 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
@@ -46,7 +52,7 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
     private final String sshKeyFile;
     private final File   chefSoloInitFile;
     private final File   soloRbFile;
-    private final File s3InitFile;
+    private final File   s3InitFile;
 
     public UbuntuChefSoloInstaller(Map<String, String> attributes)
     {
@@ -120,50 +126,49 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
     }
 
     @Override
-    public Future<?> install(Host server, Uri<Installer> uri, Deployment deployment)
+    public Future<String> install(final Host server, final Uri<Installer> uri, final Deployment deployment)
     {
-        throw new UnsupportedOperationException("Not Yet Implemented!");
+        return MoreExecutors.sameThreadExecutor().submit(new Callable<String>()
+        {
+            @Override
+            public String call() throws Exception
+            {
+                return initServer(server, createNodeJsonFor(uri.getFragment()), deployment);
+
+            }
+        });
     }
 
-//    private void initServer(Server server, String nodeJson, File sysMapFile) throws IOException
-//    {
-//        SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
-//        try {
-//            String remote_path = "/home/" + sshUser + "/ubuntu-chef-solo-init.sh";
-//            ssh.scpUpload(this.chefSoloInitFile, remote_path);
-//            ssh.exec("chmod +x " + remote_path);
-//
-//            logger.debug("about to execute chef init script remotely");
-//            ssh.exec(remote_path);
-//
-//            File node_json = File.createTempFile("node", "json");
-//            Files.write(nodeJson, node_json, Charset.forName("UTF-8"));
-//            ssh.scpUpload(node_json, "/tmp/node.json");
-//            ssh.exec("sudo mv /tmp/node.json /etc/chef/node.json");
-//
-//            ssh.scpUpload(soloRbFile, "/tmp/solo.rb");
-//            ssh.exec("sudo mv /tmp/solo.rb /etc/chef/solo.rb");
-//
-//            ssh.scpUpload(s3InitFile, "/tmp/s3_init.rb");
-//            ssh.exec("sudo mv /tmp/s3_init.rb /etc/chef/s3_init.rb");
-//
-//            we require that the /etc/atlas/system_map.json file exist
-//            String out = ssh.exec("ls /etc/atlas/");
-//            if (!out.contains("system_map.json")) {
-//                ssh.exec("sudo mkdir /etc/atlas");
-//                logger.info("AtlasInitializer was not run, placing system map on {}", server.getExternalAddress());
-//                ssh.scpUpload(sysMapFile, "/tmp/system_map.json");
-//                ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
-//            }
-//
-//            logger.debug("about to execute initial chef-solo");
-//            ssh.exec("sudo chef-solo");
-//            ssh.exec("sudo chef-solo");
-//        }
-//        finally {
-//            ssh.close();
-//        }
-//    }
+    private String initServer(Host host, String nodeJson, Deployment d) throws IOException
+    {
+        Server server = d.getSpace().get(host.getId(), Server.class, Missing.RequireAll).getValue();
+        SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
+        try {
+            String remote_path = "/home/" + sshUser + "/ubuntu-chef-solo-init.sh";
+            ssh.scpUpload(this.chefSoloInitFile, remote_path);
+            ssh.exec("chmod +x " + remote_path);
+
+            logger.debug("about to execute chef init script remotely");
+            ssh.exec(remote_path);
+
+            File node_json = File.createTempFile("node", "json");
+            Files.write(nodeJson, node_json, Charset.forName("UTF-8"));
+            ssh.scpUpload(node_json, "/tmp/node.json");
+            ssh.exec("sudo mv /tmp/node.json /etc/chef/node.json");
+
+            ssh.scpUpload(soloRbFile, "/tmp/solo.rb");
+            ssh.exec("sudo mv /tmp/solo.rb /etc/chef/solo.rb");
+
+            ssh.scpUpload(s3InitFile, "/tmp/s3_init.rb");
+            ssh.exec("sudo mv /tmp/s3_init.rb /etc/chef/s3_init.rb");
+
+            logger.debug("about to execute initial chef-solo");
+            return ssh.exec("sudo chef-solo");
+        }
+        finally {
+            ssh.close();
+        }
+    }
 
     public String createNodeJsonFor(String literal)
     {
