@@ -1,6 +1,5 @@
 package com.ning.atlas.aws;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.ning.atlas.ActualDeployment;
 import com.ning.atlas.Element;
@@ -48,7 +47,7 @@ public class EC2Helper
 
         ec2.start(deployment);
 
-        Uri<Provisioner> uri = Uri.valueOf("ec2:ami-a7f539ce");
+        Uri<Provisioner> uri = Uri.valueOf("ec2:ami-c15994a8");
         Future<Server> future = ec2.provision(node, uri, deployment);
         future.get();
         ec2.finish(deployment);

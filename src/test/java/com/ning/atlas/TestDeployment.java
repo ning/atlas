@@ -71,7 +71,8 @@ public class TestDeployment
         assertThat(d.getDescriptors().size(), equalTo(2));
         for (HostDeploymentDescription description : d.getDescriptors()) {
             //provisioning
-            assertThat(description.getSteps().get(StepType.Provision), equalTo(Arrays.asList("do nothing")));
+            assertThat(description.getSteps().get(StepType.Provision),
+                       equalTo(Arrays.asList("do nothing with noop:happy")));
 
             // initialization
             assertThat(description.getSteps()
