@@ -67,7 +67,7 @@ public class TestAtlasInstaller
         String node_info = ai.install(node, Uri.<Installer>valueOf("atlas"), deployment).get();
         System.out.println(node_info);
 
-        ai.finish(deployment.getSystemMap(), deployment.getSpace());
+        ai.finish(deployment);
 
         EC2Helper.destroy(deployment);
     }

@@ -78,7 +78,7 @@ public class TestEC2Provisioner
                              Collections.<Uri<Installer>>emptyList());
 
         this.map = new SystemMap(Arrays.<Element>asList(node));
-        this.ec2.start(map, space);
+        this.ec2.start(deployment);
         this.environment = new Environment();
         this.deployment = new ActualDeployment(map, environment, space);
     }
@@ -88,7 +88,7 @@ public class TestEC2Provisioner
     {
 
         this.ec2.destroy(node.getId(), space);
-        this.ec2.finish(map, space);
+        this.ec2.finish(deployment);
     }
 
     @Test

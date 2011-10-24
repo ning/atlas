@@ -6,6 +6,7 @@ import com.ning.atlas.base.Maybe;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Server;
@@ -50,7 +51,7 @@ public class AtlasInstaller extends BaseComponent implements Installer
     }
 
     @Override
-    public Future<String> describe(Host server, Uri<Installer> uri, Deployment deployment)
+    public Future<String> describe(Host server, Uri<? extends Component> uri, Deployment deployment)
     {
         return Futures.immediateFuture("populate /etc/atlas with legacy cruft");
     }
@@ -111,7 +112,7 @@ public class AtlasInstaller extends BaseComponent implements Installer
     }
 
     @Override
-    protected void finishLocal(SystemMap map, Space space)
+    protected void finishLocal(Deployment deployment)
     {
         es.shutdown();
     }

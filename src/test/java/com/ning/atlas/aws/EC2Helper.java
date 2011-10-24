@@ -43,14 +43,15 @@ public class EC2Helper
                              Collections.<Uri<Installer>>emptyList());
 
         SystemMap map = new SystemMap(Arrays.<Element>asList(node));
-        ec2.start(map, space);
         Environment environment = new Environment();
         ActualDeployment deployment = new ActualDeployment(map, environment, space);
+
+        ec2.start(deployment);
 
         Uri<Provisioner> uri = Uri.valueOf("ec2:ami-a7f539ce");
         Future<Server> future = ec2.provision(node, uri, deployment);
         future.get();
-        ec2.finish(map, space);
+        ec2.finish(deployment);
         return deployment;
     }
 
@@ -80,6 +81,6 @@ public class EC2Helper
         for (Host host : d.getSystemMap().findLeaves()) {
             ec2.destroy(host.getId(), d.getSpace());
         }
-        ec2.finish(d.getSystemMap(), d.getSpace());
+        ec2.finish(d);
     }
 }

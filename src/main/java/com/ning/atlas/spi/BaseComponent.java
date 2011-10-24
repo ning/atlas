@@ -1,39 +1,30 @@
 package com.ning.atlas.spi;
 
-import com.ning.atlas.SystemMap;
-
 import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class BaseComponent implements Component
 {
-    private final AtomicReference<SystemMap> systemMap = new AtomicReference<SystemMap>();
-    private final AtomicReference<Space> space = new AtomicReference<Space>();
+    private final AtomicReference<Deployment> deployment = new AtomicReference<Deployment>();
 
-    protected Space getSpace() {
-        return space.get();
-    }
-
-    protected SystemMap getSystemMap() {
-        return systemMap.get();
+    protected Deployment getDeployment() {
+        return deployment.get();
     }
 
     @Override
-    public final void start(SystemMap map, Space space)
+    public final void start(Deployment deployment)
     {
-        this.systemMap.set(map);
-        this.space.set(space);
-        startLocal(map, space);
+        this.deployment.set(deployment);
+        startLocal(deployment);
     }
 
-    protected void startLocal(SystemMap map, Space space) {}
+    protected void startLocal(Deployment deployment) {}
 
     @Override
-    public final void finish(SystemMap map, Space space)
+    public final void finish(Deployment deployment)
     {
-        this.systemMap.set(null);
-        this.space.set(null);
-        finishLocal(map, space);
+        this.deployment.set(null);
+        finishLocal(deployment);
     }
 
-    protected void finishLocal(SystemMap map, Space space) {}
+    protected void finishLocal(Deployment deployment) {}
 }

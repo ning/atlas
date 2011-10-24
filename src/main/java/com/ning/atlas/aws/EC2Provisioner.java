@@ -19,6 +19,7 @@ import com.ning.atlas.base.Maybe;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Provisioner;
@@ -140,14 +141,14 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
 
     @Override
     public Future<String> describe(Host server,
-                                   Uri<Provisioner> uri,
-                                   Deployment deployment)
+                                            Uri<? extends Component> uri,
+                                            Deployment deployment)
     {
         return Futures.immediateFuture("provision ec2 instance");
     }
 
     @Override
-    protected void finishLocal(SystemMap map, Space space)
+    protected void finishLocal(Deployment deployment)
     {
         es.shutdown();
     }

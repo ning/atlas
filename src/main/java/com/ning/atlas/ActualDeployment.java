@@ -178,7 +178,7 @@ public class ActualDeployment implements Deployment
 
         // start
         for (Pair<String, Installer> installer : installers) {
-            installer.getRight().start(map, space);
+            installer.getRight().start(this);
         }
 
         // install
@@ -205,7 +205,7 @@ public class ActualDeployment implements Deployment
 
         // finish
         for (Pair<String, Installer> installer : installers) {
-            installer.getRight().finish(map, space);
+            installer.getRight().finish(this);
         }
 
     }
@@ -225,7 +225,7 @@ public class ActualDeployment implements Deployment
 
         // startProvision
         for (final Pair<String, Provisioner> provisioner : provisioners) {
-            provisioner.getRight().start(map, space);
+            provisioner.getRight().start(this);
         }
 
         // provision
@@ -250,7 +250,7 @@ public class ActualDeployment implements Deployment
 
         // finishProvision
         for (Pair<String, Provisioner> provisioner : provisioners) {
-            provisioner.getRight().finish(map, space);
+            provisioner.getRight().finish(this);
         }
     }
 

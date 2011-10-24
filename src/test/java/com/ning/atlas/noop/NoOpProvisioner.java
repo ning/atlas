@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.Host;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
@@ -27,9 +28,9 @@ public class NoOpProvisioner extends BaseComponent implements Provisioner
     }
 
     @Override
-    public Future<String> describe(Host server, Uri<Provisioner> uri, Deployment deployment)
+    public Future<String> describe(Host server, Uri<? extends Component> uri, Deployment deployment)
     {
-        return Futures.immediateFuture("do nothing");
+        return Futures.immediateFuture("do nothing with " + uri.toString());
     }
 
     public static Collection<Pair<Identity, Uri<Provisioner>>> getProvisioned()

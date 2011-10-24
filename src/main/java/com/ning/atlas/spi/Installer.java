@@ -14,6 +14,6 @@ public interface Installer extends Component
                              Deployment deployment);
 
     public Future<String> describe(Host server,
-                                   Uri<Installer> uri,
+                                   Uri<? extends Component> uri,
                                    Deployment deployment);
 }

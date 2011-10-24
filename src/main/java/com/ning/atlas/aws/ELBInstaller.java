@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.ActualDeployment;
 import com.ning.atlas.Host;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Uri;
@@ -40,7 +41,7 @@ public class ELBInstaller extends BaseComponent implements Installer
 
     @Override
     public Future<String> describe(Host server,
-                                   Uri<Installer> uri,
+                                   Uri<? extends Component> uri,
                                    Deployment deployment)
     {
         return Futures.immediateFuture(String.format("provision an elastic load balancer as %s", uri));

@@ -14,6 +14,6 @@ public interface Provisioner extends Component
                                Deployment deployment);
 
     public Future<String> describe(Host server,
-                                   Uri<Provisioner> uri,
+                                   Uri<? extends Component> uri,
                                    Deployment deployment);
 }

@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.Host;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
@@ -20,7 +21,7 @@ public class NoOpInstaller extends BaseComponent implements Installer
     private static Collection<Pair<Identity, Uri<Installer>>> installed = Lists.newArrayList();
 
     @Override
-    public Future<String> describe(Host server, Uri<Installer> uri, Deployment deployment)
+    public Future<String> describe(Host server, Uri<? extends Component> uri, Deployment deployment)
     {
         return Futures.immediateFuture("do nothing with " + uri);
     }

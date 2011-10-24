@@ -11,13 +11,15 @@ import org.junit.Test;
 import java.util.concurrent.Future;
 
 import static com.ning.atlas.aws.EC2Helper.loadSshPropertyThing;
+import static com.ning.atlas.aws.TestEC2Provisioner.isAvailable;
+import static org.junit.Assume.assumeThat;
 
 public class TestUbuntuChefSoloInstaller
 {
     @Test
     public void testFoo() throws Exception
     {
-        // assumeThat("ec2", isAvailable());
+        assumeThat("ec2", isAvailable());
 
         Deployment d = EC2Helper.spinUpSingleInstance();
         UbuntuChefSoloInstaller ci = new UbuntuChefSoloInstaller(loadSshPropertyThing("recipe_url",
@@ -26,6 +28,6 @@ public class TestUbuntuChefSoloInstaller
         Future<String> f = ci.install(h, Uri.<Installer>valueOf("chef:role[server]"), d);
         System.out.println(f.get());
         EC2Helper.destroy(d);
-        ci.finish(d.getSystemMap(), d.getSpace());
+        ci.finish(d);
     }
 }

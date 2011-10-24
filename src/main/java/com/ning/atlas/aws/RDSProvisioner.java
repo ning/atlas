@@ -4,12 +4,11 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.rds.AmazonRDSClient;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.Host;
-import com.ning.atlas.SystemMap;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
 import org.skife.config.Config;
 
@@ -108,7 +107,7 @@ public class RDSProvisioner extends BaseComponent implements Provisioner
 
     @Override
     public Future<String> describe(Host server,
-                                   Uri<Provisioner> uri,
+                                   Uri<? extends Component> uri,
                                    Deployment deployment)
     {
         return Futures.immediateFuture("provision an rds database");
