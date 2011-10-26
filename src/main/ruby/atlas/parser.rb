@@ -90,7 +90,7 @@ module Atlas
 
     def provisioner name, type, args={}
       attr                = Atlas.stringify args
-      pair                = org.apache.commons.lang3.tuple.Pair.of(type, attr)
+      pair                = org.apache.commons.lang3.tuple.Pair.of(type.java_class , attr)
       @provisioners[name] = pair
     end
 

@@ -101,6 +101,6 @@ public class OracleLoaderInstaller extends BaseComponent implements Installer
     @Override
     public Future<?> install(Host server, Uri<Installer> uri, Deployment deployment)
     {
-        throw new UnsupportedOperationException("Not Yet Implemented!");
+        return Futures.immediateFuture("hello");
     }
 }

@@ -19,6 +19,7 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.skife.config.ConfigurationObjectFactory;
 
@@ -64,7 +65,7 @@ public class TestEC2Provisioner
     @Before
     public void setUp() throws Exception
     {
-        assumeThat("ec2", isAvailable());
+//        assumeThat("ec2", isAvailable());
 
         Properties props = new Properties();
         props.load(new FileInputStream(".awscreds"));
@@ -92,9 +93,10 @@ public class TestEC2Provisioner
     }
 
     @Test
+    @Ignore
     public void testProvision() throws Exception
     {
-        //assumeThat("ec2", isAvailable());
+        assumeThat("ec2", isAvailable());
 
         Uri<Provisioner> uri = Uri.valueOf("ec2:ami-a7f539ce");
         Future<Server> f = ec2.provision(node, uri, deployment);
@@ -104,6 +106,7 @@ public class TestEC2Provisioner
     }
 
     @Test
+    @Ignore
     public void testIdempotentProvision() throws Exception
     {
         assumeThat("ec2", isAvailable());

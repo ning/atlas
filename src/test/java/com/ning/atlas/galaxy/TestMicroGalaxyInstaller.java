@@ -13,6 +13,7 @@ import com.ning.atlas.spi.Server;
 import com.ning.atlas.spi.Uri;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -21,8 +22,10 @@ import java.net.Socket;
 import java.util.Map;
 
 import static com.ning.atlas.aws.EC2Helper.loadSshPropertyThing;
+import static com.ning.atlas.aws.TestEC2Provisioner.isAvailable;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeThat;
 
 public class TestMicroGalaxyInstaller
 {
@@ -67,8 +70,10 @@ public class TestMicroGalaxyInstaller
 
 
     @Test
+    @Ignore
     public void testFoo() throws Exception
     {
+        assumeThat("ec2", isAvailable());
         String uri = "mg:https://s3.amazonaws.com/atlas-resources/echo.tar.gz";
         microgalaxy.install(host, Uri.<Installer>valueOf(uri), d).get();
 
@@ -85,4 +90,6 @@ public class TestMicroGalaxyInstaller
 
         assertThat(new String(buf), equalTo("dlrow olleh"));
     }
+
+
 }

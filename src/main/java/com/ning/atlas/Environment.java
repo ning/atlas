@@ -74,7 +74,7 @@ public class Environment
                 return Maybe.definitely(Instantiator.create(pair.getLeft(), pair.getRight()));
             }
             catch (Exception e) {
-                throw new IllegalStateException("Unable to instantiate provisioner", e);
+                throw new IllegalStateException("Unable to instantiate provisioner " + provisioner, e);
             }
         }
         else {

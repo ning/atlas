@@ -1,6 +1,15 @@
 package com.ning.atlas.main;
 
+import com.ning.atlas.ActualDeployment;
+import com.ning.atlas.Environment;
+import com.ning.atlas.JRubyTemplateParser;
+import com.ning.atlas.SystemMap;
+import com.ning.atlas.Template;
 import com.ning.atlas.logging.Logger;
+import com.ning.atlas.space.InMemorySpace;
+import com.ning.atlas.spi.Space;
+
+import java.io.File;
 
 public class StartCommand implements Runnable
 {
@@ -15,54 +24,13 @@ public class StartCommand implements Runnable
     @Override
     public void run()
     {
-//        final ErrorCollector ec = new ErrorCollector();
-//
-//        JRubyTemplateParser p = new JRubyTemplateParser();
-//        Template sys = p.parseSystem(new File(mainOptions.getSystemPath()));
-//        Environment env = p.parseEnvironment(new File(mainOptions.getEnvironmentPath()));
-//
-//        BoundTemplate bound = sys.normalize(env);
-//        logger.info("Generated deployment tree");
-//        if (mainOptions.isFailFast() && ec.hasErrors()) {
-//            ec.dumpErrorsTo(System.err);
-//            return;
-//        }
-//
-//        ExecutorService ex = Executors.newCachedThreadPool();
-//        try {
-//            ProvisionedElement pt = bound.provision(ec, ex).get();
-//            logger.info("Provisioned system");
-//            if (mainOptions.isFailFast() && ec.hasErrors()) {
-//                ec.dumpErrorsTo(System.err);
-//                return;
-//            }
-//
-//            InitializedTemplate it = pt.initialize(ec, ex).get();
-//            logger.info("Initialized system");
-//            if (mainOptions.isFailFast() && ec.hasErrors()) {
-//                ec.dumpErrorsTo(System.err);
-//                return;
-//            }
-//
-//            InstalledElement installed = it.install(ec, ex).get();
-//            logger.info("Installed and Started system");
-//            if (mainOptions.isFailFast() && ec.hasErrors()) {
-//                ec.dumpErrorsTo(System.err);
-//                return;
-//            }
-//
-//            ObjectMapper mapper = new ObjectMapper();
-//            mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-//            mapper.writeValue(System.out, installed);
-//            System.out.println();
-//            System.out.flush();
-//        }
-//        catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
-//        finally {
-//            ex.shutdownNow();
-//        }
-//
+
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        SystemMap map = p.parseSystem(new File(mainOptions.getSystemPath())).normalize();
+        Environment env = p.parseEnvironment(new File(mainOptions.getEnvironmentPath()));
+        Space space = InMemorySpace.newInstance();
+
+        ActualDeployment d = new ActualDeployment(map, env, space);
+        d.perform();
     }
 }
