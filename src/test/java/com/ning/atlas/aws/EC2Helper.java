@@ -18,6 +18,7 @@ import com.ning.atlas.spi.Uri;
 import org.skife.config.ConfigurationObjectFactory;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,10 +31,7 @@ public class EC2Helper
 {
     public static Deployment spinUpSingleInstance() throws Exception
     {
-        Properties props = new Properties();
-        props.load(new FileInputStream(".awscreds"));
-        ConfigurationObjectFactory f = new ConfigurationObjectFactory(props);
-        AWSConfig config = f.build(AWSConfig.class);
+        AWSConfig config = loadAwsConfig();
         EC2Provisioner ec2 = new EC2Provisioner(config);
         Space space = InMemorySpace.newInstance();
         Host node = new Host(Identity.root().createChild("test", "a"),
@@ -52,6 +50,14 @@ public class EC2Helper
         future.get();
         ec2.finish(deployment);
         return deployment;
+    }
+
+    public static AWSConfig loadAwsConfig() throws IOException
+    {
+        Properties props = new Properties();
+        props.load(new FileInputStream(".awscreds"));
+        ConfigurationObjectFactory f = new ConfigurationObjectFactory(props);
+        return f.build(AWSConfig.class);
     }
 
     public static Map<String, String> loadSshPropertyThing(String... extras) throws IOException

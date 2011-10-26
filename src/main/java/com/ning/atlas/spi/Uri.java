@@ -1,5 +1,6 @@
 package com.ning.atlas.spi;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -147,6 +148,18 @@ public class Uri<T>
     public Map<String, Collection<String>> getParams()
     {
         return params;
+    }
+
+    public Map<String,String> getParamsSimple()
+    {
+        return Maps.transformValues(getParams(), new Function<Collection<String>, String>()
+        {
+            @Override
+            public String apply(@Nullable Collection<String> input)
+            {
+                return input == null || input.isEmpty() ? null : input.iterator().next();
+            }
+        });
     }
 
     public static class UriJsonSerializer extends JsonSerializer<Uri>

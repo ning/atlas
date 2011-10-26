@@ -127,4 +127,16 @@ public class InMemorySpace implements Space
 
         return Maybe.definitely(bean);
     }
+
+    @Override
+    public String require(String s)
+    {
+        Maybe<String> m = get(s);
+        if (m.isKnown()) {
+            return m.getValue();
+        }
+        else {
+            throw new IllegalStateException("required value for " + s + " has not been defined");
+        }
+    }
 }

@@ -10,39 +10,11 @@ public enum Command
                 return new HelpCommand(mo);
             }
         },
-    provision
-        {
-            @Override
-            public Runnable create(MainOptions mo)
-            {
-                return new ProvisionCommand(mo);
-            }
-        },
-    initialize
-        {
-            @Override
-            public Runnable create(MainOptions mo)
-            {
-                return new InitializeCommand(mo);
-            }
-        },
-
-    install
-        {
-            @Override
-            public Runnable create(MainOptions mo)
-            {
-                return new StartCommand(mo);
-            }
-        },
-    /**
-     * alias for install
-     */
     start
         {
             public Runnable create(MainOptions mo)
             {
-                return install.create(mo);
+                return new StartCommand(mo);
             }
         };
 

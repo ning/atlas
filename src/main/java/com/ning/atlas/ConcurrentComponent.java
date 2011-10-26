@@ -51,7 +51,7 @@ public abstract class ConcurrentComponent<T> extends BaseComponent implements Pr
         });
     }
 
-    public abstract T perform(Host host, Uri<? extends Component> uri, Deployment d);
+    public abstract T perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception;
 
     @Override
     protected final void finishLocal(Deployment deployment)
