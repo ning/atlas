@@ -33,6 +33,8 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
@@ -48,6 +50,8 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
     }
 
     private final static Logger logger = LoggerFactory.getLogger(UbuntuChefSoloInstaller.class);
+
+    private static final ExecutorService es = Executors.newCachedThreadPool();
 
     private final String sshUser;
     private final String sshKeyFile;
@@ -129,7 +133,7 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
     @Override
     public Future<String> install(final Host server, final Uri<Installer> uri, final Deployment deployment)
     {
-        return MoreExecutors.sameThreadExecutor().submit(new Callable<String>()
+        return es.submit(new Callable<String>()
         {
             @Override
             public String call() throws Exception
@@ -138,6 +142,13 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
 
             }
         });
+    }
+
+
+    @Override
+    protected void finishLocal(Deployment deployment)
+    {
+        es.shutdown();
     }
 
     private String initServer(Host host, String nodeJson, Deployment d) throws IOException

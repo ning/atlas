@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.ning.atlas.base.Maybe;
+import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
@@ -21,6 +22,8 @@ import java.util.concurrent.Future;
 
 public class ActualDeployment implements Deployment
 {
+    private static final Logger log = Logger.get(ActualDeployment.class);
+
     private final SystemMap   map;
     private final Environment environment;
     private final Space       space;
@@ -126,9 +129,12 @@ public class ActualDeployment implements Deployment
 
         // startDeploy (no one can listen for this yet)
 
+        log.info("starting provision");
         provision();
+        log.info("finished provision");
 
         // initializers
+        log.info("starting init");
         install(new Function<Host, List<Pair<Uri<Installer>, Installer>>>()
         {
             @Override
@@ -144,8 +150,10 @@ public class ActualDeployment implements Deployment
                 return rs;
             }
         });
+        log.info("finished init");
 
         // installers
+        log.info("starting install");
         install(new Function<Host, List<Pair<Uri<Installer>, Installer>>>()
         {
             @Override
@@ -158,6 +166,7 @@ public class ActualDeployment implements Deployment
                 return rs;
             }
         });
+        log.info("finished install");
 
         // finishDeploy (no one can listen for this yet)
 
