@@ -158,7 +158,10 @@ public class AtlasInstaller extends BaseComponent implements Installer
         {
             Maybe<Server> s = space.get(value.getId(), Server.class, Missing.RequireAll);
             if (s.isKnown()) {
-                jgen.writeObject(new ExtraHost(value, s.getValue(), environment.getProperties()));
+                String json = space.get(value.getId(), "extra-atlas-attributes").otherwise("{}");
+                Map attrs = new ObjectMapper().readValue(json, Map.class);
+
+                jgen.writeObject(new ExtraHost(value, s.getValue(), environment.getProperties(), attrs));
             }
         }
     }
@@ -169,6 +172,7 @@ public class AtlasInstaller extends BaseComponent implements Installer
         private final Host                host;
         private final Server              server;
         private final Map<String, String> environment;
+        private final Map attributes;
 
         private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -177,14 +181,19 @@ public class AtlasInstaller extends BaseComponent implements Installer
         {
             Map map = mapper.convertValue(host, Map.class);
             map.remove("children");
+            map.putAll(attributes);
             return map;
         }
 
-        public ExtraHost(Host host, Server server, Map<String, String> environment)
+        public ExtraHost(Host host,
+                         Server server,
+                         Map<String, String> environment,
+                         Map attributes)
         {
             this.host = host;
             this.server = server;
             this.environment = environment;
+            this.attributes = attributes;
         }
 
         public Map<String, String> getEnvironment()

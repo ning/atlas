@@ -19,11 +19,11 @@ import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Uri;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.skife.config.Config;
 import org.skife.config.ConfigurationObjectFactory;
 
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.Future;
 
 public class RDSProvisioner extends ConcurrentComponent<String>
@@ -111,6 +111,8 @@ public class RDSProvisioner extends ConcurrentComponent<String>
 
         d.getSpace().store(node.getId(), "instance-id", instance.getDBInstanceIdentifier());
 
+        d.getSpace().scratch(node.getId(), "extra-atlas-attributes", new ObjectMapper().writeValueAsString(attrs));
+
         return "cool beans";
     }
 
@@ -128,16 +130,7 @@ public class RDSProvisioner extends ConcurrentComponent<String>
         DeleteDBInstanceRequest req = new DeleteDBInstanceRequest(instance_id);
         req.setSkipFinalSnapshot(true);
         rds.deleteDBInstance(req);
-
     }
-
-
-//    public void destroy(Server server)
-//    {
-//        DeleteDBInstanceRequest req = new DeleteDBInstanceRequest(server.getAttributes().get("instanceId"));
-//        req.setSkipFinalSnapshot(true);
-//        rds.deleteDBInstance(req);
-//    }
 
     public interface RDSConfig
     {

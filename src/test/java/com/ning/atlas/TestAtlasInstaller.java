@@ -55,6 +55,38 @@ public class TestAtlasInstaller
     }
 
     @Test
+    public void testSerializationInAtlasInstallerWithAttributes() throws Exception
+    {
+        // the two props are required. Yea!
+        AtlasInstaller ai = new AtlasInstaller(ImmutableMap.<String, String>of("ssh_user", "brianm",
+                                                                               "ssh_key_file", "~/.ssh/id_rsa"));
+
+        Host child1 = new Host(Identity.root().createChild("ning", "0").createChild("child", "0"),
+                               "base",
+                               new My(),
+                               asList(Uri.<Installer>valueOf("galaxy:rslv")));
+
+        Host child2 = new Host(Identity.root().createChild("ning", "0").createChild("child", "1"),
+                               "base",
+                               new My(ImmutableMap.<String, Object>of("galaxy", "console")),
+                               asList(Uri.<Installer>valueOf("galaxy:proc")));
+
+        Bunch root = new Bunch(Identity.root()
+                                       .createChild("ning", "0"), new My(), Arrays.<Element>asList(child1, child2));
+
+        final Environment environment = new Environment();
+        SystemMap map = new SystemMap(Arrays.<Element>asList(root));
+
+        final Space space = InMemorySpace.newInstance();
+        space.store(child1.getId(), new Server("10.0.0.1"));
+        space.store(child2.getId(), new Server("10.0.0.2"));
+        space.store(child1.getId(), "extra-atlas-attributes", "{ \"hello\":\"world\" }");
+        ObjectMapper mapper = ai.makeMapper(space, environment);
+        String json = ai.generateSystemMap(mapper, map);
+        System.out.println(json);
+    }
+
+    @Test
     public void testOnEc2() throws Exception
     {
         assumeThat("ec2", isAvailable());

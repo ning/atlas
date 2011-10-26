@@ -5,9 +5,7 @@ public class Server
     private String externalAddress;
     private String internalAddress;
 
-    public Server() {
-
-    }
+    public Server() { }
 
     public Server(String externalAddress, String internalAddress) {
         this.externalAddress = externalAddress;
