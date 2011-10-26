@@ -20,6 +20,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.SerializerProvider;
 import org.codehaus.jackson.map.module.SimpleModule;
+import sun.java2d.pipe.LoopPipe;
 
 import java.io.File;
 import java.io.IOException;
@@ -65,48 +66,55 @@ public class AtlasInstaller extends BaseComponent implements Installer
             @Override
             public String call() throws Exception
             {
-                final Server server = deployment.getSpace()
-                                                .get(host.getId(), Server.class, Missing.NullProperty)
-                                                .getValue();
-                final ObjectMapper mapper = makeMapper(deployment.getSpace(), deployment.getEnvironment());
-                SSH ssh;
-                try {
-                    ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
-                }
-                catch (IOException e) {
-                    log.warn(e, "unable to ssh into the server");
-                    throw new UnsupportedOperationException("Not Yet Implemented!", e);
-                }
-                try {
-                    ssh.exec("sudo mkdir /etc/atlas");
-
-                    // upload the system map
-                    String sys_map = mapper.writeValueAsString(deployment.getSystemMap().getSingleRoot());
-                    File sys_map_file = File.createTempFile("system", "map");
-                    Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
-                    ssh.scpUpload(sys_map_file, "/tmp/system_map.json");
-                    ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
-
-                    // upload node info
-                    String node_info = mapper.writeValueAsString(host);
-                    File node_info_file = File.createTempFile("node", "info");
-                    Files.write(node_info, node_info_file, Charset.forName("UTF-8"));
-                    ssh.scpUpload(node_info_file, "/tmp/node_info.json");
-                    ssh.exec("sudo mv /tmp/node_info.json /etc/atlas/node_info.json");
-                    return node_info;
-                }
-                catch (Exception e) {
-                    log.warn(e, "FAIELD!");
-                    throw new UnsupportedOperationException("Not Yet Implemented!", e);
-                }
-                finally {
+                boolean success = false;
+                while (!success) {
+                    final Server server = deployment.getSpace()
+                                                    .get(host.getId(), Server.class, Missing.NullProperty)
+                                                    .getValue();
+                    final ObjectMapper mapper = makeMapper(deployment.getSpace(), deployment.getEnvironment());
+                    SSH ssh;
                     try {
-                        ssh.close();
+                        ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
                     }
                     catch (IOException e) {
-                        throw new UnsupportedOperationException("Not Yet Implemented!", e);
+                        log.warn(e, "unable to ssh into the server");
+                        break;
+
                     }
+                    try {
+                        ssh.exec("sudo mkdir /etc/atlas");
+
+                        // upload the system map
+                        String sys_map = mapper.writeValueAsString(deployment.getSystemMap().getSingleRoot());
+                        File sys_map_file = File.createTempFile("system", "map");
+                        Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
+                        ssh.scpUpload(sys_map_file, "/tmp/system_map.json");
+                        ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
+
+                        // upload node info
+                        String node_info = mapper.writeValueAsString(host);
+                        File node_info_file = File.createTempFile("node", "info");
+                        Files.write(node_info, node_info_file, Charset.forName("UTF-8"));
+                        ssh.scpUpload(node_info_file, "/tmp/node_info.json");
+                        ssh.exec("sudo mv /tmp/node_info.json /etc/atlas/node_info.json");
+                        success = true;
+                        return node_info;
+                    }
+                    catch (Exception e) {
+                        log.warn(e, "failed!");
+                        success = false;
+                    }
+                    finally {
+                        try {
+                            ssh.close();
+                        }
+                        catch (IOException e) {
+                            log.warn("exception closing ssh connection", e);
+                        }
+                    }
+
                 }
+                return "finished";
             }
         });
     }
@@ -172,7 +180,7 @@ public class AtlasInstaller extends BaseComponent implements Installer
         private final Host                host;
         private final Server              server;
         private final Map<String, String> environment;
-        private final Map attributes;
+        private final Map                 attributes;
 
         private static final ObjectMapper mapper = new ObjectMapper();
 

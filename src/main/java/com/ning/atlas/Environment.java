@@ -66,9 +66,9 @@ public class Environment
         return new ActualDeployment(map, this, state);
     }
 
-    public Maybe<Provisioner> findProvisioner(Uri<Provisioner> provisioner)
+    public Maybe<Provisioner> findProvisioner(String provisioner)
     {
-        if (provisioners.containsKey(provisioner.getScheme())) {
+        if (provisioners.containsKey(provisioner)) {
             Pair<Class<? extends Provisioner>, Map<String, String>> pair = provisioners.get(provisioner.getScheme());
             try {
                 return Maybe.definitely(Instantiator.create(pair.getLeft(), pair.getRight()));
@@ -98,9 +98,9 @@ public class Environment
         }
     }
 
-    public Provisioner resolveProvisioner(Uri<Provisioner> uri)
+    public Provisioner resolveProvisioner(String scheme)
     {
-        return findProvisioner(uri).otherwise(new ErrorProvisioner());
+        return findProvisioner(scheme).otherwise(new ErrorProvisioner());
     }
 
     public Installer resolveInstaller(Uri<Installer> uri)
