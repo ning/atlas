@@ -1,5 +1,7 @@
 package com.ning.atlas.spi;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 public class Server
 {
     private String externalAddress;
@@ -16,6 +18,7 @@ public class Server
         this(address, address);
     }
 
+    @JsonProperty("external_address")
     public String getExternalAddress()
     {
         return externalAddress;
@@ -26,6 +29,7 @@ public class Server
         this.externalAddress = externalAddress;
     }
 
+    @JsonProperty("internal_address")
     public String getInternalAddress()
     {
         return internalAddress;

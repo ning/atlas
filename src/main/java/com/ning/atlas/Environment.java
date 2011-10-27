@@ -69,7 +69,7 @@ public class Environment
     public Maybe<Provisioner> findProvisioner(String provisioner)
     {
         if (provisioners.containsKey(provisioner)) {
-            Pair<Class<? extends Provisioner>, Map<String, String>> pair = provisioners.get(provisioner.getScheme());
+            Pair<Class<? extends Provisioner>, Map<String, String>> pair = provisioners.get(provisioner);
             try {
                 return Maybe.definitely(Instantiator.create(pair.getLeft(), pair.getRight()));
             }
