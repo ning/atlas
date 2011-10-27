@@ -152,6 +152,7 @@ public class ActualDeployment implements Deployment
                     }
                     else {
                         i = environment.resolveInstaller(uri);
+                        input.getRight().put(uri.getScheme(), i);
                     }
                     rs.add(Pair.of(uri, i));
                 }
@@ -169,7 +170,16 @@ public class ActualDeployment implements Deployment
             {
                 final List<Pair<Uri<Installer>, Installer>> rs = Lists.newArrayList();
                 for (Uri<Installer> uri : input.getLeft().getInstallations()) {
-                    rs.add(Pair.of(uri, environment.resolveInstaller(uri)));
+                    Installer i;
+                    if (input.getRight().containsKey(uri.getScheme())) {
+                        i = input.getRight().get(uri.getScheme());
+                    }
+                    else {
+                        i = environment.resolveInstaller(uri);
+                        input.getRight().put(uri.getScheme(), i);
+                    }
+
+                    rs.add(Pair.of(uri, i));
                 }
                 return rs;
             }
