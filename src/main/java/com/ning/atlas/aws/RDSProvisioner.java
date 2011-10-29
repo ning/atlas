@@ -18,12 +18,14 @@ import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.Server;
 import com.ning.atlas.spi.Uri;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.skife.config.Config;
 import org.skife.config.ConfigurationObjectFactory;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Future;
 
 public class RDSProvisioner extends ConcurrentComponent<String>
@@ -50,7 +52,7 @@ public class RDSProvisioner extends ConcurrentComponent<String>
         log.info("Started provisioning %s, this could take a while", node.getId().toExternalForm());
         RDSConfig cfg = new ConfigurationObjectFactory(new MapConfigSource(uri.getParamsSimple())).build(RDSConfig.class);
 
-        String name = uri.getFragment();
+        String name = "db-" + UUID.randomUUID().toString();
         CreateDBInstanceRequest req = new CreateDBInstanceRequest(name,
                                                                   cfg.getStorageSize(),
                                                                   cfg.getInstanceClass(),
@@ -108,6 +110,8 @@ public class RDSProvisioner extends ConcurrentComponent<String>
         log.info("Finished provisioning %s", node.getId().toExternalForm());
 
         // TODO save to space somehow
+
+        d.getSpace().store(node.getId(), new Server(instance.getEndpoint().getAddress()));
 
         d.getSpace().store(node.getId(), "instance-id", instance.getDBInstanceIdentifier());
 

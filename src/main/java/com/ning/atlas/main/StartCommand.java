@@ -2,14 +2,15 @@ package com.ning.atlas.main;
 
 import com.ning.atlas.ActualDeployment;
 import com.ning.atlas.Environment;
+import com.ning.atlas.Host;
 import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.SystemMap;
-import com.ning.atlas.Template;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.spi.Space;
 
 import java.io.File;
+import java.util.Map;
 
 public class StartCommand implements Runnable
 {
@@ -32,5 +33,15 @@ public class StartCommand implements Runnable
 
         ActualDeployment d = new ActualDeployment(map, env, space);
         d.perform();
+
+        for (Host host : d.getSystemMap().findLeaves()) {
+            System.out.println(host.getId());
+            for (Map.Entry<String, String> entry : space.getAllFor(host.getId()).entrySet()) {
+                System.out.printf("    %s = %s\n",
+                                  entry.getKey().substring(host.getId().toExternalForm().length()),
+                                  entry.getValue());
+            }
+        }
+
     }
 }

@@ -171,6 +171,9 @@ public class AtlasInstaller extends BaseComponent implements Installer
 
                 jgen.writeObject(new ExtraHost(value, s.getValue(), environment.getProperties(), attrs));
             }
+            else {
+                jgen.writeObject(value);
+            }
         }
     }
 

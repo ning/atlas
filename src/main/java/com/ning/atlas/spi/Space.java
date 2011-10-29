@@ -3,6 +3,9 @@ package com.ning.atlas.spi;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.space.Missing;
 
+import java.util.Map;
+import java.util.Set;
+
 /**
  * @todo Add garbage collection via mark and sweep (marked if read or written during a deployment, sweep at end)
  */
@@ -29,4 +32,8 @@ public interface Space
      */
 
     String require(String s);
+
+
+    Map<String, String> getAllFor(Identity id);
+
 }

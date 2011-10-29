@@ -1,7 +1,9 @@
 package com.ning.atlas.space;
 
 import com.google.common.base.CaseFormat;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
@@ -11,6 +13,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
 public class InMemorySpace implements Space
 {
@@ -32,7 +35,7 @@ public class InMemorySpace implements Space
                 String prop_name = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, pd.getName());
                 try {
                     Object value = pd.getReadMethod().invoke(it);
-                    String json = mapper.writeValueAsString(value);
+                    String json = String.valueOf(value);
                     values.put(id.toExternalForm() + ":" + prop_name, json);
                 }
                 catch (Exception e) {
@@ -138,5 +141,17 @@ public class InMemorySpace implements Space
         else {
             throw new IllegalStateException("required value for " + s + " has not been defined");
         }
+    }
+
+    @Override
+    public Map<String, String> getAllFor(Identity id)
+    {
+        Map<String, String> rs = Maps.newHashMap();
+        for (Map.Entry<String, String> entry : values.entrySet()) {
+            if (entry.getKey().startsWith(id.toString() + ":")) {
+                rs.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return rs;
     }
 }
