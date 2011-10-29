@@ -49,6 +49,11 @@ public class RDSProvisioner extends ConcurrentComponent<String>
     @Override
     public String perform(Host node, Uri<? extends Component> uri, Deployment d) throws Exception
     {
+
+        if (d.getSpace().get(node.getId(), "instance-id").isKnown()) {
+            return "already exists";
+        }
+
         log.info("Started provisioning %s, this could take a while", node.getId().toExternalForm());
         RDSConfig cfg = new ConfigurationObjectFactory(new MapConfigSource(uri.getParamsSimple())).build(RDSConfig.class);
 
@@ -115,7 +120,7 @@ public class RDSProvisioner extends ConcurrentComponent<String>
 
         d.getSpace().store(node.getId(), "instance-id", instance.getDBInstanceIdentifier());
 
-        d.getSpace().scratch(node.getId(), "extra-atlas-attributes", new ObjectMapper().writeValueAsString(attrs));
+        d.getSpace().store(node.getId(), "extra-atlas-attributes", new ObjectMapper().writeValueAsString(attrs));
 
         return "cool beans";
     }
