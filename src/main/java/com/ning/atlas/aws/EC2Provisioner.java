@@ -35,6 +35,9 @@ import java.util.concurrent.Future;
 
 import static java.util.Arrays.asList;
 
+/**
+ *
+ */
 public class EC2Provisioner extends BaseComponent implements Provisioner
 {
     private final static Logger logger = Logger.get(EC2Provisioner.class);

@@ -100,12 +100,7 @@ public class InMemorySpace implements Space
                 String json_val = this.values.get(key);
                 final Object val;
                 if (json_val != null) {
-                    try {
-                        val = mapper.readValue(json_val, pd.getPropertyType());
-                    }
-                    catch (IOException e) {
-                        throw new IllegalStateException("io exception reading from a string!", e);
-                    }
+                    val =  mapper.convertValue(String.valueOf(json_val), pd.getPropertyType());
                 }
                 else {
                     switch (behavior) {
