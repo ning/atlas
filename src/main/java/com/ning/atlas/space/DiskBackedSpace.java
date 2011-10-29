@@ -21,6 +21,12 @@ public class DiskBackedSpace extends BaseSpace
     {
         checkArgument(storageDir.isDirectory() || !storageDir.exists(), "storageDir must be a directory or not exist");
 
+        if (!storageDir.exists()) {
+            if (!storageDir.mkdirs()) {
+                throw new IllegalStateException("unable to create storage dir " + storageDir.getAbsolutePath());
+            }
+        }
+
         log.info("storing data in %s", storageDir.getAbsolutePath());
         this.storageDir = storageDir;
     }
@@ -33,7 +39,7 @@ public class DiskBackedSpace extends BaseSpace
     @Override
     protected String read(String key) throws IOException
     {
-        File f = new File(storageDir, key);
+        File f = new File(storageDir, munge(key));
         if (!f.exists()) return null;
 
         return Files.readLines(f, Charset.forName("UTF8"), new LineProcessor<String>()
@@ -55,10 +61,19 @@ public class DiskBackedSpace extends BaseSpace
         });
     }
 
+    private String munge(String key)
+    {
+        return key.replaceAll("/", "____");
+    }
+
+    private String unmunge(String name) {
+        return name.replaceAll("____", "/");
+    }
+
     @Override
     protected void write(String key, String value) throws IOException
     {
-        Files.write(value.getBytes(Charset.forName("UTF8")), new File(storageDir, key));
+        Files.write(value.getBytes(Charset.forName("UTF8")), new File(storageDir, munge(key)));
     }
 
     @Override
@@ -66,8 +81,8 @@ public class DiskBackedSpace extends BaseSpace
     {
         Map<String, String> rs = Maps.newHashMap();
         for (File file : storageDir.listFiles()) {
-            if (file.isFile() && file.getName().startsWith(prefix) ) {
-                rs.put(file.getName(), read(file.getName()));
+            if (file.isFile() && munge(file.getName()).startsWith(munge(prefix)) ) {
+                rs.put(unmunge(file.getName()), read(file.getName()));
             }
         }
         return rs;

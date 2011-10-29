@@ -7,7 +7,6 @@ import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.space.DiskBackedSpace;
-import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.spi.Space;
 
 import java.io.File;

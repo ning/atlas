@@ -37,7 +37,7 @@ public class TestSpace
     @Test
     public void testFoo() throws Exception
     {
-        Identity id = Identity.root().createChild("test", "0");
+        Identity id = Identity.root().createChild("test", "0").createChild("waffle", "9");
 
         Thing t = new Thing();
         t.setName("Freddy");
@@ -53,7 +53,7 @@ public class TestSpace
     @Test
     public void testOtherObjectsSameProperties() throws Exception
     {
-        Identity id = Identity.root().createChild("test", "0");
+        Identity id = Identity.root().createChild("test", "0").createChild("waffle", "9");
 
         Thing t = new Thing();
         t.setName("Freddy");
@@ -68,7 +68,7 @@ public class TestSpace
     @Test
     public void testRequireAll() throws Exception
     {
-        Identity id = Identity.root().createChild("test", "0");
+        Identity id = Identity.root().createChild("test", "0").createChild("waffle", "9");
 
         NameOnly t = new NameOnly();
         t.setName("Freddy");
@@ -83,7 +83,7 @@ public class TestSpace
     @Test
     public void testNullValueWhenMissing() throws Exception
     {
-        Identity id = Identity.root().createChild("test", "0");
+        Identity id = Identity.root().createChild("test", "0").createChild("waffle", "9");
 
         NameOnly t = new NameOnly();
         t.setName("Freddy");
