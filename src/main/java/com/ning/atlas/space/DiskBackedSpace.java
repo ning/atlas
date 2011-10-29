@@ -81,7 +81,7 @@ public class DiskBackedSpace extends BaseSpace
     {
         Map<String, String> rs = Maps.newHashMap();
         for (File file : storageDir.listFiles()) {
-            if (file.isFile() && munge(file.getName()).startsWith(munge(prefix)) ) {
+            if (file.isFile() && file.getName().startsWith(munge(prefix)) ) {
                 rs.put(unmunge(file.getName()), read(file.getName()));
             }
         }

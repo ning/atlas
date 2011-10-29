@@ -142,7 +142,13 @@ public abstract class BaseSpace implements Space
     @Override
     public Map<String, String> getAllFor(Identity id)
     {
-        Map<String, String> rs = Maps.newHashMap();
+        Map<String, String> rs = null;
+        try {
+            rs = readAll(id.toExternalForm());
+        }
+        catch (IOException e) {
+            throw new IllegalStateException("unable to read from storage", e);
+        }
         for (Map.Entry<String, String> entry : scratchSpace.entrySet()) {
             if (entry.getKey().startsWith(id.toString() + ":")) {
                 rs.put(entry.getKey(), entry.getValue());

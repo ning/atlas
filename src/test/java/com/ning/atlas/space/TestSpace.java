@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -94,6 +95,23 @@ public class TestSpace
 
         assertThat(t2.isKnown(), equalTo(true));
         assertThat(t2.getValue().getAgeOfPetDog(), nullValue());
+
+    }
+
+    @Test
+    public void testListAttributes() throws Exception
+    {
+        Identity id = Identity.root().createChild("test", "0").createChild("waffle", "9");
+
+        Thing t = new Thing();
+        t.setName("Freddy");
+        t.setAgeOfPetDog(7);
+
+        space.store(id, t);
+
+        Map<String, String> all = space.getAllFor(id);
+        assertThat(all.get(id.toExternalForm() + ":" + "name"), equalTo("Freddy"));
+        assertThat(all.get(id.toExternalForm() + ":" + "age-of-pet-dog"), equalTo("7"));
 
     }
 
