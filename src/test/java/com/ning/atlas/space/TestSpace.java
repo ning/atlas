@@ -1,11 +1,15 @@
 package com.ning.atlas.space;
 
+import com.google.common.io.Files;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.io.File;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -13,10 +17,26 @@ import static org.junit.Assert.assertThat;
 
 public class TestSpace
 {
+    private Space space;
+    private File  tempDir;
+
+    @Before
+    public void setUp() throws Exception
+    {
+        this.tempDir = Files.createTempDir();
+        this.space = DiskBackedSpace.create(tempDir);
+
+        // this.space = InMemorySpace.newInstance();
+    }
+
+    public void tearDown() throws Exception
+    {
+        Files.deleteRecursively(tempDir);
+    }
+
     @Test
     public void testFoo() throws Exception
     {
-        Space space = InMemorySpace.newInstance();
         Identity id = Identity.root().createChild("test", "0");
 
         Thing t = new Thing();
@@ -33,7 +53,6 @@ public class TestSpace
     @Test
     public void testOtherObjectsSameProperties() throws Exception
     {
-        Space space = InMemorySpace.newInstance();
         Identity id = Identity.root().createChild("test", "0");
 
         Thing t = new Thing();
@@ -49,7 +68,6 @@ public class TestSpace
     @Test
     public void testRequireAll() throws Exception
     {
-        Space space = InMemorySpace.newInstance();
         Identity id = Identity.root().createChild("test", "0");
 
         NameOnly t = new NameOnly();
@@ -65,7 +83,6 @@ public class TestSpace
     @Test
     public void testNullValueWhenMissing() throws Exception
     {
-        Space space = InMemorySpace.newInstance();
         Identity id = Identity.root().createChild("test", "0");
 
         NameOnly t = new NameOnly();
@@ -80,7 +97,8 @@ public class TestSpace
 
     }
 
-    public static class NameOnly {
+    public static class NameOnly
+    {
         private String name;
 
         public String getName()
@@ -96,18 +114,21 @@ public class TestSpace
 
     public static class Thing
     {
-        private String name;
+        private String  name;
         private Integer ageOfPetDog;
 
-        public void setName(String name) {
+        public void setName(String name)
+        {
             this.name = name;
         }
 
-        public String getName() {
+        public String getName()
+        {
             return this.name;
         }
 
-        public Integer getAgeOfPetDog() {
+        public Integer getAgeOfPetDog()
+        {
             return ageOfPetDog;
         }
 

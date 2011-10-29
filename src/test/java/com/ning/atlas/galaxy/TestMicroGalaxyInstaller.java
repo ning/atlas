@@ -1,15 +1,24 @@
 package com.ning.atlas.galaxy;
 
 import com.google.common.collect.Iterables;
+import com.google.common.util.concurrent.UncheckedTimeoutException;
+import com.ning.atlas.ActualDeployment;
 import com.ning.atlas.AtlasInstaller;
+import com.ning.atlas.Element;
+import com.ning.atlas.Environment;
 import com.ning.atlas.Host;
 import com.ning.atlas.SSH;
+import com.ning.atlas.SystemMap;
 import com.ning.atlas.aws.EC2Helper;
 import com.ning.atlas.chef.UbuntuChefSoloInstaller;
+import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.Deployment;
+import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Server;
+import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
 import org.junit.After;
 import org.junit.Before;
@@ -19,10 +28,13 @@ import org.junit.Test;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import static com.ning.atlas.aws.EC2Helper.loadSshPropertyThing;
 import static com.ning.atlas.aws.TestEC2Provisioner.isAvailable;
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assume.assumeThat;
@@ -90,6 +102,4 @@ public class TestMicroGalaxyInstaller
 
         assertThat(new String(buf), equalTo("dlrow olleh"));
     }
-
-
 }

@@ -6,6 +6,7 @@ import com.ning.atlas.Host;
 import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.logging.Logger;
+import com.ning.atlas.space.DiskBackedSpace;
 import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.spi.Space;
 
@@ -29,7 +30,8 @@ public class StartCommand implements Runnable
         JRubyTemplateParser p = new JRubyTemplateParser();
         SystemMap map = p.parseSystem(new File(mainOptions.getSystemPath())).normalize();
         Environment env = p.parseEnvironment(new File(mainOptions.getEnvironmentPath()));
-        Space space = InMemorySpace.newInstance();
+        Space space = DiskBackedSpace.create(new File(".space"));
+
 
         ActualDeployment d = new ActualDeployment(map, env, space);
         d.perform();

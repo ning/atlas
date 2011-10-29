@@ -48,14 +48,16 @@ public class MicroGalaxyInstaller extends ConcurrentComponent<String>
         try {
             ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
             log.debug("installing {} on {}", fragment, server.getExternalAddress());
-            // sudo -u %s ugx stop; sudo -u %s ugx clean;
-            String out = ssh.exec(format("cd ~%s; sudo -u %s ugx -b %s deploy; sudo -u %s ugx start",
-                                         //microGalaxyUser,
-                                         //microGalaxyUser,
+            //
+            String cmd = format("cd ~%s; sudo -u %s ugx stop; sudo -u %s ugx clean; sudo -u %s ugx -b %s deploy; sudo -u %s ugx start",
+                                         microGalaxyUser,
+                                         microGalaxyUser,
                                          microGalaxyUser,
                                          microGalaxyUser,
                                          fragment,
-                                         microGalaxyUser));
+                                         microGalaxyUser);
+            log.warn(cmd);
+            String out = ssh.exec(cmd);
             log.warn(out);
             return out;
         }
