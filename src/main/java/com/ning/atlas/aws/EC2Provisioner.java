@@ -49,6 +49,7 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
 
     /**
      * used by jruby template parsing
+     *
      * @param attributes
      */
     public EC2Provisioner(Map<String, String> attributes)
@@ -77,6 +78,12 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
         final Maybe<Server> s = space.get(node.getId(), Server.class, Missing.RequireAll);
         if (s.isKnown() && space.get(node.getId(), EC2InstanceInfo.class, Missing.RequireAll).isKnown()) {
             // we have an ec2 instance for this node already
+            logger.info("using existing ec2 instance %s for %s",
+                        space.get(node.getId(), EC2InstanceInfo.class, Missing.RequireAll)
+                             .getValue()
+                             .getEc2InstanceId(),
+                        node.getId().toExternalForm());
+
             return Futures.immediateFuture(s.getValue());
         }
         else {
@@ -144,8 +151,8 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
 
     @Override
     public Future<String> describe(Host server,
-                                            Uri<? extends Component> uri,
-                                            Deployment deployment)
+                                   Uri<? extends Component> uri,
+                                   Deployment deployment)
     {
         return Futures.immediateFuture("provision ec2 instance");
     }
