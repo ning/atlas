@@ -40,7 +40,7 @@ public class StartCommand implements Runnable
             for (Map.Entry<SpaceKey, String> entry : space.getAllFor(host.getId()).entrySet()) {
                 System.out.printf("    %s : %s\n",
                                   entry.getKey().getKey(),
-                                  StringUtils.abbreviate(entry.getValue(), 40).replaceAll("\n", "\\n"));
+                                  StringUtils.abbreviate(entry.getValue(), 80).replaceAll("\n", "\\n"));
             }
         }
 
