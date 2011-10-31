@@ -1,39 +1,44 @@
 package com.ning.atlas.space;
 
-import com.google.common.io.Files;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-public class TestSpace
+public abstract class BaseSpaceTest
 {
     private Space space;
-    private File  tempDir;
 
     @Before
-    public void setUp() throws Exception
+    public final void setUp() throws Exception
     {
-        this.tempDir = Files.createTempDir();
-        this.space = DiskBackedSpace.create(tempDir);
-
-        // this.space = InMemorySpace.newInstance();
+        localSetUp();
+        this.space = createSpace();
     }
 
+    protected abstract Space createSpace();
+    protected abstract void destroySpace(Space space) throws IOException;
+
+    protected void localSetUp() {}
+
+    @After
     public void tearDown() throws Exception
     {
-        Files.deleteRecursively(tempDir);
+        localTearDown();
     }
+
+    protected void localTearDown() throws Exception {};
 
     @Test
     public void testFoo() throws Exception
