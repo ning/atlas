@@ -4,6 +4,7 @@
 
     <!-- com.ning.atlas.logging.ColorizedAppender -->
     <appender name="console" class="org.apache.log4j.ConsoleAppender">
+        <param name="target" value="System.err"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%p\t%d{ISO8601}\t%t\t%c\t%m%n"/>
         </layout>
