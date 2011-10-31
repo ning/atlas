@@ -40,7 +40,7 @@ public abstract class BaseSpace implements Space
     public void store(Identity id, String key, String value)
     {
         try {
-            write(id.toExternalForm() + ":" + key, value);
+            write(id, key, value);
         }
         catch (IOException e) {
             throw new IllegalStateException("unable to write", e);
@@ -68,18 +68,23 @@ public abstract class BaseSpace implements Space
     @Override
     public Maybe<String> get(String key)
     {
-        try {
-            return Maybe.elideNull(this.scratchSpace.get(key)).otherwise(Maybe.elideNull(read(key)));
-        }
-        catch (IOException e) {
-            throw new IllegalStateException("unable to read value", e);
-        }
+        return getScratch(key);
+    }
+
+    protected Maybe<String> getScratch(String key)
+    {
+        return Maybe.elideNull(this.scratchSpace.get(key));
     }
 
     @Override
     public Maybe<String> get(Identity id, String key)
     {
-        return get(id.toExternalForm() + ":" + key);
+        try {
+            return getScratch(id.toExternalForm() + ":" + key).otherwise(Maybe.elideNull(read(id, key)));
+        }
+        catch (IOException e) {
+            throw new IllegalStateException("unable to read from persistent store", e);
+        }
     }
 
     @Override
@@ -96,9 +101,8 @@ public abstract class BaseSpace implements Space
 
         for (PropertyDescriptor pd : pds) {
             if (pd.getWriteMethod() != null) {
-                String key = id.toExternalForm() + ":" + CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN,
-                                                                                   pd.getName());
-                String json_val = get(key).otherwise((String) null);
+                String prop_name = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, pd.getName());
+                String json_val = get(id, prop_name).otherwise((String) null);
                 final Object val;
                 if (json_val != null) {
                     val = mapper.convertValue(String.valueOf(json_val), pd.getPropertyType());
@@ -142,9 +146,9 @@ public abstract class BaseSpace implements Space
     @Override
     public Map<String, String> getAllFor(Identity id)
     {
-        Map<String, String> rs = null;
+        Map<String, String> rs;
         try {
-            rs = readAll(id.toExternalForm());
+            rs = readAll(id);
         }
         catch (IOException e) {
             throw new IllegalStateException("unable to read from storage", e);
@@ -157,7 +161,9 @@ public abstract class BaseSpace implements Space
         return rs;
     }
 
-    protected abstract String read(String key) throws IOException;
-    protected abstract void write(String key, String value) throws IOException;
-    protected abstract Map<String, String> readAll(String prefix) throws IOException;
+    protected abstract String read(Identity id, String key) throws IOException;
+
+    protected abstract void write(Identity id, String key, String value) throws IOException;
+
+    protected abstract Map<String, String> readAll(Identity prefix) throws IOException;
 }

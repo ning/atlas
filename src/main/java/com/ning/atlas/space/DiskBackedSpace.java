@@ -3,10 +3,13 @@ package com.ning.atlas.space;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
+import com.ning.atlas.base.Maybe;
 import com.ning.atlas.logging.Logger;
+import com.ning.atlas.spi.Identity;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.util.Map;
 
@@ -37,11 +40,46 @@ public class DiskBackedSpace extends BaseSpace
     }
 
     @Override
-    protected String read(String key) throws IOException
+    protected String read(Identity id, String key) throws IOException
     {
-        File f = new File(storageDir, munge(key));
+        String name = id.toExternalForm() + ":" + key;
+        File f = new File(storageDir, munge(name));
         if (!f.exists()) return null;
 
+        return readFile(f);
+    }
+
+    private String munge(String key)
+    {
+        return key.replaceAll("/", "____");
+    }
+
+    private String unmunge(String name) {
+        return name.replaceAll("____", "/");
+    }
+
+    @Override
+    protected void write(Identity id, String key, String value) throws IOException
+    {
+        Files.write(value.getBytes(Charset.forName("UTF8")),
+                    new File(storageDir, munge(id.toExternalForm() + ":" + key)));
+    }
+
+    @Override
+    protected Map<String, String> readAll(Identity id) throws IOException
+    {
+        final String prefix = munge(id.toExternalForm());
+        Map<String, String> rs = Maps.newHashMap();
+        for (File file : storageDir.listFiles()) {
+            if (file.isFile() && file.getName().startsWith(prefix) ) {
+                rs.put(unmunge(file.getName()), readFile(file));
+            }
+        }
+        return rs;
+    }
+
+    private String readFile(File f) throws IOException
+    {
         return Files.readLines(f, Charset.forName("UTF8"), new LineProcessor<String>()
         {
             final StringBuffer buf = new StringBuffer();
@@ -59,32 +97,5 @@ public class DiskBackedSpace extends BaseSpace
                 return buf.toString();
             }
         });
-    }
-
-    private String munge(String key)
-    {
-        return key.replaceAll("/", "____");
-    }
-
-    private String unmunge(String name) {
-        return name.replaceAll("____", "/");
-    }
-
-    @Override
-    protected void write(String key, String value) throws IOException
-    {
-        Files.write(value.getBytes(Charset.forName("UTF8")), new File(storageDir, munge(key)));
-    }
-
-    @Override
-    protected Map<String, String> readAll(String prefix) throws IOException
-    {
-        Map<String, String> rs = Maps.newHashMap();
-        for (File file : storageDir.listFiles()) {
-            if (file.isFile() && file.getName().startsWith(munge(prefix)) ) {
-                rs.put(unmunge(file.getName()), read(file.getName()));
-            }
-        }
-        return rs;
     }
 }
