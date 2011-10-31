@@ -1,25 +1,22 @@
 package com.ning.atlas.space;
 
 import com.google.common.base.CaseFormat;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.SpaceKey;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.beans.PropertyDescriptor;
-import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 
 public class InMemorySpace implements Space
 {
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private final Map<String, String> values = Maps.newConcurrentMap();
+    private final Map<SpaceKey, String> values = Maps.newConcurrentMap();
 
     public static Space newInstance()
     {
@@ -36,7 +33,7 @@ public class InMemorySpace implements Space
                 try {
                     Object value = pd.getReadMethod().invoke(it);
                     String json = String.valueOf(value);
-                    values.put(id.toExternalForm() + ":" + prop_name, json);
+                    values.put(SpaceKey.from(id, prop_name), json);
                 }
                 catch (Exception e) {
                     throw new IllegalStateException("unable to read property '" + pd.getName() + "' from " + it, e);
@@ -48,25 +45,25 @@ public class InMemorySpace implements Space
     @Override
     public void store(Identity id, String key, String value)
     {
-        this.values.put(id.toExternalForm() + ":" + key, value);
+        this.values.put(SpaceKey.from(id, key), value);
     }
 
     @Override
     public void scratch(String key, String value)
     {
-        this.values.put(key, value);
+        this.values.put(SpaceKey.from(Identity.root(), key), value);
     }
 
     @Override
     public Maybe<String> get(String key)
     {
-        return Maybe.elideNull(this.values.get(key));
+        return Maybe.elideNull(this.values.get(SpaceKey.from(Identity.root(), key)));
     }
 
     @Override
     public Maybe<String> get(Identity id, String key)
     {
-        return Maybe.elideNull(values.get(id.toExternalForm() + ":" + key));
+        return Maybe.elideNull(values.get(SpaceKey.from(id, key)));
     }
 
     @Override
@@ -83,9 +80,8 @@ public class InMemorySpace implements Space
 
         for (PropertyDescriptor pd : pds) {
             if (pd.getWriteMethod() != null) {
-                String key = id.toExternalForm() + ":" + CaseFormat.LOWER_CAMEL
-                    .to(CaseFormat.LOWER_HYPHEN, pd.getName());
-                String json_val = this.values.get(key);
+                String key = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, pd.getName());
+                String json_val = this.values.get(SpaceKey.from(id, key));
                 final Object val;
                 if (json_val != null) {
                     val =  mapper.convertValue(String.valueOf(json_val), pd.getPropertyType());
@@ -127,11 +123,11 @@ public class InMemorySpace implements Space
     }
 
     @Override
-    public Map<String, String> getAllFor(Identity id)
+    public Map<SpaceKey, String> getAllFor(Identity id)
     {
-        Map<String, String> rs = Maps.newHashMap();
-        for (Map.Entry<String, String> entry : values.entrySet()) {
-            if (entry.getKey().startsWith(id.toString() + ":")) {
+        Map<SpaceKey, String> rs = Maps.newHashMap();
+        for (Map.Entry<SpaceKey, String> entry : values.entrySet()) {
+            if (entry.getKey().getIdentity().equals(id)) {
                 rs.put(entry.getKey(), entry.getValue());
             }
         }

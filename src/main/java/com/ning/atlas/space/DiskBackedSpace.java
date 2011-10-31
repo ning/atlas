@@ -75,7 +75,7 @@ public class DiskBackedSpace extends BaseSpace
         Map<String, String> rs = Maps.newHashMap();
         for (File file : dir.listFiles()) {
             if (file.isFile()) {
-                rs.put(id.toExternalForm() + ":" + file.getName(), readFile(file));
+                rs.put(file.getName(), readFile(file));
             }
         }
         return rs;

@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.SpaceKey;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -132,21 +133,19 @@ public abstract class BaseSpace implements Space
     }
 
     @Override
-    public Map<String, String> getAllFor(Identity id)
+    public Map<SpaceKey, String> getAllFor(Identity id)
     {
-        Map<String, String> rs;
+        Map<SpaceKey, String> rs = Maps.newHashMap();
         try {
-            rs = readAll(id);
+            Map<String, String> local_vals = readAll(id);
+            for (Map.Entry<String, String> entry : local_vals.entrySet()) {
+                rs.put(SpaceKey.from(id, entry.getKey()), entry.getValue());
+            }
+            return rs;
         }
         catch (IOException e) {
             throw new IllegalStateException("unable to read from storage", e);
         }
-        for (Map.Entry<String, String> entry : scratchSpace.entrySet()) {
-            if (entry.getKey().startsWith(id.toString() + ":")) {
-                rs.put(entry.getKey(), entry.getValue());
-            }
-        }
-        return rs;
     }
 
     protected abstract String read(Identity id, String key) throws IOException;

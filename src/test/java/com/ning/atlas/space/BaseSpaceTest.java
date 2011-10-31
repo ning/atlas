@@ -3,6 +3,7 @@ package com.ning.atlas.space;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.SpaceKey;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.junit.After;
@@ -114,9 +115,9 @@ public abstract class BaseSpaceTest
 
         space.store(id, t);
 
-        Map<String, String> all = space.getAllFor(id);
-        assertThat(all.get(id.toExternalForm() + ":" + "name"), equalTo("Freddy"));
-        assertThat(all.get(id.toExternalForm() + ":" + "age-of-pet-dog"), equalTo("7"));
+        Map<SpaceKey, String> all = space.getAllFor(id);
+        assertThat(all.get(SpaceKey.from(id, "name")), equalTo("Freddy"));
+        assertThat(all.get(SpaceKey.from(id, "age-of-pet-dog")), equalTo("7"));
 
     }
 

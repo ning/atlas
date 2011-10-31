@@ -2,6 +2,7 @@ package com.ning.atlas.spi;
 
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.space.Missing;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +29,6 @@ public interface Space
      */
     String require(String s);
 
-    Map<String, String> getAllFor(Identity id);
+    Map<SpaceKey, String> getAllFor(Identity id);
 
 }
