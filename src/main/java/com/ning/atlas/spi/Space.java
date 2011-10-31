@@ -14,11 +14,7 @@ public interface Space
     void store(Identity id, Object it);
     void store(Identity id, String key, String value);
 
-
     void scratch(String key, String value);
-    void scratch(Identity id, String key, String value);
-    void scratch(Identity id, Object it);
-
 
     Maybe<String> get(String key);
     Maybe<String> get(Identity id, String key);
@@ -30,9 +26,7 @@ public interface Space
      * @param s the key
      * @return the value
      */
-
     String require(String s);
-
 
     Map<String, String> getAllFor(Identity id);
 

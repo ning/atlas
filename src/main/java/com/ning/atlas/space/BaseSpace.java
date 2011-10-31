@@ -54,18 +54,6 @@ public abstract class BaseSpace implements Space
     }
 
     @Override
-    public void scratch(Identity id, String key, String value)
-    {
-        this.scratchSpace.put(id.toExternalForm() + ":" + key, value);
-    }
-
-    @Override
-    public void scratch(Identity id, Object it)
-    {
-        store(id, it);
-    }
-
-    @Override
     public Maybe<String> get(String key)
     {
         return getScratch(key);
