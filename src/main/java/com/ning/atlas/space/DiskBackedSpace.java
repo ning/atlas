@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -42,8 +43,10 @@ public class DiskBackedSpace extends BaseSpace
     @Override
     protected String read(Identity id, String key) throws IOException
     {
-        String name = id.toExternalForm() + ":" + key;
-        File f = new File(storageDir, munge(name));
+        File dir = new File(storageDir, munge(id.toExternalForm()));
+        if (!dir.exists()) { return null; }
+
+        File f = new File(dir, key);
         if (!f.exists()) return null;
 
         return readFile(f);
@@ -51,28 +54,28 @@ public class DiskBackedSpace extends BaseSpace
 
     private String munge(String key)
     {
-        return key.replaceAll("/", "____");
-    }
-
-    private String unmunge(String name) {
-        return name.replaceAll("____", "/");
+        return key.replaceAll("/", "_");
     }
 
     @Override
     protected void write(Identity id, String key, String value) throws IOException
     {
-        Files.write(value.getBytes(Charset.forName("UTF8")),
-                    new File(storageDir, munge(id.toExternalForm() + ":" + key)));
+        File dir = new File(storageDir, munge(id.toExternalForm()));
+        if (!dir.exists()) { if (!dir.mkdirs()) { throw new IOException("unable to make storage dir"); } }
+
+        Files.write(value.getBytes(Charset.forName("UTF8")), new File(dir, key));
     }
 
     @Override
     protected Map<String, String> readAll(Identity id) throws IOException
     {
-        final String prefix = munge(id.toExternalForm());
+        File dir = new File(storageDir, munge(id.toExternalForm()));
+        if (!dir.exists()) { return Collections.emptyMap(); }
+
         Map<String, String> rs = Maps.newHashMap();
-        for (File file : storageDir.listFiles()) {
-            if (file.isFile() && file.getName().startsWith(prefix) ) {
-                rs.put(unmunge(file.getName()), readFile(file));
+        for (File file : dir.listFiles()) {
+            if (file.isFile()) {
+                rs.put(id.toExternalForm() + ":" + file.getName(), readFile(file));
             }
         }
         return rs;
