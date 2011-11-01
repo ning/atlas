@@ -3,8 +3,11 @@ package com.ning.atlas;
 import com.google.common.collect.Iterables;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.base.MorePredicates;
+import com.ning.atlas.space.InMemorySpace;
+import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
+import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.tree.Trees;
 import org.codehaus.jackson.JsonFactory;
@@ -15,6 +18,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 import static com.ning.atlas.base.MorePredicates.beanPropertyEquals;
@@ -144,4 +148,28 @@ public class TestJRubyTemplateParser
         List<Uri<Installer>> xs = st.getInstallations();
         assertThat(xs, equalTo(asList(Uri.<Installer>valueOf("hello:world"))));
     }
+
+    @Test
+    public void testEnvironmentWithListener() throws Exception
+    {
+        ListenerThing.calls.clear();
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Environment env = p.parseEnvironment(new File("src/test/ruby/ex1/env-with-listener.rb"));
+
+        Host h = new Host(Identity.root().createChild("some", "thing"), "concrete", new My(), Collections.<Uri<Installer>>emptyList());
+        SystemMap map = new SystemMap(h);
+        Space space = InMemorySpace.newInstance();
+        ActualDeployment d = new ActualDeployment(map, env, space);
+
+        d.perform();
+        assertThat(ListenerThing.calls, equalTo(asList("startDeployment",
+                                                       "startProvision",
+                                                       "finishProvision",
+                                                       "startInit",
+                                                       "finishInit",
+                                                       "startInstall",
+                                                       "finishInstall",
+                                                       "finishDeployment")));
+    }
+
 }

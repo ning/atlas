@@ -8,17 +8,21 @@ import com.ning.atlas.base.Maybe;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.StepType;
 import com.ning.atlas.spi.Uri;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ActualDeployment implements Deployment
 {
@@ -127,14 +131,33 @@ public class ActualDeployment implements Deployment
          *            whatever state it wants.
          */
 
+        List<LifecycleListener> listeners = Lists.transform(environment.getListeners(), new Function<Pair<Class<? extends LifecycleListener>, Map<String, String>>, LifecycleListener>()
+        {
+            @Override
+            public LifecycleListener apply(Pair<Class<? extends LifecycleListener>, Map<String, String>> input)
+            {
+                checkNotNull(input);
+                try {
+                    return Instantiator.create(input.getKey(), input.getValue());
+                }
+                catch (Exception e) {
+                    throw new IllegalStateException("unable to instantiate listener " + input.getKey().getName(), e);
+                }
+            }
+        });
+
         // startDeploy (no one can listen for this yet)
+        fire(Events.startDeployment, listeners);
 
         log.info("starting provision");
+        fire(Events.startProvision, listeners);
         provision();
+        fire(Events.finishProvision, listeners);
         log.info("finished provision");
 
         // initializers
         log.info("starting init");
+        fire(Events.startInit, listeners);
         install(new Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>>()
         {
             @Override
@@ -159,10 +182,12 @@ public class ActualDeployment implements Deployment
                 return rs;
             }
         });
+        fire(Events.finishInit, listeners);
         log.info("finished init");
 
         // installers
         log.info("starting install");
+        fire(Events.startInstall, listeners);
         install(new Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>>()
         {
             @Override
@@ -184,10 +209,11 @@ public class ActualDeployment implements Deployment
                 return rs;
             }
         });
+        fire(Events.finishInstall, listeners);
         log.info("finished install");
 
         // finishDeploy (no one can listen for this yet)
-
+        fire(Events.finishDeployment, listeners);
     }
 
     private void install(Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>> f)
@@ -254,7 +280,7 @@ public class ActualDeployment implements Deployment
         }
 
         // startProvision
-        for (Provisioner provisioner : provisioners.values()  ) {
+        for (Provisioner provisioner : provisioners.values()) {
             provisioner.start(this);
         }
 
@@ -280,7 +306,7 @@ public class ActualDeployment implements Deployment
         }
 
         // finishProvision
-        for (Provisioner provisioner : provisioners.values()  ) {
+        for (Provisioner provisioner : provisioners.values()) {
             provisioner.finish(this);
         }
     }
@@ -298,5 +324,93 @@ public class ActualDeployment implements Deployment
     public Space getSpace()
     {
         return space;
+    }
+
+    private void fire(Events event, List<LifecycleListener> listeners) {
+        List<Future<?>> fs = Lists.newArrayList();
+        for (LifecycleListener listener : listeners) {
+            fs.add(event.fire(listener, this));
+        }
+        for (Future<?> f : fs) {
+            try {
+                f.get();
+            }
+            catch (Exception e) {
+                log.warn("exception from listener ", e);
+            }
+        }
+    }
+
+    private static enum Events
+    {
+        startDeployment()
+            {
+                @Override
+                public Future<?> fire(LifecycleListener listener, Deployment d)
+                {
+                    return listener.startDeployment(d);
+                }
+            },
+        startProvision()
+            {
+                @Override
+                public Future<?> fire(LifecycleListener listener, Deployment d)
+                {
+                    return listener.startProvision(d);
+                }
+            },
+        finishProvision()
+            {
+                @Override
+                public Future<?> fire(LifecycleListener listener, Deployment d)
+                {
+                    return listener.finishProvision(d);
+                }
+            },
+        startInit()
+            {
+                @Override
+                public Future<?> fire(LifecycleListener listener, Deployment d)
+                {
+                    return listener.startInit(d);
+                }
+            },
+        finishInit()
+            {
+                @Override
+                public Future<?> fire(LifecycleListener listener, Deployment d)
+                {
+                    return listener.finishInit(d);
+                }
+            },
+        startInstall()
+            {
+                @Override
+                public Future<?> fire(LifecycleListener listener, Deployment d)
+                {
+                    return listener.startInstall(d);
+                }
+            },
+        finishInstall()
+            {
+                @Override
+                public Future<?> fire(LifecycleListener listener, Deployment d)
+                {
+                    return listener.finishInstall(d);
+                }
+            },
+        finishDeployment()
+            {
+                @Override
+                public Future<?> fire(LifecycleListener listener, Deployment d)
+                {
+                    return listener.finishDeployment(d);
+                }
+            };
+
+
+        public abstract Future<?> fire(LifecycleListener listener, Deployment d);
+
+
     }
 }

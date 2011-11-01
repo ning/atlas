@@ -64,12 +64,14 @@ module Atlas
     def initialize block
       @block                                          = block
       @properties, @provisioners, @installers, @bases = {}, {}, {}, {}
+      @listeners = []
     end
 
     def __parse
       instance_eval &@block
       com.ning.atlas.Environment.new @provisioners,
                                      @installers,
+                                     @listeners,
                                      @bases,
                                      @properties
     end
@@ -102,6 +104,11 @@ module Atlas
 
     def system *args
       #no-op
+    end
+
+    def listener type, args= {}
+      attr = Atlas.stringify args
+      @listeners << org.apache.commons.lang3.tuple.Pair.of(type.java_class, attr)
     end
 
     def set args

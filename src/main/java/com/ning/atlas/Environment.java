@@ -1,22 +1,28 @@
 package com.ning.atlas;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ning.atlas.base.Maybe;
 import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Environment
 {
     private final Map<String, Pair<Class<? extends Provisioner>, Map<String, String>>> provisioners = Maps.newConcurrentMap();
     private final Map<String, Pair<Class<? extends Installer>, Map<String, String>>>   installers   = Maps.newConcurrentMap();
+    private final List<Pair<Class<? extends LifecycleListener>, Map<String, String>>> listeners = new CopyOnWriteArrayList<Pair<Class<? extends LifecycleListener>, Map<String, String>>>();
 
     private final Map<String, Base>   bases      = Maps.newConcurrentMap();
     private final Map<String, String> properties = Maps.newConcurrentMap();
@@ -25,12 +31,14 @@ public class Environment
     {
         this(Collections.<String, Pair<Class<? extends Provisioner>, Map<String, String>>>emptyMap(),
              Collections.<String, Pair<Class<? extends Installer>, Map<String, String>>>emptyMap(),
+             Collections.<Pair<Class<? extends LifecycleListener>, Map<String, String>>>emptyList(),
              Collections.<String, Base>emptyMap(),
              Collections.<String, String>emptyMap());
     }
 
     public Environment(Map<String, Pair<Class<? extends Provisioner>, Map<String, String>>> provisioners,
                        Map<String, Pair<Class<? extends Installer>, Map<String, String>>> installers,
+                       Collection<Pair<Class<? extends LifecycleListener>, Map<String, String>>> listeners,
                        Map<String, Base> bases,
                        Map<String, String> properties)
     {
@@ -38,6 +46,7 @@ public class Environment
         this.installers.putAll(installers);
         this.bases.putAll(bases);
         this.properties.putAll(properties);
+        this.listeners.addAll(listeners);
     }
 
     @Override
@@ -106,5 +115,10 @@ public class Environment
     public Installer resolveInstaller(Uri<Installer> uri)
     {
         return findInstaller(uri).otherwise(new ErrorInstaller(Collections.<String, String>emptyMap()));
+    }
+
+    public List<Pair<Class<? extends LifecycleListener>, Map<String, String>>> getListeners()
+    {
+        return listeners;
     }
 }

@@ -8,12 +8,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static java.util.Arrays.asList;
+
 public class SystemMap
 {
     private final List<Element> roots;
 
     public SystemMap() {
         this(Collections.<Element>emptyList());
+    }
+
+    public SystemMap(Element... elements) {
+        this(asList(elements));
     }
 
     public SystemMap(List<Element> roots)

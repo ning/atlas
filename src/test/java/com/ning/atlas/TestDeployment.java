@@ -6,6 +6,7 @@ import com.ning.atlas.noop.NoOpProvisioner;
 import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.StepType;
@@ -56,7 +57,11 @@ public class TestDeployment
         Map<String, Base> bases = ImmutableMap.of("base", new Base(Uri.<Provisioner>valueOf("noop:happy"),
                                                                    Arrays.asList(Uri.<Installer>valueOf("foo:init"))));
 
-        env = new Environment(provisioners, installers, bases, Collections.<String, String>emptyMap());
+        env = new Environment(provisioners,
+                              installers,
+                              Collections.<Pair<Class<? extends LifecycleListener>, Map<String, String>>>emptyList(),
+                              bases,
+                              Collections.<String, String>emptyMap());
 
         map = root.normalize();
         space = InMemorySpace.newInstance();

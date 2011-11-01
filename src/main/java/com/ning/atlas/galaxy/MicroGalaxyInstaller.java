@@ -6,7 +6,7 @@ import com.ning.atlas.SSH;
 import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
-import com.ning.atlas.spi.Server;
+import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.Uri;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

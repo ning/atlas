@@ -1,4 +1,4 @@
-package com.ning.atlas.spi;
+package com.ning.atlas.spi.protocols;
 
 import org.codehaus.jackson.annotate.JsonProperty;
 
