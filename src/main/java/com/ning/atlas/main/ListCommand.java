@@ -1,48 +1,30 @@
 package com.ning.atlas.main;
 
-import com.ning.atlas.ActualDeployment;
-import com.ning.atlas.Environment;
 import com.ning.atlas.Host;
 import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.SystemMap;
-import com.ning.atlas.logging.Logger;
 import com.ning.atlas.space.SQLiteBackedSpace;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.SpaceKey;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class StartCommand implements Callable<Void>
+public class ListCommand implements Callable<Void>
 {
-    private static final Logger logger = Logger.get(StartCommand.class);
-    private final MainOptions mainOptions;
-
-    public StartCommand(MainOptions mainOptions)
-    {
-        this.mainOptions = mainOptions;
-    }
-
     @Override
-    public Void call() throws IOException
+    public Void call() throws Exception
     {
         Space space = SQLiteBackedSpace.create(new File(".atlas", "space.db"));
         String sys_path = space.get(InitCommand.ID, "system-path")
-            .otherwise(new IllegalStateException("System not initialized"));
-        String env_path = space.get(InitCommand.ID, "environment-path")
-            .otherwise(new IllegalStateException("System not initialized"));
+                               .otherwise(new IllegalStateException("System not initialized"));
 
         JRubyTemplateParser p = new JRubyTemplateParser();
         SystemMap map = p.parseSystem(new File(sys_path)).normalize();
-        Environment env = p.parseEnvironment(new File(env_path));
 
-        ActualDeployment d = new ActualDeployment(map, env, space);
-        d.perform();
-
-        for (Host host : d.getSystemMap().findLeaves()) {
+        for (Host host : map.findLeaves()) {
             System.out.println(host.getId() + " :");
             for (Map.Entry<SpaceKey, String> entry : space.getAllFor(host.getId()).entrySet()) {
                 System.out.printf("    %s : %s\n",
@@ -50,6 +32,7 @@ public class StartCommand implements Callable<Void>
                                   StringUtils.abbreviate(entry.getValue(), 80).replaceAll("\n", "\\n"));
             }
         }
+
         return null;
     }
 }

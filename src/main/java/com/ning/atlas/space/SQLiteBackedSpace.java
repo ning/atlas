@@ -6,7 +6,6 @@ import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
 import org.apache.commons.lang3.tuple.Pair;
-import org.h2.jdbcx.JdbcConnectionPool;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.sqlobject.Bind;
@@ -41,7 +40,7 @@ public class SQLiteBackedSpace extends BaseSpace
     private SQLiteBackedSpace(File dbFile) throws IOException
     {
         Files.createParentDirs(dbFile);
-        log.info("storing data in %s", dbFile.getAbsolutePath());
+        log.debug("storing data in %s", dbFile.getAbsolutePath());
 
         String url = "jdbc:sqlite:" + dbFile.getAbsolutePath();
         this.dao = new DBI(url).onDemand(Dao.class);

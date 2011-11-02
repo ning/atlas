@@ -20,8 +20,6 @@ public class MainOptions
     private final OptionParser parser;
     private final Command      command;
     private final String[]     commandArguments;
-    private final boolean      failFast;
-    private final File pluginRootDirectory;
 
     public MainOptions(String... args) throws IOException
     {
@@ -34,14 +32,6 @@ public class MainOptions
         OptionSpec<String> s = parser.acceptsAll(asList("s", "sys", "system"), "System specification file")
                                      .withRequiredArg()
                                      .ofType(String.class);
-        OptionSpec<File> f = parser.acceptsAll(asList("L", "log-file")).withRequiredArg().ofType(File.class);
-
-        parser.acceptsAll(asList("f", "fail-fast"), "fail at the end of any stage which has errors");
-        parser.acceptsAll(asList("v", "verbose"), "verbose output");
-        parser.acceptsAll(asList("vv", "very-verbose"), "very verbose output");
-        OptionSpec<File> p = parser.acceptsAll(asList("p", "plugin"), "directory (root) containing plugin archives")
-                                   .withRequiredArg()
-                                   .ofType(File.class);
 
         OptionSet o = parser.parse(args);
 
@@ -51,49 +41,15 @@ public class MainOptions
         if (o.has("vv")) {
             Logger.getLogger("com.ning.atlas").setLevel(Level.DEBUG);
         }
-        if (o.has(f)) {
-            File log_file = o.valueOf(f);
-            Appender console = Logger.getRootLogger().getAppender("console");
-            Logger.getRootLogger().removeAppender(console);
-            Logger.getRootLogger().addAppender(new FileAppender(console.getLayout(),
-                                                                log_file.getAbsolutePath(),
-                                                                true));
-        }
 
-        this.failFast = o.has("f");
-
-        if (o.has(p)) {
-            this.pluginRootDirectory = o.valueOf(p);
-        }
-        else {
-            this.pluginRootDirectory = File.createTempFile("woof", "meow");
-            this.pluginRootDirectory.delete();
-            this.pluginRootDirectory.mkdir();
-        }
-
-        if ((o.has(e) && o.has(s))) {
-            this.environmentPath = o.valueOf(e);
-            this.systemPath = o.valueOf(s);
-            this.command = Command.valueOf(o.nonOptionArguments().size() >= 1 ? o.nonOptionArguments().get(0) : "help");
-            this.commandArguments = o.nonOptionArguments().size() >= 1
-                                    ? o.nonOptionArguments()
-                                       .subList(1, o.nonOptionArguments().size())
-                                       .toArray(new String[o.nonOptionArguments().size() - 1])
-                                    : new String[0];
-        }
-
-        else {
-            System.err.println("Missing one or both of environment or system specification paths");
-            this.command = Command.help;
-            this.commandArguments = new String[0];
-            this.environmentPath = "";
-            this.systemPath = "";
-        }
-    }
-
-    public boolean isFailFast()
-    {
-        return failFast;
+        this.environmentPath = o.valueOf(e);
+        this.systemPath = o.valueOf(s);
+        this.command = Command.valueOf(o.nonOptionArguments().size() >= 1 ? o.nonOptionArguments().get(0) : "help");
+        this.commandArguments = o.nonOptionArguments().size() >= 1
+                                ? o.nonOptionArguments()
+                                   .subList(1, o.nonOptionArguments().size())
+                                   .toArray(new String[o.nonOptionArguments().size() - 1])
+                                : new String[0];
     }
 
     public String getEnvironmentPath()
