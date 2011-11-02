@@ -28,7 +28,7 @@ public abstract class BaseSpaceTest
         this.space = createSpace();
     }
 
-    protected abstract Space createSpace();
+    protected abstract Space createSpace() throws IOException;
     protected abstract void destroySpace(Space space) throws IOException;
 
     protected void localSetUp() {}

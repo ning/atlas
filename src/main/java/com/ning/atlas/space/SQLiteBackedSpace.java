@@ -1,6 +1,7 @@
 package com.ning.atlas.space;
 
 import com.google.common.collect.Maps;
+import com.google.common.io.Files;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
@@ -21,36 +22,36 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-public class H2BackedSpace extends BaseSpace
+public class SQLiteBackedSpace extends BaseSpace
 {
+    private static final Logger log = Logger.get(SQLiteBackedSpace.class);
 
-    private static final Logger log = Logger.get(H2BackedSpace.class);
+    static {
+        try {
+            Class.forName("org.sqlite.JDBC");
+        }
+        catch (ClassNotFoundException e) {
+            log.warn(e, "sqlite not available");
+        }
+    }
+
+
     private final Dao dao;
 
-    private H2BackedSpace(File storageDir)
+    private SQLiteBackedSpace(File dbFile) throws IOException
     {
-        checkArgument(storageDir.isDirectory() || !storageDir.exists(), "storageDir must be a directory or not exist");
+        Files.createParentDirs(dbFile);
+        log.info("storing data in %s", dbFile.getAbsolutePath());
 
-        if (!storageDir.exists()) {
-            if (!storageDir.mkdirs()) {
-                throw new IllegalStateException("unable to create storage dir " + storageDir.getAbsolutePath());
-            }
-        }
-
-        log.info("storing data in %s", storageDir.getAbsolutePath());
-
-        JdbcConnectionPool ds = JdbcConnectionPool.create("jdbc:h2:" + new File(storageDir, "space").getAbsolutePath(),
-                                                          "atlas", "atlas");
-        this.dao = new DBI(ds).onDemand(Dao.class);
+        String url = "jdbc:sqlite:" + dbFile.getAbsolutePath();
+        this.dao = new DBI(url).onDemand(Dao.class);
 
         dao.create();
     }
 
-    public static Space create(File storage)
+    public static Space create(File storage) throws IOException
     {
-        return new H2BackedSpace(storage);
+        return new SQLiteBackedSpace(storage);
     }
 
 

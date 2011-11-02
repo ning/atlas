@@ -33,7 +33,7 @@ public class SSH
 
     public SSH(SSHCredentials creds, String externalAddress) throws IOException
     {
-        this(creds.getKeyFilePath(), creds.getUserName(), externalAddress);
+        this(new File(creds.getKeyFilePath()), creds.getUserName(), externalAddress);
     }
 
     public enum AuthType

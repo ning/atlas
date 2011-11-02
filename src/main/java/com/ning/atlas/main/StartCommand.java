@@ -6,12 +6,13 @@ import com.ning.atlas.Host;
 import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.logging.Logger;
-import com.ning.atlas.space.H2BackedSpace;
+import com.ning.atlas.space.SQLiteBackedSpace;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.SpaceKey;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 public class StartCommand implements Runnable
@@ -30,7 +31,14 @@ public class StartCommand implements Runnable
         JRubyTemplateParser p = new JRubyTemplateParser();
         SystemMap map = p.parseSystem(new File(mainOptions.getSystemPath())).normalize();
         Environment env = p.parseEnvironment(new File(mainOptions.getEnvironmentPath()));
-        Space space = H2BackedSpace.create(new File(".atlas", "space"));
+        Space space = null;
+        try {
+            space = SQLiteBackedSpace.create(new File(".atlas", "space.db"));
+        }
+        catch (IOException e) {
+            logger.warn(e, "unable to create storage for space");
+            throw new IllegalStateException(e);
+        }
 
         ActualDeployment d = new ActualDeployment(map, env, space);
         d.perform();
