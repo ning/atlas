@@ -5,8 +5,6 @@ import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.concurrent.Callable;
 
 public class InitCommand implements Callable<Void>
@@ -24,8 +22,8 @@ public class InitCommand implements Callable<Void>
     {
         Space space = SQLiteBackedSpace.create(new File(".atlas", "space.db"));
 
-        space.store(ID, "system-path", mainOptions.getSystemPath());
-        space.store(ID, "environment-path", mainOptions.getEnvironmentPath());
+        space.store(ID, "system-path", new File(mainOptions.getSystemPath()).getAbsolutePath());
+        space.store(ID, "environment-path", new File(mainOptions.getEnvironmentPath()).getAbsolutePath());
 
         return null;
     }
