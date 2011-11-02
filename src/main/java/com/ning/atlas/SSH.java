@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import com.ning.atlas.spi.protocols.SSHCredentials;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -29,6 +30,11 @@ public class SSH
     private final String    host;
     private final int       port;
     private final static int TIMEOUT_MINUTES = 2; // time out in minutes
+
+    public SSH(SSHCredentials creds, String externalAddress) throws IOException
+    {
+        this(creds.getKeyFilePath(), creds.getUserName(), externalAddress);
+    }
 
     public enum AuthType
     {

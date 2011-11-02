@@ -51,7 +51,7 @@ public class TestScratchInstaller
 
         ScratchInstaller scratch = new ScratchInstaller();
         String json = scratch.install(host, Uri.<Installer>valueOf("scratch:@:hello=world"), d).get();
-        assertThat(space.get(id, "hello").getValue(), equalTo("world"));
+        assertThat(space.get(id.toExternalForm() + ":" + "hello").getValue(), equalTo("world"));
     }
 
     @Test
@@ -69,7 +69,7 @@ public class TestScratchInstaller
 
         ScratchInstaller scratch = new ScratchInstaller();
         String json = scratch.install(host, Uri.<Installer>valueOf("scratch:@:hello=world;waffle=@"), d).get();
-        assertThat(space.get(id, "hello").getValue(), equalTo("world"));
+        assertThat(space.get(id.toExternalForm() + ":" + "hello").getValue(), equalTo("world"));
         assertThat(space.get("waffle").getValue(), equalTo(id.toExternalForm()));
     }
 }

@@ -18,6 +18,7 @@ import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.Uri;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -27,23 +28,34 @@ import org.skife.config.ConfigurationObjectFactory;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class RDSProvisioner extends ConcurrentComponent<String>
 {
 
     private static final Logger log = Logger.get(RDSProvisioner.class);
 
-    private final AmazonRDSClient rds;
+    private final AtomicReference<AmazonRDSClient> rds = new AtomicReference<AmazonRDSClient>();
 
     public RDSProvisioner(String accessKey, String secretKey)
     {
         BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-        rds = new AmazonRDSClient(credentials);
+        rds.set(new AmazonRDSClient(credentials));
     }
 
-    public RDSProvisioner(Map<String, String> attributes)
+    public RDSProvisioner()
     {
-        this(attributes.get("access_key"), attributes.get("secret_key"));
+        // for jruby
+    }
+
+    @Override
+    protected void startLocal(Deployment deployment)
+    {
+        Space s = deployment.getSpace();
+        BasicAWSCredentials credentials = new BasicAWSCredentials(s.get("atlas.aws.access_key").getValue(),
+                                                                  s.get("atlas.aws.secret_key").getValue());
+        rds.set(new AmazonRDSClient(credentials));
+
     }
 
     @Override
@@ -69,7 +81,7 @@ public class RDSProvisioner extends ConcurrentComponent<String>
                                : "general-public-license";
 
         req.setLicenseModel(license_model);
-        DBInstance db = rds.createDBInstance(req);
+        DBInstance db = rds.get().createDBInstance(req);
 
         DBInstance instance = null;
         String last_state = "";
@@ -85,7 +97,7 @@ public class RDSProvisioner extends ConcurrentComponent<String>
             rdy.setDBInstanceIdentifier(db.getDBInstanceIdentifier());
             DescribeDBInstancesResult rs;
             try {
-                rs = rds.describeDBInstances(rdy);
+                rs = rds.get().describeDBInstances(rdy);
             }
             catch (AmazonServiceException e) {
                 continue;
@@ -138,7 +150,7 @@ public class RDSProvisioner extends ConcurrentComponent<String>
         String instance_id = d.getSpace().get(id, "instance-id").getValue();
         DeleteDBInstanceRequest req = new DeleteDBInstanceRequest(instance_id);
         req.setSkipFinalSnapshot(true);
-        rds.deleteDBInstance(req);
+        rds.get().deleteDBInstance(req);
     }
 
     public interface RDSConfig

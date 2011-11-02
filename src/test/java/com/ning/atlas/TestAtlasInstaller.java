@@ -15,6 +15,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 import static com.ning.atlas.aws.TestEC2Provisioner.isAvailable;
 import static java.util.Arrays.asList;
@@ -26,8 +28,7 @@ public class TestAtlasInstaller
     public void testSerializationInAtlasInstaller() throws Exception
     {
         // the two props are required. Yea!
-        AtlasInstaller ai = new AtlasInstaller(ImmutableMap.<String, String>of("ssh_user", "brianm",
-                                                                               "ssh_key_file", "~/.ssh/id_rsa"));
+        AtlasInstaller ai = new AtlasInstaller(Collections.<String, String>emptyMap());
 
         Host child1 = new Host(Identity.root().createChild("ning", "0").createChild("child", "0"),
                                "base",
@@ -58,8 +59,7 @@ public class TestAtlasInstaller
     public void testSerializationInAtlasInstallerWithAttributes() throws Exception
     {
         // the two props are required. Yea!
-        AtlasInstaller ai = new AtlasInstaller(ImmutableMap.<String, String>of("ssh_user", "brianm",
-                                                                               "ssh_key_file", "~/.ssh/id_rsa"));
+        AtlasInstaller ai = new AtlasInstaller(Collections.<String, String>emptyMap());
 
         Host child1 = new Host(Identity.root().createChild("ning", "0").createChild("child", "0"),
                                "base",
@@ -94,7 +94,7 @@ public class TestAtlasInstaller
         Deployment deployment = EC2Helper.spinUpSingleInstance();
         Host node = Iterables.getOnlyElement(deployment.getSystemMap().findLeaves());
 
-        AtlasInstaller ai = new AtlasInstaller(EC2Helper.loadSshPropertyThing());
+        AtlasInstaller ai = new AtlasInstaller(Collections.<String, String>emptyMap());
 
         String node_info = ai.install(node, Uri.<Installer>valueOf("atlas"), deployment).get();
         System.out.println(node_info);

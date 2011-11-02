@@ -1,7 +1,7 @@
 package com.ning.atlas;
 
 import com.google.common.collect.Iterables;
-import com.ning.atlas.base.Maybe;
+import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.base.MorePredicates;
 import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.spi.Identity;

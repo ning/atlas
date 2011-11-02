@@ -8,14 +8,15 @@ import com.google.common.io.Files;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.Host;
 import com.ning.atlas.SSH;
-import com.ning.atlas.base.Maybe;
 import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.protocols.Server;
+import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Uri;
+import com.ning.atlas.spi.protocols.SSHCredentials;
+import com.ning.atlas.spi.protocols.Server;
 import org.antlr.stringtemplate.StringTemplate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -36,6 +37,8 @@ import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.ning.atlas.spi.protocols.SSHCredentials.defaultCredentials;
+import static com.ning.atlas.spi.protocols.SSHCredentials.lookup;
 import static java.util.Arrays.asList;
 
 public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
@@ -50,22 +53,17 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
 
     private static final ExecutorService es = Executors.newCachedThreadPool();
 
-    private final String sshUser;
-    private final String sshKeyFile;
     private final File   chefSoloInitFile;
     private final File   soloRbFile;
     private final File   s3InitFile;
+    private final String credentialName;
 
     public UbuntuChefSoloInstaller(Map<String, String> attributes)
     {
-        this.sshUser = attributes.get("ssh_user");
-        checkNotNull(sshUser, "ssh_user attribute required");
-
-        this.sshKeyFile = attributes.get("ssh_key_file");
-        checkNotNull(sshKeyFile, "ssh_key_file attribute required");
-
         final String recipeUrl = attributes.get("recipe_url");
         checkNotNull(recipeUrl, "recipe_url attribute required");
+
+        this.credentialName = attributes.get("credentials");
 
         Maybe<String> s3AccessKey = Maybe.elideNull(attributes.get("s3_access_key"));
         Maybe<String> s3SecretKey = Maybe.elideNull(attributes.get("s3_secret_key"));
@@ -102,23 +100,6 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
 
     }
 
-//    @Override
-//    public void install(final Server server,
-//                        final String arg,
-//                        com.ning.atlas.spi.Node root,
-//                        com.ning.atlas.spi.Node node) throws Exception
-//    {
-//        boolean done = true;
-//        do {
-//            String sys_map = mapper.writeValueAsString(root);
-//            File sys_map_file = File.createTempFile("system", "map");
-//            Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
-//            initServer(server, createNodeJsonFor(arg), sys_map_file);
-//            sys_map_file.delete();
-//        }
-//        while (!done);
-//    }
-
     @Override
     public Future<String> describe(Host server,
                                    Uri<? extends Component> uri,
@@ -150,10 +131,15 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
 
     private String initServer(Host host, String nodeJson, Deployment d) throws IOException
     {
+        final SSHCredentials creds = lookup(d.getSpace(), credentialName)
+                    .otherwise(defaultCredentials(d.getSpace()))
+                    .otherwise(new IllegalStateException("unable to locate any ssh credentials"));
+
+
         Server server = d.getSpace().get(host.getId(), Server.class, Missing.RequireAll).getValue();
-        SSH ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
+        SSH ssh = new SSH(creds, server.getExternalAddress());
         try {
-            String remote_path = "/home/" + sshUser + "/ubuntu-chef-solo-init.sh";
+            String remote_path = "/home/" + creds.getUserName() + "/ubuntu-chef-solo-init.sh";
             ssh.scpUpload(this.chefSoloInitFile, remote_path);
             ssh.exec("chmod +x " + remote_path);
 

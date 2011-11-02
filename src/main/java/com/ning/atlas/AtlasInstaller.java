@@ -2,13 +2,14 @@ package com.ning.atlas;
 
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.Futures;
-import com.ning.atlas.base.Maybe;
+import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
@@ -30,24 +31,23 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.ning.atlas.spi.protocols.SSHCredentials.defaultCredentials;
+import static com.ning.atlas.spi.protocols.SSHCredentials.lookup;
 
 public class AtlasInstaller extends BaseComponent implements Installer
 {
     private final static Logger log = Logger.get(AtlasInstaller.class);
 
     private final ExecutorService es = Executors.newCachedThreadPool();
-    private final String sshUser;
-    private final String sshKeyFile;
+    private final String credentialName;
+
 
     public AtlasInstaller(Map<String, String> attributes)
     {
-        this.sshUser = attributes.get("ssh_user");
-        checkNotNull(sshUser, "ssh_user attribute required");
-
-        this.sshKeyFile = attributes.get("ssh_key_file");
-        checkNotNull(sshKeyFile, "ssh_key_file attribute required");
+        this.credentialName = attributes.get("credentials");
     }
 
     @Override
@@ -59,6 +59,10 @@ public class AtlasInstaller extends BaseComponent implements Installer
     @Override
     public Future<String> install(final Host host, Uri<Installer> uri, final Deployment deployment)
     {
+        final SSHCredentials creds = lookup(deployment.getSpace(), credentialName)
+            .otherwise(defaultCredentials(deployment.getSpace()))
+            .otherwise(new IllegalStateException("unable to locate any ssh credentials"));
+
         // this *always* runs
         return es.submit(new Callable<String>()
         {
@@ -73,7 +77,7 @@ public class AtlasInstaller extends BaseComponent implements Installer
                     final ObjectMapper mapper = makeMapper(deployment.getSpace(), deployment.getEnvironment());
                     SSH ssh;
                     try {
-                        ssh = new SSH(new File(sshKeyFile), sshUser, server.getExternalAddress());
+                        ssh = new SSH(creds, server.getExternalAddress());
                     }
                     catch (IOException e) {
                         log.warn(e, "unable to ssh into the server");

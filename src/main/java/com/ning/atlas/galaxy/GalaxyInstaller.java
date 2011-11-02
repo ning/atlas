@@ -10,6 +10,8 @@ import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.Uri;
 import org.slf4j.Logger;
@@ -22,24 +24,21 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.ning.atlas.spi.protocols.SSHCredentials.defaultCredentials;
+import static com.ning.atlas.spi.protocols.SSHCredentials.lookup;
 import static java.lang.String.format;
 
 public class GalaxyInstaller extends ConcurrentComponent<String>
 {
     private final Logger log = LoggerFactory.getLogger(GalaxyInstaller.class);
 
-    private final String sshUser;
-    private final String sshKeyFile;
+    private final String credentialName;
 
-    public GalaxyInstaller(Map<String, String> attributes)
-    {
-        this.sshUser = attributes.get("ssh_user");
-        checkNotNull(sshUser, "ssh_user attribute required");
-
-        this.sshKeyFile = attributes.get("ssh_key_file");
-        checkNotNull(sshKeyFile, "ssh_key_file attribute required");
+    public GalaxyInstaller(Map<String, String> attributes) {
+        this.credentialName = attributes.get("credentials");
     }
 
     @Override
@@ -53,10 +52,15 @@ public class GalaxyInstaller extends ConcurrentComponent<String>
     {
         log.info("using galaxy to install {} on {}", host.getId(), uri.toString());
 
+        final SSHCredentials creds = lookup(d.getSpace(), credentialName)
+                    .otherwise(defaultCredentials(d.getSpace()))
+                    .otherwise(new IllegalStateException("unable to locate any ssh credentials"));
+
+
         Identity shell_id = Identity.valueOf(d.getSpace().require("galaxy-shell"));
         Server shell = d.getSpace().get(shell_id, Server.class, Missing.RequireAll).getValue();
         Server server = d.getSpace().get(host.getId(), Server.class, Missing.RequireAll).getValue();
-        SSH ssh = new SSH(new File(sshKeyFile), sshUser, shell.getExternalAddress());
+        SSH ssh = new SSH(creds, shell.getExternalAddress());
 
 
         final String fragment = uri.getFragment();

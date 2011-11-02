@@ -1,4 +1,4 @@
-package com.ning.atlas.base;
+package com.ning.atlas.spi;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -97,6 +97,11 @@ public abstract class Maybe<T> implements Iterable<T>
     public static <T> Maybe<T> elideNull(T value)
     {
         return value == null ? Maybe.<T>unknown() : definitely(value);
+    }
+
+    public <T, E extends Exception> T otherwise(E e) throws E
+    {
+        throw e;
     }
 
     private static class DefiniteValue<T> extends Maybe<T>

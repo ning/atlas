@@ -1,4 +1,4 @@
-# basics
+.atlasrc
 .DS_Store
 .rbenv*
 \#*\#
@@ -9,9 +9,6 @@ target
 tmp
 .awscreds
 *.swp
-
-# build stuff
-
 .classpath
 .project
 .settings

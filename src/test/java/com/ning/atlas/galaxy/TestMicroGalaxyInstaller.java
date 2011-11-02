@@ -9,8 +9,8 @@ import com.ning.atlas.chef.UbuntuChefSoloInstaller;
 import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.Uri;
+import com.ning.atlas.spi.protocols.Server;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -19,9 +19,9 @@ import org.junit.Test;
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Collections;
 import java.util.Map;
 
-import static com.ning.atlas.aws.EC2Helper.loadSshPropertyThing;
 import static com.ning.atlas.aws.TestEC2Provisioner.isAvailable;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -49,7 +49,7 @@ public class TestMicroGalaxyInstaller
         microgalaxy.start(d);
         this.host = Iterables.getOnlyElement(this.d.getSystemMap().findLeaves());
 
-        this.atlas = new AtlasInstaller(loadSshPropertyThing());
+        this.atlas = new AtlasInstaller(Collections.<String, String>emptyMap());
         this.atlas.start(d);
         this.atlas.install(host, Uri.<Installer>valueOf("atlas"), d).get();
         chef = new UbuntuChefSoloInstaller(ssh_props);

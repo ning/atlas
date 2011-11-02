@@ -9,6 +9,7 @@ import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.Uri;
 import org.antlr.stringtemplate.StringTemplate;
@@ -21,6 +22,7 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
@@ -28,75 +30,23 @@ import static java.lang.String.format;
 public class OracleLoaderInstaller extends ConcurrentComponent<String>
 {
     private final Logger log = LoggerFactory.getLogger(OracleLoaderInstaller.class);
-    private final String sshUser;
-    private final String sshKeyFile;
+    private final AtomicReference<String> sshUser = new AtomicReference<String>();
+    private final AtomicReference<String> sshKeyFile = new AtomicReference<String>();
     private final String sqlUrlTemplate;
 
     public OracleLoaderInstaller(Map<String, String> attributes)
     {
-        this.sshUser = attributes.get("ssh_user");
-        checkNotNull(sshUser, "ssh_user attribute required");
-
-        this.sshKeyFile = attributes.get("ssh_key_file");
-        checkNotNull(sshKeyFile, "ssh_key_file attribute required");
-
         checkNotNull(attributes.get("sql_url_template"), "sql_url_template required");
         this.sqlUrlTemplate = attributes.get("sql_url_template");
     }
 
-
-//    @Override
-//    public void install(Server server, String fragment, Node root, Node node) throws Exception
-//    {
-//        Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()
-//        {
-//            @Override
-//            public boolean apply(InitializedServer input)
-//            {
-//                log.debug("looking at {}", input.getMy().toJson());
-//                return "shell".equals(input.getMy().get("oracle"));
-//            }
-//        });
-//
-//        if (Iterables.isEmpty(shells)) {
-//            log.warn("unable to find a :databases => 'shell' host to run install on, failing");
-//            throw new IllegalStateException("no galaxy shell defined in the deploy tree, unable to continue");
-//        }
-//
-//        InitializedServer shell = Iterables.getFirst(shells, null);
-//        assert shell != null;
-//
-//        SSH ssh = new SSH(new File(sshKeyFile), sshUser, shell.getServer().getExternalAddress());
-//        try {
-//            log.debug("installing {} on {}", fragment, server.getInternalAddress());
-//            final StringTemplate sql_url_t = new StringTemplate(sqlUrlTemplate);
-//            Splitter equal_splitter = Splitter.on('=');
-//            for (String pair : Splitter.on(';').split(fragment)) {
-//                Iterator<String> itty = equal_splitter.split(pair).iterator();
-//                sql_url_t.setAttribute(itty.next(), itty.next());
-//            }
-//            String sql_url = sql_url_t.toString();
-//
-//            String s3_fetch = String.format("s3cmd get %s do_it.sql", sql_url);
-//            log.info(s3_fetch);
-//            ssh.exec(s3_fetch);
-//
-//            String cmd = format("sqlplus %s/%s@\"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=%s)(PORT=%s))(CONNECT_DATA=(SID=%s)))\" @do_it.sql",
-//                                server.getAttributes().get("username"),
-//                                server.getAttributes().get("password"),
-//                                server.getInternalAddress(),
-//                                server.getAttributes().get("port"),
-//                                server.getAttributes().get("name"));
-//            log.info("about to load sql via [ " +  cmd + " ]");
-//            String out = ssh.exec(cmd);
-//        }
-//        catch (Exception e) {
-//            log.warn("failure to load sql", e);
-//        }
-//        finally {
-//            ssh.close();
-//        }
-//    }
+    @Override
+    protected void startLocal(Deployment deployment)
+    {
+        Space s = deployment.getSpace();
+        this.sshUser.set(s.get("atlas.ssh_user").getValue());
+        this.sshKeyFile.set(s.get("atlas.ssh_key_file").getValue());
+    }
 
     @Override
     public Future<String> describe(Host server,
@@ -128,7 +78,7 @@ public class OracleLoaderInstaller extends ConcurrentComponent<String>
             return "Nothing to be done for " + sql_url;
         }
 
-        SSH ssh = new SSH(new File(sshKeyFile), sshUser, shell.getExternalAddress());
+        SSH ssh = new SSH(new File(sshKeyFile.get()), sshUser.get(), shell.getExternalAddress());
         try {
             String s3_fetch = String.format("s3cmd get %s do_it.sql", sql_url);
             log.info(s3_fetch);

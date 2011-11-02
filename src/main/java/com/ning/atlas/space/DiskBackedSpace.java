@@ -3,13 +3,11 @@ package com.ning.atlas.space;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
-import com.ning.atlas.base.Maybe;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Identity;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Map;

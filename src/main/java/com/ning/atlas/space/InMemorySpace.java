@@ -2,7 +2,7 @@ package com.ning.atlas.space;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.Maps;
-import com.ning.atlas.base.Maybe;
+import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.SpaceKey;

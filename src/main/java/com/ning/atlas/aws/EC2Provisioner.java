@@ -13,7 +13,7 @@ import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.Host;
-import com.ning.atlas.base.Maybe;
+import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.BaseComponent;
@@ -21,15 +21,16 @@ import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
+import com.ning.atlas.spi.protocols.AWS;
+import com.ning.atlas.spi.protocols.Server;
 
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Arrays.asList;
 
@@ -40,31 +41,37 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
 {
     private final static Logger logger = Logger.get(EC2Provisioner.class);
 
-    private final ExecutorService es = Executors.newCachedThreadPool();
+    private final ExecutorService                  es        = Executors.newCachedThreadPool();
+    private final AtomicReference<AmazonEC2Client> ec2       = new AtomicReference<AmazonEC2Client>();
+    private final AtomicReference<String>          keypairId = new AtomicReference<String>();
 
-    private final AmazonEC2Client ec2;
-    private final String          keypairId;
-
-    /**
-     * used by jruby template parsing
-     *
-     * @param attributes
-     */
-    public EC2Provisioner(Map<String, String> attributes)
+    public EC2Provisioner()
     {
-        BasicAWSCredentials credentials = new BasicAWSCredentials(attributes.get("access_key"),
-                                                                  attributes.get("secret_key"));
-        keypairId = attributes.get("keypair_id");
-        ec2 = new AmazonEC2AsyncClient(credentials);
-
+        // used by jruby processor
     }
 
     public EC2Provisioner(AWSConfig config)
     {
         BasicAWSCredentials credentials = new BasicAWSCredentials(config.getAccessKey(), config.getSecretKey());
-        ec2 = new AmazonEC2AsyncClient(credentials);
-        keypairId = config.getKeyPairId();
+        ec2.set(new AmazonEC2AsyncClient(credentials));
+        keypairId.set(config.getKeyPairId());
 
+    }
+
+    @Override
+    protected void startLocal(Deployment deployment)
+    {
+        Space s = deployment.getSpace();
+
+        AWS.Credentials creds = s.get(AWS.ID, AWS.Credentials.class, Missing.RequireAll).getValue();
+
+        BasicAWSCredentials credentials = new BasicAWSCredentials(creds.getAccessKey(),
+                                                                  creds.getSecretKey());
+
+        AWS.SSHKeyPairInfo info = s.get(AWS.ID, AWS.SSHKeyPairInfo.class, Missing.RequireAll).getValue();
+
+        this.keypairId.set(info.getKeyPairId());
+        this.ec2.set(new AmazonEC2AsyncClient(credentials));
     }
 
     @Override
@@ -92,11 +99,13 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
                 @Override
                 public Server call() throws Exception
                 {
+                    final AmazonEC2Client ec2 = EC2Provisioner.this.ec2.get();
+
                     logger.info("Provisioning server for %s", node.getId());
                     final String ami_name = uri.getFragment();
                     RunInstancesRequest req = new RunInstancesRequest(ami_name, 1, 1);
 
-                    req.setKeyName(keypairId);
+                    req.setKeyName(keypairId.get());
                     RunInstancesResult rs = ec2.runInstances(req);
 
                     final Instance i = rs.getReservation().getInstances().get(0);
@@ -164,7 +173,7 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
     public void destroy(Identity id, Space space)
     {
         EC2InstanceInfo info = space.get(id, EC2InstanceInfo.class, Missing.RequireAll).getValue();
-        ec2.terminateInstances(new TerminateInstancesRequest(asList(info.getEc2InstanceId())));
+        ec2.get().terminateInstances(new TerminateInstancesRequest(asList(info.getEc2InstanceId())));
         logger.info("destroyed ec2 instance %s", info.getEc2InstanceId());
     }
 

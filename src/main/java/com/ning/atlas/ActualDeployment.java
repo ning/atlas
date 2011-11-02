@@ -3,8 +3,7 @@ package com.ning.atlas;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.ning.atlas.base.Maybe;
+import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
@@ -15,7 +14,6 @@ import com.ning.atlas.spi.StepType;
 import com.ning.atlas.spi.Uri;
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

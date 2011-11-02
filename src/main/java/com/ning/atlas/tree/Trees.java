@@ -2,7 +2,7 @@ package com.ning.atlas.tree;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
-import com.ning.atlas.base.Maybe;
+import com.ning.atlas.spi.Maybe;
 
 import java.util.ArrayList;
 import java.util.List;

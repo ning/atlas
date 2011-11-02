@@ -21,6 +21,17 @@ public class TestIdentity
     }
 
     @Test
+    public void testFromEternalWithoutLeadingSlash() throws Exception
+    {
+        Identity root = Identity.root();
+        Identity child_1 = root.createChild("hello", "0");
+        Identity child_2 = child_1.createChild("world", "0");
+
+        assertThat(Identity.valueOf("hello.0"), equalTo(child_1));
+        assertThat(Identity.valueOf("hello.0/world.0"), equalTo(child_2));
+    }
+
+    @Test
     public void testFromExternalForm() throws Exception
     {
         Identity root = Identity.root();
