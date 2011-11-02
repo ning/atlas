@@ -16,6 +16,7 @@ import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
+import com.ning.atlas.spi.protocols.AWS;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 
@@ -43,13 +44,21 @@ public class TestRDSProvisioner
         params.put("password", "test");
         Uri<Provisioner> uri = Uri.valueOf("rds:testdb", params.asMap());
 
+        Space space = InMemorySpace.newInstance();
         AWSConfig cfg = EC2Helper.loadAwsConfig();
-        RDSProvisioner p = new RDSProvisioner(cfg.getAccessKey(), cfg.getSecretKey());
+
+        AWS.Credentials creds = new AWS.Credentials();
+        creds.setAccessKey(cfg.getAccessKey());
+        creds.setSecretKey(cfg.getSecretKey());
+        space.store(AWS.ID, creds);
+
+
+        RDSProvisioner p = new RDSProvisioner();
 
         Identity id = Identity.root().createChild("db", "0");
         Host db = new Host(id, "db", new My(), Collections.<Uri<Installer>>emptyList());
         SystemMap map = new SystemMap(Arrays.<Element>asList(db));
-        Space space = InMemorySpace.newInstance();
+
         Environment e = new Environment();
         Deployment d = new ActualDeployment(map, e, space);
 

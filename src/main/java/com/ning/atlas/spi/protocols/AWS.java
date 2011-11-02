@@ -39,22 +39,22 @@ public class AWS
         private AtomicReference<String> name        = new AtomicReference<String>();
         private AtomicReference<String> keyPairFile = new AtomicReference<String>();
 
-        public String getKeyPairId()
+        public String getId()
         {
             return name.get();
         }
 
-        public String getKeyPairFile()
-        {
-            return keyPairFile.get();
-        }
-
-        public void setKeyPairId(String name)
+        public void getId(String name)
         {
             this.name.set(name);
         }
 
-        public void setKeyPairFile(String keyPairFile)
+        public String getFile()
+        {
+            return keyPairFile.get();
+        }
+
+        public void setFile(String keyPairFile)
         {
             this.keyPairFile.set(keyPairFile);
         }

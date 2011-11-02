@@ -67,6 +67,12 @@ public abstract class Maybe<T> implements Iterable<T>
             }
 
             @Override
+            public <E extends Exception> T otherwise(E e) throws E
+            {
+                throw e;
+            }
+
+            @Override
             public String toString()
             {
                 return "unknown";
@@ -99,10 +105,7 @@ public abstract class Maybe<T> implements Iterable<T>
         return value == null ? Maybe.<T>unknown() : definitely(value);
     }
 
-    public <T, E extends Exception> T otherwise(E e) throws E
-    {
-        throw e;
-    }
+    public abstract <E extends Exception> T otherwise(E e) throws E;
 
     private static class DefiniteValue<T> extends Maybe<T>
     {
@@ -152,6 +155,12 @@ public abstract class Maybe<T> implements Iterable<T>
 
         @Override
         public T getValue()
+        {
+            return theValue;
+        }
+
+        @Override
+        public <E extends Exception> T otherwise(E e) throws E
         {
             return theValue;
         }

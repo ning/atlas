@@ -15,10 +15,13 @@ import com.ning.atlas.ConcurrentComponent;
 import com.ning.atlas.Host;
 import com.ning.atlas.base.MapConfigSource;
 import com.ning.atlas.logging.Logger;
+import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.protocols.AWS;
+import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.Uri;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -35,32 +38,14 @@ public class RDSProvisioner extends ConcurrentComponent<String>
 
     private static final Logger log = Logger.get(RDSProvisioner.class);
 
-    private final AtomicReference<AmazonRDSClient> rds = new AtomicReference<AmazonRDSClient>();
-
-    public RDSProvisioner(String accessKey, String secretKey)
-    {
-        BasicAWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
-        rds.set(new AmazonRDSClient(credentials));
-    }
-
-    public RDSProvisioner()
-    {
-        // for jruby
-    }
-
-    @Override
-    protected void startLocal(Deployment deployment)
-    {
-        Space s = deployment.getSpace();
-        BasicAWSCredentials credentials = new BasicAWSCredentials(s.get("atlas.aws.access_key").getValue(),
-                                                                  s.get("atlas.aws.secret_key").getValue());
-        rds.set(new AmazonRDSClient(credentials));
-
-    }
-
     @Override
     public String perform(Host node, Uri<? extends Component> uri, Deployment d) throws Exception
     {
+
+        AWS.Credentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class, Missing.RequireAll)
+            .otherwise(new IllegalStateException("AWS credentials are not available"));
+
+        AmazonRDSClient rds = new AmazonRDSClient(new BasicAWSCredentials(creds.getAccessKey(), creds.getSecretKey()));
 
         if (d.getSpace().get(node.getId(), "instance-id").isKnown()) {
             return "already exists";
@@ -81,7 +66,7 @@ public class RDSProvisioner extends ConcurrentComponent<String>
                                : "general-public-license";
 
         req.setLicenseModel(license_model);
-        DBInstance db = rds.get().createDBInstance(req);
+        DBInstance db = rds.createDBInstance(req);
 
         DBInstance instance = null;
         String last_state = "";
@@ -97,7 +82,7 @@ public class RDSProvisioner extends ConcurrentComponent<String>
             rdy.setDBInstanceIdentifier(db.getDBInstanceIdentifier());
             DescribeDBInstancesResult rs;
             try {
-                rs = rds.get().describeDBInstances(rdy);
+                rs = rds.describeDBInstances(rdy);
             }
             catch (AmazonServiceException e) {
                 continue;
@@ -147,10 +132,15 @@ public class RDSProvisioner extends ConcurrentComponent<String>
 
     public void destroy(Identity id, Deployment d)
     {
+        AWS.Credentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class, Missing.RequireAll)
+            .otherwise(new IllegalStateException("AWS credentials are not available"));
+
+        AmazonRDSClient rds = new AmazonRDSClient(new BasicAWSCredentials(creds.getAccessKey(), creds.getSecretKey()));
+
         String instance_id = d.getSpace().get(id, "instance-id").getValue();
         DeleteDBInstanceRequest req = new DeleteDBInstanceRequest(instance_id);
         req.setSkipFinalSnapshot(true);
-        rds.get().deleteDBInstance(req);
+        rds.deleteDBInstance(req);
     }
 
     public interface RDSConfig

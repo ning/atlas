@@ -30,7 +30,7 @@ public class StartCommand implements Runnable
         JRubyTemplateParser p = new JRubyTemplateParser();
         SystemMap map = p.parseSystem(new File(mainOptions.getSystemPath())).normalize();
         Environment env = p.parseEnvironment(new File(mainOptions.getEnvironmentPath()));
-        Space space = H2BackedSpace.create(new File(".space"));
+        Space space = H2BackedSpace.create(new File(".atlas", "space"));
 
         ActualDeployment d = new ActualDeployment(map, env, space);
         d.perform();

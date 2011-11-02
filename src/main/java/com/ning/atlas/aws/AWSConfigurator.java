@@ -5,12 +5,10 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.CreateKeyPairRequest;
 import com.amazonaws.services.ec2.model.CreateKeyPairResult;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 import com.google.common.io.Files;
 import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.BaseLifecycleListener;
 import com.ning.atlas.spi.Deployment;
-import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.protocols.AWS;
 import com.ning.atlas.spi.protocols.SSHCredentials;
@@ -27,24 +25,23 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.regex.Pattern;
 
 public class AWSConfigurator extends BaseLifecycleListener
 {
     private final ExecutorService              es            = Executors.newCachedThreadPool();
-    private final List<Pair<String, Identity>> credentialIds = new CopyOnWriteArrayList<Pair<String, Identity>>();
+    private final List<Pair<String, String>> credentialIds = new CopyOnWriteArrayList<Pair<String, String>>();
 
     public AWSConfigurator(Map<String, String> attributes)
     {
-        Splitter s = Splitter.on(Pattern.compile("\\s+"));
+        Splitter s = Splitter.on('@').trimResults();
         for (Map.Entry<String, String> entry : attributes.entrySet()) {
             if (entry.getKey().startsWith("ssh")) {
                 Iterator<String> i = s.split(entry.getValue()).iterator();
 
                 String user = i.next();
-                Identity id = Identity.valueOf(i.next());
+                String name = i.next();
 
-                credentialIds.add(Pair.of(user, id));
+                credentialIds.add(Pair.of(user, name));
             }
         }
     }
@@ -103,19 +100,19 @@ public class AWSConfigurator extends BaseLifecycleListener
                     }
 
                     info = new AWS.SSHKeyPairInfo();
-                    info.setKeyPairFile(pemfile.getAbsolutePath());
-                    info.setKeyPairId(name);
+                    info.setFile(pemfile.getAbsolutePath());
+                    info.getId(name);
                     s.store(AWS.ID, info);
                 }
                 else {
                     info = s.get(AWS.ID, AWS.SSHKeyPairInfo.class, Missing.RequireAll).getValue();
                 }
 
-                for (Pair<String, Identity> pair : credentialIds) {
+                for (Pair<String, String> pair : credentialIds) {
                     SSHCredentials ssh_creds = new SSHCredentials();
-                    ssh_creds.setKeyFilePath(info.getKeyPairFile());
+                    ssh_creds.setKeyFilePath(info.getFile());
                     ssh_creds.setUserName(pair.getKey());
-                    s.store(pair.getValue(), ssh_creds);
+                    SSHCredentials.store(s, ssh_creds, pair.getValue());
                 }
             }
         });

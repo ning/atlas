@@ -2,12 +2,14 @@ package com.ning.atlas.space;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.Maps;
+import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.SpaceKey;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.codehaus.jackson.map.ObjectMapper;
+import sun.rmi.runtime.Log;
 
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
@@ -15,6 +17,7 @@ import java.util.Map;
 
 public abstract class BaseSpace implements Space
 {
+    private static final Logger log = Logger.get(BaseSpace.class);
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private final Map<String, String> scratchSpace = Maps.newConcurrentMap();
@@ -102,6 +105,7 @@ public abstract class BaseSpace implements Space
                             val = null;
                             break;
                         case RequireAll:
+                            log.info("Failing get because of missing property '%s'", prop_name);
                             return Maybe.unknown();
                         default:
                             throw new UnsupportedOperationException("Not Yet Implemented!");

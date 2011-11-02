@@ -68,9 +68,10 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
         BasicAWSCredentials credentials = new BasicAWSCredentials(creds.getAccessKey(),
                                                                   creds.getSecretKey());
 
-        AWS.SSHKeyPairInfo info = s.get(AWS.ID, AWS.SSHKeyPairInfo.class, Missing.RequireAll).getValue();
+        AWS.SSHKeyPairInfo info = s.get(AWS.ID, AWS.SSHKeyPairInfo.class, Missing.RequireAll)
+                                   .otherwise(new IllegalStateException("unable to find aws ssh keypair info"));
 
-        this.keypairId.set(info.getKeyPairId());
+        this.keypairId.set(info.getId());
         this.ec2.set(new AmazonEC2AsyncClient(credentials));
     }
 
