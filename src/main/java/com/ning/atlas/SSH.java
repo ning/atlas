@@ -1,19 +1,17 @@
 package com.ning.atlas;
 
+import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.protocols.SSHCredentials;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.PKCS8KeyFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,51 +23,26 @@ public class SSH
 {
     // http://www.jarvana.com/jarvana/view/net/schmizz/sshj/0.1.1/sshj-0.1.1-javadoc.jar!/net/schmizz/sshj/SSHClient.html
 
-    private final static Logger logger = LoggerFactory.getLogger(SSH.class);
+    private final static Logger logger = Logger.get(SSH.class);
+
+    private final ExecutorService pool = Executors.newCachedThreadPool();
+
     private final SSHClient ssh;
     private final String    host;
-    private final int       port;
-    private final static int TIMEOUT_MINUTES = 2; // time out in minutes
 
     public SSH(SSHCredentials creds, String externalAddress) throws IOException
     {
         this(new File(creds.getKeyFilePath()), creds.getUserName(), externalAddress);
     }
 
-    public enum AuthType
-    {
-        AUTH_KEY, AUTH_PASSWORD
-    }
-
-    private final ExecutorService pool = Executors.newCachedThreadPool();
-
-    // Key
     public SSH(File privateKeyFile, String userName, String host) throws IOException
     {
-        this(privateKeyFile, userName, host, SSHClient.DEFAULT_PORT);
+        this(privateKeyFile, userName, host, 30, TimeUnit.SECONDS);
     }
 
-    // Key
-    public SSH(File privateKeyFile, String userName, String host, int port) throws IOException
+    public SSH(File privateKeyFile, String userName, String host, long time, TimeUnit unit) throws IOException
     {
-        this(privateKeyFile, userName, null, host, port, AuthType.AUTH_KEY, SSH.TIMEOUT_MINUTES, TimeUnit.MINUTES);
-    }
-
-    // Password
-    public SSH(String passWord, String userName, String host) throws IOException
-    {
-        this(passWord, userName, host, SSHClient.DEFAULT_PORT);
-    }
-
-    // Password
-    public SSH(String passWord, String userName, String host, int port) throws IOException
-    {
-        this(null, userName, passWord, host, port, AuthType.AUTH_PASSWORD, SSH.TIMEOUT_MINUTES, TimeUnit.MINUTES);
-
-    }
-
-    public SSH(File privateKeyFile, String userName, String passWord, String host, int port, AuthType authtype, long time, TimeUnit unit) throws IOException
-    {
+        logger.debug("connecting to %s with key file %s and user %s", host, privateKeyFile.getAbsolutePath(), userName);
         long give_up_at = System.currentTimeMillis() + unit.toMillis(time);
 
         boolean connected = false;
@@ -81,15 +54,12 @@ public class SSH
             ssh = new SSHClient();
             ssh.addHostKeyVerifier(new PromiscuousVerifier());
             try {
-                ssh.connect(host, port);
-                if (authtype == AuthType.AUTH_KEY) {
-                    PKCS8KeyFile keyfile = new PKCS8KeyFile();
-                    keyfile.init(privateKeyFile);
-                    ssh.authPublickey(userName, keyfile);
-                }
-                else if (authtype == AuthType.AUTH_PASSWORD) {
-                    ssh.authPassword(userName, passWord);
-                }
+                ssh.connect(host);
+
+                PKCS8KeyFile keyfile = new PKCS8KeyFile();
+                keyfile.init(privateKeyFile);
+                ssh.authPublickey(userName, keyfile);
+
                 connected = true;
             }
             catch (Exception e) {
@@ -104,7 +74,6 @@ public class SSH
         }
         this.host = host;
         this.ssh = ssh;
-        this.port = port;
     }
 
     public void close() throws IOException
@@ -125,7 +94,7 @@ public class SSH
                     local.listen();
                 }
                 catch (IOException e) {
-                    logger.warn("ioexception on local port forwarded", e);
+                    logger.warn(e, "ioexception on local port forwarded");
                 }
             }
         });
@@ -143,10 +112,8 @@ public class SSH
 
     public String exec(String command, int time, TimeUnit unit) throws IOException
     {
-        logger.debug("executing {} on {}", command, host);
         Session s = ssh.startSession();
         try {
-            logger.debug("executing '{}' on {}", command, host);
             Session.Command cmd = s.exec(command);
 
             StringBuilder all = new StringBuilder();
@@ -169,7 +136,6 @@ public class SSH
 
     public void scpUpload(File localFile, String remotePath) throws IOException
     {
-        logger.debug(format("uploading %s to %s:%d:%s", localFile.getAbsolutePath(), host, port, remotePath));
         ssh.newSCPFileTransfer().upload(localFile.getAbsolutePath(), remotePath);
     }
 }

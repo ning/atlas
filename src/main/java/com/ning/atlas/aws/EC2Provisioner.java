@@ -71,7 +71,7 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
         AWS.SSHKeyPairInfo info = s.get(AWS.ID, AWS.SSHKeyPairInfo.class, Missing.RequireAll)
                                    .otherwise(new IllegalStateException("unable to find aws ssh keypair info"));
 
-        this.keypairId.set(info.getId());
+        this.keypairId.set(info.getKeyPairId());
         this.ec2.set(new AmazonEC2AsyncClient(credentials));
     }
 

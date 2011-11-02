@@ -94,14 +94,19 @@ public class AWSConfigurator extends BaseLifecycleListener
                         Files.write(res.getKeyPair().getKeyMaterial(),
                                     pemfile,
                                     Charset.forName("UTF8"));
+
+                        // good god the perm api on file is horrible
+                        pemfile.setWritable(false, false); // no one may write
+                        pemfile.setReadable(false, false); // no one may read
+                        pemfile.setReadable(true, true); // owner may read
                     }
                     catch (IOException e) {
                         throw new IllegalStateException("Unable to write out pem file for keypair " + name, e);
                     }
 
                     info = new AWS.SSHKeyPairInfo();
-                    info.setFile(pemfile.getAbsolutePath());
-                    info.getId(name);
+                    info.setPrivateKeyFile(pemfile.getAbsolutePath());
+                    info.setKeyPairId(name);
                     s.store(AWS.ID, info);
                 }
                 else {
@@ -110,7 +115,7 @@ public class AWSConfigurator extends BaseLifecycleListener
 
                 for (Pair<String, String> pair : credentialIds) {
                     SSHCredentials ssh_creds = new SSHCredentials();
-                    ssh_creds.setKeyFilePath(info.getFile());
+                    ssh_creds.setKeyFilePath(info.getPrivateKeyFile());
                     ssh_creds.setUserName(pair.getKey());
                     SSHCredentials.store(s, ssh_creds, pair.getValue());
                 }

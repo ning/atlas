@@ -10,6 +10,7 @@ import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.Uri;
 import org.antlr.stringtemplate.StringTemplate;
@@ -29,23 +30,15 @@ import static java.lang.String.format;
 
 public class OracleLoaderInstaller extends ConcurrentComponent<String>
 {
-    private final Logger log = LoggerFactory.getLogger(OracleLoaderInstaller.class);
-    private final AtomicReference<String> sshUser = new AtomicReference<String>();
-    private final AtomicReference<String> sshKeyFile = new AtomicReference<String>();
+    private static final Logger log = LoggerFactory.getLogger(OracleLoaderInstaller.class);
     private final String sqlUrlTemplate;
+    private final String credentialName;
 
     public OracleLoaderInstaller(Map<String, String> attributes)
     {
         checkNotNull(attributes.get("sql_url_template"), "sql_url_template required");
         this.sqlUrlTemplate = attributes.get("sql_url_template");
-    }
-
-    @Override
-    protected void startLocal(Deployment deployment)
-    {
-        Space s = deployment.getSpace();
-        this.sshUser.set(s.get("atlas.ssh_user").getValue());
-        this.sshKeyFile.set(s.get("atlas.ssh_key_file").getValue());
+        this.credentialName = attributes.get("credentials");
     }
 
     @Override
@@ -59,6 +52,10 @@ public class OracleLoaderInstaller extends ConcurrentComponent<String>
     @Override
     public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
+        SSHCredentials creds = SSHCredentials.lookup(d.getSpace(), credentialName)
+            .otherwise(SSHCredentials.defaultCredentials(d.getSpace()))
+            .otherwise(new IllegalStateException("unable to find ssh credentials"));
+
         String fragment = uri.getFragment();
         String oracle_shell_id = d.getSpace().require("oracle-shell");
         String attrs = d.getSpace().get(host.getId(), "extra-atlas-attributes").getValue();
@@ -78,7 +75,7 @@ public class OracleLoaderInstaller extends ConcurrentComponent<String>
             return "Nothing to be done for " + sql_url;
         }
 
-        SSH ssh = new SSH(new File(sshKeyFile.get()), sshUser.get(), shell.getExternalAddress());
+        SSH ssh = new SSH(creds, shell.getExternalAddress());
         try {
             String s3_fetch = String.format("s3cmd get %s do_it.sql", sql_url);
             log.info(s3_fetch);
