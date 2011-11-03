@@ -3,11 +3,13 @@ package com.ning.atlas;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.ning.atlas.spi.Maybe;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
+import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.StepType;
@@ -17,7 +19,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -105,8 +109,6 @@ public class ActualDeployment implements Deployment
 
     public void perform()
     {
-        // perform
-
         /**
          * lifecycle: startDeploy ->
          *            startProvision -> provision[] -> finishProvision ->
@@ -144,6 +146,8 @@ public class ActualDeployment implements Deployment
             }
         });
 
+        final ListeningExecutorService es = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
+
         // startDeploy (no one can listen for this yet)
         fire(Events.startDeployment, listeners);
 
@@ -156,7 +160,7 @@ public class ActualDeployment implements Deployment
         // initializers
         log.info("starting init");
         fire(Events.startInit, listeners);
-        install(new Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>>()
+        install(es, new Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>>()
         {
             @Override
             public List<Pair<Uri<Installer>, Installer>> apply(Pair<Host, Map<String, Installer>> input)
@@ -186,7 +190,7 @@ public class ActualDeployment implements Deployment
         // installers
         log.info("starting install");
         fire(Events.startInstall, listeners);
-        install(new Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>>()
+        install(es, new Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>>()
         {
             @Override
             public List<Pair<Uri<Installer>, Installer>> apply(Pair<Host, Map<String, Installer>> input)
@@ -212,9 +216,10 @@ public class ActualDeployment implements Deployment
 
         // finishDeploy (no one can listen for this yet)
         fire(Events.finishDeployment, listeners);
+        es.shutdown();
     }
 
-    private void install(Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>> f)
+    private void install(ListeningExecutorService es, Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>> f)
     {
         final Map<String, Installer> installers = Maps.newHashMap();
         final Set<Host> servers = map.findLeaves();
@@ -233,12 +238,8 @@ public class ActualDeployment implements Deployment
         final List<Future<?>> futures = Lists.newArrayList();
         for (Map.Entry<Host, List<Pair<Uri<Installer>, Installer>>> entry : t_to_i.entrySet()) {
             final Host server = entry.getKey();
-            for (Pair<Uri<Installer>, Installer> pair : entry.getValue()) {
-                final Uri<Installer> uri = pair.getKey();
-                final Installer installer = pair.getRight();
-                log.info("installing %s on %s", uri, server.getId());
-                futures.add(installer.install(server, uri, this));
-            }
+            final List<Pair<Uri<Installer>, Installer>> installations = entry.getValue();
+            futures.add(installAllOnHost(es, server, installations));
         }
         for (Future<?> future : futures) {
             try {
@@ -257,6 +258,23 @@ public class ActualDeployment implements Deployment
             installer.finish(this);
         }
 
+    }
+
+    private Future<?> installAllOnHost(ListeningExecutorService es,
+                                       final Host server,
+                                       final List<Pair<Uri<Installer>, Installer>> installations)
+    {
+        return es.submit(new Callable<Object>()
+        {
+            @Override
+            public Object call() throws Exception
+            {
+                for (Pair<Uri<Installer>, Installer> installation : installations) {
+                    installation.getValue().install(server, installation.getKey(), ActualDeployment.this).get();
+                }
+                return null;
+            }
+        });
     }
 
     private void provision()
@@ -324,7 +342,8 @@ public class ActualDeployment implements Deployment
         return space;
     }
 
-    private void fire(Events event, List<LifecycleListener> listeners) {
+    private void fire(Events event, List<LifecycleListener> listeners)
+    {
         List<Future<?>> fs = Lists.newArrayList();
         for (LifecycleListener listener : listeners) {
             fs.add(event.fire(listener, this));
