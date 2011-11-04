@@ -28,6 +28,6 @@ public class ErrorInstaller extends BaseComponent implements Installer
     @Override
     public Future<?> install(Host server, Uri<Installer> uri, Deployment deployment)
     {
-        throw new UnsupportedOperationException("Not Yet Implemented!");
+        throw new UnsupportedOperationException("raising an error on uri: " + uri.toString());
     }
 }

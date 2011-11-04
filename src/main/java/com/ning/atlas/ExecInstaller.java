@@ -26,7 +26,7 @@ public class ExecInstaller extends ConcurrentComponent<String>
         SSH ssh = new SSH(host, d.getSpace(), creds);
         try {
             String out = ssh.exec(uri.getFragment());
-            log.info(out);
+            log.info("output of exec is %s", out);
             return out;
         }
         finally {

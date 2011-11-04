@@ -165,7 +165,6 @@ public class ActualDeployment implements Deployment
             @Override
             public List<Pair<Uri<Installer>, Installer>> apply(Pair<Host, Map<String, Installer>> input)
             {
-
                 final String base_name = input.getLeft().getBase();
                 final Base base = environment.findBase(base_name).otherwise(Base.errorBase());
 
@@ -245,10 +244,8 @@ public class ActualDeployment implements Deployment
             try {
                 future.get();
             }
-            catch (InterruptedException e) {
-                throw new UnsupportedOperationException("Not Yet Implemented!", e);
-            }
-            catch (ExecutionException e) {
+            catch (Exception  e) {
+                log.warn(e, "Exception trying to execute installation");
                 throw new UnsupportedOperationException("Not Yet Implemented!", e);
             }
         }
@@ -269,6 +266,7 @@ public class ActualDeployment implements Deployment
             @Override
             public Object call() throws Exception
             {
+                log.info("installing on %s : %s", server.getId(), installations );
                 for (Pair<Uri<Installer>, Installer> installation : installations) {
                     log.info("installing %s on %s", installation.getKey().toString(), server.getId());
                     installation.getValue().install(server, installation.getKey(), ActualDeployment.this).get();

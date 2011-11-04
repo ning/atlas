@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
@@ -15,6 +16,8 @@ import java.util.concurrent.Future;
 
 public abstract class ConcurrentComponent<T> extends BaseComponent implements Provisioner, Installer
 {
+
+    private static final Logger log = Logger.get(ConcurrentComponent.class);
 
     private final ExecutorService threadPool;
 
@@ -32,7 +35,13 @@ public abstract class ConcurrentComponent<T> extends BaseComponent implements Pr
             @Override
             public T call() throws Exception
             {
-                return perform(server, uri, deployment);
+                try {
+                    return perform(server, uri, deployment);
+                }
+                catch (Exception e) {
+                    log.warn(e, "exception performing actual installation");
+                    throw e;
+                }
             }
         });
     }

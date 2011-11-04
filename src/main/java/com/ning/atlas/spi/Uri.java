@@ -45,8 +45,8 @@ public class Uri<T>
         checkNotNull(scheme, "scheme may not be null");
         checkNotNull(fragment, "fragment may not be null");
 
-        this.scheme = scheme;
-        this.fragment = fragment;
+        this.scheme = scheme.trim();
+        this.fragment = fragment.trim();
         Map<String, Collection<String>> tmp = Maps.newLinkedHashMap();
         for (Map.Entry<String, Collection<String>> entry : params.entrySet()) {
             List<String> values = ImmutableList.copyOf(entry.getValue());
