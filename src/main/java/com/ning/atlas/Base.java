@@ -1,6 +1,8 @@
 package com.ning.atlas;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Uri;
@@ -16,6 +18,12 @@ public class Base
 {
     private final List<Uri<Installer>> initializations;
     private final Uri<Provisioner>     provisioner;
+
+    public Base(Base inheritFrom, Uri<Provisioner> provisioner, List<Uri<Installer>> inits)
+    {
+        this((provisioner == null ? inheritFrom.getProvisionUri() : provisioner),
+             Lists.newArrayList(Iterables.concat(inheritFrom.getInitializations(), inits)));
+    }
 
     public Base(final Uri<Provisioner> provisioner,
                 final List<Uri<Installer>> initializations)

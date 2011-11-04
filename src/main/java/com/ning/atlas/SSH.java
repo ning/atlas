@@ -1,7 +1,10 @@
 package com.ning.atlas;
 
 import com.ning.atlas.logging.Logger;
+import com.ning.atlas.space.Missing;
+import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.protocols.SSHCredentials;
+import com.ning.atlas.spi.protocols.Server;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
 import net.schmizz.sshj.connection.channel.direct.Session;
@@ -28,7 +31,16 @@ public class SSH
     private final ExecutorService pool = Executors.newCachedThreadPool();
 
     private final SSHClient ssh;
-    private final String    host;
+
+    public SSH(Host host, Space space, String credentialName) throws IOException
+    {
+        this(SSHCredentials.lookup(space, credentialName)
+                           .otherwise(SSHCredentials.defaultCredentials(space))
+                           .otherwise(new IllegalStateException("no ssh credentials available for " + host.getId())),
+             space.get(host.getId(), Server.class, Missing.RequireAll)
+                  .otherwise(new IllegalStateException("no server info available for " + host.getId()))
+                  .getExternalAddress());
+    }
 
     public SSH(SSHCredentials creds, String externalAddress) throws IOException
     {
@@ -72,8 +84,12 @@ public class SSH
                 }
             }
         }
-        this.host = host;
         this.ssh = ssh;
+    }
+
+    public SSH(Host host, Space space) throws IOException
+    {
+        this(host, space, SSHCredentials.DEFAULT_CREDENTIAL_NAME);
     }
 
     public void close() throws IOException

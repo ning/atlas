@@ -78,16 +78,25 @@ module Atlas
 
     def base name, args={}
       p, params = Array(args[:provisioner])
-      raise "Provisioner URI is required" unless p
+      raise "Provisioner URI is required" unless p or args[:inherit]
       params = if params
                  Atlas.stringify params
                else
                  Hash.new
                end
-      uri    = com.ning.atlas.spi.Uri.valueOf2(p, params)
+
+      uri = if p 
+              com.ning.atlas.spi.Uri.valueOf2(p, params)
+            else
+              nil
+            end
 
       inits = Atlas.parse_install_list(args[:init])
-      @bases[name] = com.ning.atlas.Base.new(uri, inits)
+      if args[:inherit] then
+        @bases[name] = com.ning.atlas.Base.new(@bases[args[:inherit]], uri, inits)
+      else
+        @bases[name] = com.ning.atlas.Base.new(uri, inits)
+      end
     end
 
     def provisioner name, type, args={}

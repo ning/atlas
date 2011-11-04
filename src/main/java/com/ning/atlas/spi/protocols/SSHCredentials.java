@@ -11,6 +11,7 @@ public class SSHCredentials
 {
     private AtomicReference<String> keyFilePath = new AtomicReference<String>();
     private AtomicReference<String> userName = new AtomicReference<String>();
+    public static String DEFAULT_CREDENTIAL_NAME = "default";
 
     public String getKeyFilePath() {
         return keyFilePath.get();
@@ -46,6 +47,6 @@ public class SSHCredentials
     }
 
     public static Maybe<SSHCredentials> defaultCredentials(Space space) {
-        return lookup(space, "default");
+        return lookup(space, DEFAULT_CREDENTIAL_NAME);
     }
 }

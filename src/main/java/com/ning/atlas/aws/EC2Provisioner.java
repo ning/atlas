@@ -105,6 +105,9 @@ public class EC2Provisioner extends BaseComponent implements Provisioner
                     logger.info("Provisioning server for %s", node.getId());
                     final String ami_name = uri.getFragment();
                     RunInstancesRequest req = new RunInstancesRequest(ami_name, 1, 1);
+                    if (uri.getParamsSimple().containsKey("instance_type")) {
+                        req.setInstanceType(uri.getParamsSimple().get("instance_type"));
+                    }
 
                     req.setKeyName(keypairId.get());
                     RunInstancesResult rs = ec2.runInstances(req);

@@ -270,6 +270,7 @@ public class ActualDeployment implements Deployment
             public Object call() throws Exception
             {
                 for (Pair<Uri<Installer>, Installer> installation : installations) {
+                    log.info("installing %s on %s", installation.getKey().toString(), server.getId());
                     installation.getValue().install(server, installation.getKey(), ActualDeployment.this).get();
                 }
                 return null;

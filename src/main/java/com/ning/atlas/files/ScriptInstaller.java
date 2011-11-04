@@ -1,4 +1,4 @@
-package com.ning.atlas.packages;
+package com.ning.atlas.files;
 
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.ConcurrentComponent;
@@ -9,28 +9,32 @@ import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Uri;
 
+import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-public class AptInstaller extends ConcurrentComponent<String>
+public class ScriptInstaller extends ConcurrentComponent<String>
 {
 
-    private static final Logger log = Logger.get(AptInstaller.class);
+    private static final Logger log = Logger.get(ScriptInstaller.class);
 
-    private final String credentialName;
+    private final String creds;
 
-    public AptInstaller(Map<String, String> attributes)
+    public ScriptInstaller(Map<String, String> attrs)
     {
-        this.credentialName = attributes.get("credentialName");
+        this.creds = attrs.get("credentials");
     }
 
     @Override
     public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
-        SSH ssh = new SSH(host, d.getSpace(), credentialName);
+        File script = new File(uri.getFragment());
+
+        SSH ssh = new SSH(host, d.getSpace(), creds);
         try {
-            ssh.exec("sudo apt-get update");
-            String out = ssh.exec("yes | sudo apt-get install " + uri.getFragment().replaceAll(",", " "));
+            ssh.scpUpload(script, "/tmp/script_installer_script");
+            ssh.exec("chmod +x /tmp/script_installer_script");
+            String out = ssh.exec("/tmp/script_installer_script");
             log.info(out);
             return out;
         }
@@ -42,7 +46,6 @@ public class AptInstaller extends ConcurrentComponent<String>
     @Override
     public Future<String> describe(Host server, Uri<? extends Component> uri, Deployment deployment)
     {
-        return Futures.immediateFuture("will install the packages " + uri.getFragment());
+        return Futures.immediateFuture(String.format("will execute %s remotely", uri.getFragment()));
     }
 }
-
