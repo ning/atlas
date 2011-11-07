@@ -2,12 +2,11 @@ package com.ning.atlas.databases;
 
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.Host;
-import com.ning.atlas.SystemMap;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,59 +36,6 @@ public class MysqlLoaderInstaller extends BaseComponent implements Installer
     }
 
 
-//    @Override
-//    public void install(Server server, String fragment, Node root, Node node) throws Exception
-//    {
-//        Iterable<InitializedServer> shells = filter(findInstancesOf(root, InitializedServer.class), new Predicate<InitializedServer>()
-//        {
-//            @Override
-//            public boolean apply(InitializedServer input)
-//            {
-//                log.debug("looking at {}", input.getMy().toJson());
-//                return "shell".equals(input.getMy().get("mysql"));
-//            }
-//        });
-//
-//        if (Iterables.isEmpty(shells)) {
-//            log.warn("unable to find a :databases => 'shell' host to run install on, failing");
-//            throw new IllegalStateException("no galaxy shell defined in the deploy tree, unable to continue");
-//        }
-//
-//        InitializedServer shell = Iterables.getFirst(shells, null);
-//        assert shell != null;
-//
-//        SSH ssh = new SSH(new File(sshKeyFile), sshUser, shell.getServer().getExternalAddress());
-//        try {
-//            log.debug("installing {} on {}", fragment, server.getInternalAddress());
-//            final StringTemplate sql_url_t = new StringTemplate(sqlUrlTemplate);
-//            Splitter equal_splitter = Splitter.on('=');
-//            for (String pair : Splitter.on(';').split(fragment)) {
-//                Iterator<String> itty = equal_splitter.split(pair).iterator();
-//                sql_url_t.setAttribute(itty.next(), itty.next());
-//            }
-//            String sql_url = sql_url_t.toString();
-//
-//            String s3_fetch = String.format("s3cmd get %s do_it.sql", sql_url);
-//            log.info(s3_fetch);
-//            ssh.exec(s3_fetch);
-//
-//            String cmd = format("sqlplus %s/%s@\"(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=%s)(PORT=%s))(CONNECT_DATA=(SID=%s)))\" @do_it.sql",
-//                                server.getAttributes().get("username"),
-//                                server.getAttributes().get("password"),
-//                                server.getInternalAddress(),
-//                                server.getAttributes().get("port"),
-//                                server.getAttributes().get("name"));
-//            log.info("about to load sql via [ " +  cmd + " ]");
-//            String out = ssh.exec(cmd);
-//        }
-//        catch (Exception e) {
-//            log.warn("failure to load sql", e);
-//        }
-//        finally {
-//            ssh.close();
-//        }
-//    }
-
     @Override
     public Future<String> describe(Host server, Uri<? extends Component> uri, Deployment deployment)
     {
@@ -97,9 +43,9 @@ public class MysqlLoaderInstaller extends BaseComponent implements Installer
     }
 
     @Override
-    public Future<?> install(Host server, Uri<Installer> uri, Deployment deployment)
+    public Future<Status> install(Host server, Uri<Installer> uri, Deployment deployment)
     {
-        throw new UnsupportedOperationException("Not Yet Implemented!");
+        return Futures.immediateFuture(Status.fail(uri.getFragment()));
     }
 
 }

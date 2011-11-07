@@ -5,6 +5,7 @@ import com.ning.atlas.Host;
 import com.ning.atlas.aws.EC2Helper;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
 import org.junit.Test;
 
@@ -25,7 +26,7 @@ public class TestUbuntuChefSoloInstaller
         UbuntuChefSoloInstaller ci = new UbuntuChefSoloInstaller(loadSshPropertyThing("recipe_url",
                                                                                       "https://s3.amazonaws.com/atlas-resources/chef-solo.tar.gz"));
         Host h = Iterables.getOnlyElement(d.getSystemMap().findLeaves());
-        Future<String> f = ci.install(h, Uri.<Installer>valueOf("chef:role[server]"), d);
+        Future<Status> f = ci.install(h, Uri.<Installer>valueOf("chef:role[server]"), d);
         System.out.println(f.get());
         EC2Helper.destroy(d);
         ci.finish(d);

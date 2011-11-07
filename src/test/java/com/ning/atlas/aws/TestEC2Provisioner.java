@@ -11,6 +11,7 @@ import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
@@ -99,8 +100,8 @@ public class TestEC2Provisioner
         assumeThat("ec2", isAvailable());
 
         Uri<Provisioner> uri = Uri.valueOf("ec2:ami-a7f539ce");
-        Future<Server> f = ec2.provision(node, uri, deployment);
-        Server s = f.get();
+        Future<Status> f = ec2.provision(node, uri, deployment);
+        Status s = f.get();
 
         assertThat(s, not(nullValue()));
     }
@@ -112,7 +113,7 @@ public class TestEC2Provisioner
         assumeThat("ec2", isAvailable());
 
         Uri<Provisioner> uri = Uri.valueOf("ec2:ami-a7f539ce");
-        Future<Server> f = ec2.provision(node, uri, deployment);
+        Future<Status> f = ec2.provision(node, uri, deployment);
         f.get();
 
         EC2Provisioner.EC2InstanceInfo info = space.get(node.getId(),

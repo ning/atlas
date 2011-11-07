@@ -12,6 +12,7 @@ import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
@@ -25,6 +26,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Future;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class EC2Helper
 {
@@ -45,8 +49,9 @@ public class EC2Helper
         ec2.start(deployment);
 
         Uri<Provisioner> uri = Uri.valueOf("ec2:ami-c15994a8");
-        Future<Server> future = ec2.provision(node, uri, deployment);
-        future.get();
+        Future<Status> future = ec2.provision(node, uri, deployment);
+
+        assertThat(future.get().getType(), equalTo(Status.Type.Okay));
         ec2.finish(deployment);
         return deployment;
     }

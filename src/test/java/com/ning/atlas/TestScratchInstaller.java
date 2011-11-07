@@ -6,6 +6,7 @@ import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
 import org.junit.Test;
 
@@ -31,7 +32,7 @@ public class TestScratchInstaller
         Deployment d = new ActualDeployment(map, environment, space);
 
         ScratchInstaller scratch = new ScratchInstaller();
-        String json = scratch.install(host, Uri.<Installer>valueOf("scratch:hello=@"), d).get();
+        Status json = scratch.install(host, Uri.<Installer>valueOf("scratch:hello=@"), d).get();
         assertThat(space.get("hello").getValue(), equalTo(id.toExternalForm()));
     }
 
@@ -50,7 +51,7 @@ public class TestScratchInstaller
         Deployment d = new ActualDeployment(map, environment, space);
 
         ScratchInstaller scratch = new ScratchInstaller();
-        String json = scratch.install(host, Uri.<Installer>valueOf("scratch:@:hello=world"), d).get();
+        Status json = scratch.install(host, Uri.<Installer>valueOf("scratch:@:hello=world"), d).get();
         assertThat(space.get(id.toExternalForm() + ":" + "hello").getValue(), equalTo("world"));
     }
 
@@ -68,7 +69,7 @@ public class TestScratchInstaller
         Deployment d = new ActualDeployment(map, environment, space);
 
         ScratchInstaller scratch = new ScratchInstaller();
-        String json = scratch.install(host, Uri.<Installer>valueOf("scratch:@:hello=world;waffle=@"), d).get();
+        Status status = scratch.install(host, Uri.<Installer>valueOf("scratch:@:hello=world;waffle=@"), d).get();
         assertThat(space.get(id.toExternalForm() + ":" + "hello").getValue(), equalTo("world"));
         assertThat(space.get("waffle").getValue(), equalTo(id.toExternalForm()));
     }

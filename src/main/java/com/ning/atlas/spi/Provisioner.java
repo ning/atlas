@@ -9,9 +9,9 @@ import java.util.concurrent.Future;
  */
 public interface Provisioner extends Component
 {
-    public Future<?> provision(Host node,
-                               Uri<Provisioner> uri,
-                               Deployment deployment);
+    public Future<Status> provision(Host node,
+                                    Uri<Provisioner> uri,
+                                    Deployment deployment);
 
     public Future<String> describe(Host server,
                                    Uri<? extends Component> uri,

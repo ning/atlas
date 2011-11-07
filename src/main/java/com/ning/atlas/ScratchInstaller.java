@@ -7,6 +7,7 @@ import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -17,8 +18,9 @@ import java.util.concurrent.Future;
 public class ScratchInstaller extends BaseComponent implements Installer
 {
     private static final ObjectMapper mapper = new ObjectMapper();
+
     @Override
-    public Future<String> install(Host server, Uri<Installer> uri, Deployment deployment)
+    public Future<Status> install(Host server, Uri<Installer> uri, Deployment deployment)
     {
         final String id = server.getId().toExternalForm();
         final Space space = deployment.getSpace();
@@ -28,12 +30,9 @@ public class ScratchInstaller extends BaseComponent implements Installer
             final String value = entry.getValue();
             space.scratch(key.replaceAll("@", id), value.replaceAll("@", id));
         }
-        try {
-            return Futures.immediateFuture(mapper.writeValueAsString(pairs));
-        }
-        catch (IOException e) {
-            return Futures.immediateFuture(e.getMessage());
-        }
+
+        return Futures.immediateFuture(Status.okay("wrote out value"));
+
     }
 
     @Override

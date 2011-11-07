@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
 
 import static java.lang.String.format;
 
-public class ERBFileInstaller extends ConcurrentComponent<String>
+public class ERBFileInstaller extends ConcurrentComponent
 {
     private final static Logger log = Logger.get(ERBFileInstaller.class);
     private final String creds;

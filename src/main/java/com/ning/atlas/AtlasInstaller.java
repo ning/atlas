@@ -2,17 +2,15 @@ package com.ning.atlas;
 
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.Futures;
-import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.space.Missing;
-import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
-import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.protocols.SSHCredentials;
-import com.ning.atlas.spi.protocols.Server;
+import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
+import com.ning.atlas.spi.protocols.SSHCredentials;
+import com.ning.atlas.spi.protocols.Server;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.Version;
 import org.codehaus.jackson.annotate.JsonAnyGetter;
@@ -27,21 +25,16 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicReference;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.ning.atlas.spi.protocols.SSHCredentials.defaultCredentials;
 import static com.ning.atlas.spi.protocols.SSHCredentials.lookup;
 
-public class AtlasInstaller extends BaseComponent implements Installer
+public class AtlasInstaller extends ConcurrentComponent
 {
     private final static Logger log = Logger.get(AtlasInstaller.class);
-
-    private final ExecutorService es = Executors.newCachedThreadPool();
     private final String credentialName;
 
 
@@ -54,78 +47,6 @@ public class AtlasInstaller extends BaseComponent implements Installer
     public Future<String> describe(Host server, Uri<? extends Component> uri, Deployment deployment)
     {
         return Futures.immediateFuture("populate /etc/atlas with legacy cruft");
-    }
-
-    @Override
-    public Future<String> install(final Host host, Uri<Installer> uri, final Deployment deployment)
-    {
-        final SSHCredentials creds = lookup(deployment.getSpace(), credentialName)
-            .otherwise(defaultCredentials(deployment.getSpace()))
-            .otherwise(new IllegalStateException("unable to locate any ssh credentials"));
-
-        // this *always* runs
-        return es.submit(new Callable<String>()
-        {
-            @Override
-            public String call() throws Exception
-            {
-                boolean success = false;
-                while (!success) {
-                    final Server server = deployment.getSpace()
-                                                    .get(host.getId(), Server.class, Missing.NullProperty)
-                                                    .getValue();
-                    final ObjectMapper mapper = makeMapper(deployment.getSpace(), deployment.getEnvironment());
-                    SSH ssh;
-                    try {
-                        ssh = new SSH(creds, server.getExternalAddress());
-                    }
-                    catch (IOException e) {
-                        log.warn(e, "unable to ssh into the server");
-                        break;
-
-                    }
-                    try {
-                        ssh.exec("sudo mkdir /etc/atlas");
-
-                        // upload the system map
-                        String sys_map = mapper.writeValueAsString(deployment.getSystemMap().getSingleRoot());
-                        File sys_map_file = File.createTempFile("system", "map");
-                        Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
-                        ssh.scpUpload(sys_map_file, "/tmp/system_map.json");
-                        ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
-
-                        // upload node info
-                        String node_info = mapper.writeValueAsString(host);
-                        File node_info_file = File.createTempFile("node", "info");
-                        Files.write(node_info, node_info_file, Charset.forName("UTF-8"));
-                        ssh.scpUpload(node_info_file, "/tmp/node_info.json");
-                        ssh.exec("sudo mv /tmp/node_info.json /etc/atlas/node_info.json");
-                        success = true;
-                        return node_info;
-                    }
-                    catch (Exception e) {
-                        log.warn(e, "failed!");
-                        success = false;
-                    }
-                    finally {
-                        try {
-                            ssh.close();
-                        }
-                        catch (IOException e) {
-                            log.warn("exception closing ssh connection", e);
-                        }
-                    }
-
-                }
-                return "finished";
-            }
-        });
-    }
-
-    @Override
-    protected void finishLocal(Deployment deployment)
-    {
-        es.shutdown();
     }
 
     ObjectMapper makeMapper(Space space, Environment environment)
@@ -146,10 +67,70 @@ public class AtlasInstaller extends BaseComponent implements Installer
         return mapper.writeValueAsString(map.getSingleRoot());
     }
 
+    @Override
+    public String perform(Host host, Uri<? extends Component> uri, Deployment deployment) throws Exception
+    {
+        final SSHCredentials creds = lookup(deployment.getSpace(), credentialName)
+            .otherwise(defaultCredentials(deployment.getSpace()))
+            .otherwise(new IllegalStateException("unable to locate any ssh credentials"));
+
+        // this *always* runs
+
+        boolean success = false;
+        while (!success) {
+            final Server server = deployment.getSpace()
+                .get(host.getId(), Server.class, Missing.NullProperty)
+                .getValue();
+            final ObjectMapper mapper = makeMapper(deployment.getSpace(), deployment.getEnvironment());
+            SSH ssh;
+            try {
+                ssh = new SSH(creds, server.getExternalAddress());
+            }
+            catch (IOException e) {
+                log.warn(e, "unable to ssh into the server");
+                break;
+
+            }
+            try {
+                ssh.exec("sudo mkdir /etc/atlas");
+
+                // upload the system map
+                String sys_map = mapper.writeValueAsString(deployment.getSystemMap().getSingleRoot());
+                File sys_map_file = File.createTempFile("system", "map");
+                Files.write(sys_map, sys_map_file, Charset.forName("UTF-8"));
+                ssh.scpUpload(sys_map_file, "/tmp/system_map.json");
+                ssh.exec("sudo mv /tmp/system_map.json /etc/atlas/system_map.json");
+
+                // upload node info
+                String node_info = mapper.writeValueAsString(host);
+                File node_info_file = File.createTempFile("node", "info");
+                Files.write(node_info, node_info_file, Charset.forName("UTF-8"));
+                ssh.scpUpload(node_info_file, "/tmp/node_info.json");
+                ssh.exec("sudo mv /tmp/node_info.json /etc/atlas/node_info.json");
+                success = true;
+                return node_info;
+            }
+            catch (Exception e) {
+                log.warn(e, "failed!");
+                success = false;
+            }
+            finally {
+                try {
+                    ssh.close();
+                }
+                catch (IOException e) {
+                    log.warn("exception closing ssh connection", e);
+                }
+            }
+
+        }
+        return "finished";
+    }
+
 
     public static class HostSerializer extends JsonSerializer<Host>
     {
-        private final Space       space;
+        private final Space space;
         private final Environment environment;
 
         HostSerializer(Space space, Environment environment)
@@ -183,10 +164,10 @@ public class AtlasInstaller extends BaseComponent implements Installer
     public static class ExtraHost
     {
 
-        private final Host                host;
-        private final Server              server;
+        private final Host host;
+        private final Server server;
         private final Map<String, String> environment;
-        private final Map                 attributes;
+        private final Map attributes;
 
         private static final ObjectMapper mapper = new ObjectMapper();
 

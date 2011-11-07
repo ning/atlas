@@ -12,7 +12,7 @@ import com.ning.atlas.spi.Uri;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-public class AptInstaller extends ConcurrentComponent<String>
+public class AptInstaller extends ConcurrentComponent
 {
 
     private static final Logger log = Logger.get(AptInstaller.class);

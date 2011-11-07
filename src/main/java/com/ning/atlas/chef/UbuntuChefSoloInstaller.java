@@ -6,13 +6,12 @@ import com.google.common.collect.Lists;
 import com.google.common.io.ByteStreams;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.Futures;
+import com.ning.atlas.ConcurrentComponent;
 import com.ning.atlas.Host;
 import com.ning.atlas.SSH;
 import com.ning.atlas.space.Missing;
-import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
-import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.protocols.SSHCredentials;
@@ -30,9 +29,6 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
@@ -41,7 +37,7 @@ import static com.ning.atlas.spi.protocols.SSHCredentials.defaultCredentials;
 import static com.ning.atlas.spi.protocols.SSHCredentials.lookup;
 import static java.util.Arrays.asList;
 
-public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
+public class UbuntuChefSoloInstaller extends ConcurrentComponent
 {
     private final static ObjectMapper mapper = new ObjectMapper();
 
@@ -50,8 +46,6 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
     }
 
     private final static Logger logger = LoggerFactory.getLogger(UbuntuChefSoloInstaller.class);
-
-    private static final ExecutorService es = Executors.newCachedThreadPool();
 
     private final File   chefSoloInitFile;
     private final File   soloRbFile;
@@ -108,25 +102,11 @@ public class UbuntuChefSoloInstaller extends BaseComponent implements Installer
         return Futures.immediateFuture("install chef solo and assign it <roles>");
     }
 
-    @Override
-    public Future<String> install(final Host server, final Uri<Installer> uri, final Deployment deployment)
-    {
-        return es.submit(new Callable<String>()
-        {
-            @Override
-            public String call() throws Exception
-            {
-                return initServer(server, createNodeJsonFor(uri.getFragment()), deployment);
-
-            }
-        });
-    }
-
 
     @Override
-    protected void finishLocal(Deployment deployment)
+    public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
-        es.shutdown();
+        return initServer(host, createNodeJsonFor(uri.getFragment()), d);
     }
 
     private String initServer(Host host, String nodeJson, Deployment d) throws IOException

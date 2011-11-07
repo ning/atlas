@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-public class FileInstaller extends ConcurrentComponent<Void>
+public class FileInstaller extends ConcurrentComponent
 {
 
     private final String credentials;
@@ -25,7 +25,7 @@ public class FileInstaller extends ConcurrentComponent<Void>
     }
 
     @Override
-    public Void perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
+    public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
         SSH ssh = new SSH(host, d.getSpace(), credentials);
 
@@ -40,7 +40,7 @@ public class FileInstaller extends ConcurrentComponent<Void>
         finally {
             ssh.close();
         }
-        return null;
+        return "copied " + from + " to " + to;
     }
 
     @Override

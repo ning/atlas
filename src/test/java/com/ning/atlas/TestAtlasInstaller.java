@@ -8,6 +8,7 @@ import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
+import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Uri;
@@ -96,7 +97,7 @@ public class TestAtlasInstaller
 
         AtlasInstaller ai = new AtlasInstaller(Collections.<String, String>emptyMap());
 
-        String node_info = ai.install(node, Uri.<Installer>valueOf("atlas"), deployment).get();
+        Status node_info = ai.install(node, Uri.<Installer>valueOf("atlas"), deployment).get();
         System.out.println(node_info);
 
         ai.finish(deployment);

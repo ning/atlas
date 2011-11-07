@@ -9,26 +9,23 @@ import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
-import com.ning.atlas.spi.Uri;
 import org.antlr.stringtemplate.StringTemplate;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.lang.String.format;
 
-public class OracleLoaderInstaller extends ConcurrentComponent<String>
+public class OracleLoaderInstaller extends ConcurrentComponent
 {
     private static final Logger log = LoggerFactory.getLogger(OracleLoaderInstaller.class);
     private final String sqlUrlTemplate;

@@ -15,6 +15,7 @@ import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.protocols.AWS;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -64,7 +65,7 @@ public class TestRDSProvisioner
 
         p.start(d);
 
-        String s = p.provision(db, uri, d).get();
+        Status s = p.provision(db, uri, d).get();
 
         System.out.println(s);
 

@@ -6,7 +6,7 @@ import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
 
 import java.util.concurrent.Callable;
@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public abstract class ConcurrentComponent<T> extends BaseComponent implements Provisioner, Installer
+public abstract class ConcurrentComponent extends BaseComponent implements Provisioner, Installer
 {
 
     private static final Logger log = Logger.get(ConcurrentComponent.class);
@@ -27,40 +27,47 @@ public abstract class ConcurrentComponent<T> extends BaseComponent implements Pr
     }
 
     @Override
-    public final Future<T> install(final Host server, final Uri<Installer> uri, final Deployment deployment)
+    public final Future<Status> install(final Host server, final Uri<Installer> uri, final Deployment deployment)
     {
-        return threadPool.submit(new Callable<T>()
+        return threadPool.submit(new Callable<Status>()
         {
 
             @Override
-            public T call() throws Exception
+            public Status call() throws Exception
             {
                 try {
-                    return perform(server, uri, deployment);
+                    return Status.okay(perform(server, uri, deployment));
                 }
                 catch (Exception e) {
                     log.warn(e, "exception performing actual installation");
-                    throw e;
+                    return Status.fail(e.getMessage());
                 }
             }
         });
     }
 
     @Override
-    public final Future<T> provision(final Host node, final Uri<Provisioner> uri, final Deployment deployment)
+    public final Future<Status> provision(final Host node, final Uri<Provisioner> uri, final Deployment deployment)
     {
-        return threadPool.submit(new Callable<T>()
+        return threadPool.submit(new Callable<Status>()
         {
 
             @Override
-            public T call() throws Exception
+            public Status call() throws Exception
             {
-                return perform(node, uri, deployment);
+                try {
+                    return Status.okay(perform(node, uri, deployment));
+                }
+                catch (Exception e) {
+                    log.warn(e, "exception performing provision");
+                    return Status.fail(e.getMessage());
+                }
+
             }
         });
     }
 
-    public abstract T perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception;
+    public abstract String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception;
 
     @Override
     protected final void finishLocal(Deployment deployment)

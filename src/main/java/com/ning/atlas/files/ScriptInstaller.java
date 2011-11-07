@@ -13,7 +13,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-public class ScriptInstaller extends ConcurrentComponent<String>
+public class ScriptInstaller extends ConcurrentComponent
 {
 
     private static final Logger log = Logger.get(ScriptInstaller.class);

@@ -6,6 +6,7 @@ import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
 
 import java.util.Map;
@@ -24,9 +25,9 @@ public class ErrorProvisioner extends BaseComponent implements Provisioner
     }
 
     @Override
-    public Future<?> provision(Host node, Uri<Provisioner> uri, Deployment deployment)
+    public Future<Status> provision(Host node, Uri<Provisioner> uri, Deployment deployment)
     {
-        throw new UnsupportedOperationException("Not Yet Implemented!");
+        return Futures.immediateFuture(Status.fail(uri.getFragment()));
     }
 
     @Override

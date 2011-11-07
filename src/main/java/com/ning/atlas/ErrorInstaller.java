@@ -5,7 +5,7 @@ import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
 
 import java.util.Map;
@@ -26,8 +26,8 @@ public class ErrorInstaller extends BaseComponent implements Installer
     }
 
     @Override
-    public Future<?> install(Host server, Uri<Installer> uri, Deployment deployment)
+    public Future<Status> install(Host server, Uri<Installer> uri, Deployment deployment)
     {
-        throw new UnsupportedOperationException("raising an error on uri: " + uri.toString());
+        return Futures.immediateFuture(Status.fail(uri.getFragment()));
     }
 }

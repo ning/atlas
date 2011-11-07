@@ -9,9 +9,9 @@ import java.util.concurrent.Future;
  */
 public interface Installer extends Component
 {
-    public Future<?> install(Host server,
-                             Uri<Installer> uri,
-                             Deployment deployment);
+    public Future<Status> install(final Host server,
+                                  final Uri<Installer> uri,
+                                  final Deployment deployment);
 
     public Future<String> describe(Host server,
                                    Uri<? extends Component> uri,

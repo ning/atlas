@@ -33,7 +33,7 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class RDSProvisioner extends ConcurrentComponent<String>
+public class RDSProvisioner extends ConcurrentComponent
 {
 
     private static final Logger log = Logger.get(RDSProvisioner.class);

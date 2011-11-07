@@ -21,7 +21,7 @@ import static com.ning.atlas.spi.protocols.SSHCredentials.defaultCredentials;
 import static com.ning.atlas.spi.protocols.SSHCredentials.lookup;
 import static java.lang.String.format;
 
-public class MicroGalaxyInstaller extends ConcurrentComponent<String>
+public class MicroGalaxyInstaller extends ConcurrentComponent
 {
     private final Logger log = LoggerFactory.getLogger(MicroGalaxyInstaller.class);
 

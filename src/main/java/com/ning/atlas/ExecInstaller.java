@@ -9,7 +9,7 @@ import com.ning.atlas.spi.Uri;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-public class ExecInstaller extends ConcurrentComponent<String>
+public class ExecInstaller extends ConcurrentComponent
 {
     private final static Logger log = Logger.get(ExecInstaller.class);
 
