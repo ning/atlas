@@ -81,7 +81,7 @@ public class SQLiteBackedSpace extends BaseSpace
         @SqlUpdate("create table if not exists space ( id varchar, key varchar, value varchar, primary key (id, key))")
         public void create();
 
-        @SqlUpdate("insert into space (id, key, value) values (:id, :key, :value)")
+        @SqlUpdate("insert or replace into space (id, key, value) values (:id, :key, :value)")
         void write(@Bind("id") String id, @Bind("key") String key, @Bind("value") String value);
 
         @SqlQuery("select value from space where id = :id and key = :key")
