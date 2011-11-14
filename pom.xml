@@ -17,6 +17,13 @@
     <dependencies>
 
         <dependency>
+            <groupId>org.jruby.ext.posix</groupId>
+            <artifactId>jnr-posix</artifactId>
+            <version>1.1.8</version>
+            <scope>provided</scope> <!-- this is bundled in jruby-complete -->
+        </dependency>
+
+        <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.7.2</version>
