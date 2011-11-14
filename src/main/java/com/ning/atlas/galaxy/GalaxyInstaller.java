@@ -4,12 +4,14 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.ConcurrentComponent;
+import com.ning.atlas.Core;
 import com.ning.atlas.Host;
 import com.ning.atlas.SSH;
 import com.ning.atlas.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
@@ -33,7 +35,8 @@ public class GalaxyInstaller extends ConcurrentComponent
 
     private final String credentialName;
 
-    public GalaxyInstaller(Map<String, String> attributes) {
+    public GalaxyInstaller(Map<String, String> attributes)
+    {
         this.credentialName = attributes.get("credentials");
     }
 
@@ -49,8 +52,8 @@ public class GalaxyInstaller extends ConcurrentComponent
         log.info("using galaxy to install {} on {}", host.getId(), uri.toString());
 
         final SSHCredentials creds = lookup(d.getSpace(), credentialName)
-                    .otherwise(defaultCredentials(d.getSpace()))
-                    .otherwise(new IllegalStateException("unable to locate any ssh credentials"));
+            .otherwise(defaultCredentials(d.getSpace()))
+            .otherwise(new IllegalStateException("unable to locate any ssh credentials"));
 
 
         Identity shell_id = Identity.valueOf(d.getSpace().require("galaxy-shell"));
@@ -60,6 +63,25 @@ public class GalaxyInstaller extends ConcurrentComponent
 
 
         final String fragment = uri.getFragment();
+
+        String internal_hostname = Splitter.on('.').split(server.getInternalAddress()).iterator().next();
+
+
+        Maybe<String> old_install_fragment = d.getSpace().get(Core.ID.createChild("galaxy", "installer"),
+                                                              host.getId().toExternalForm());
+        if (old_install_fragment.isKnown()) {
+            if (old_install_fragment.getValue().equals(fragment)) {
+                // nothing to do, move along
+                return "leaving current installation in place.";
+            }
+            else {
+                // need to clear what was there first
+                ssh.exec("galaxy -i %s clear", internal_hostname);
+                log.info("cleared old installation %s on %s", old_install_fragment, host.getId().toExternalForm());
+            }
+        }
+        // new install
+
         Iterator<String> top_parts = Splitter.on(':').split(fragment).iterator();
         String config_path = top_parts.next();
 
@@ -72,16 +94,14 @@ public class GalaxyInstaller extends ConcurrentComponent
             String version = parts[1];
             String type = Joiner.on('/').join(Arrays.asList(parts).subList(2, parts.length));
 
-            String internal_first_part = Splitter.on('.').split(server.getInternalAddress()).iterator().next();
-
-            String query_cmd = format("galaxy -i %s show", internal_first_part);
+            String query_cmd = format("galaxy -i %s show", internal_hostname);
             String out;
             do {
                 out = ssh.exec(query_cmd);
             }
             while (out.contains("No agents matching the provided filter"));
 
-            String cmd = format("galaxy -i %s assign %s %s %s", internal_first_part, env, version, type);
+            String cmd = format("galaxy -i %s assign %s %s %s", internal_hostname, env, version, type);
             log.debug("about to run '{}'", cmd);
 
             String o;
@@ -90,9 +110,13 @@ public class GalaxyInstaller extends ConcurrentComponent
             }
             while (o.contains("SocketError: getaddrinfo: Name or service not known"));
 
-            String cmd2 = format("galaxy -i %s start", internal_first_part);
+            String cmd2 = format("galaxy -i %s start", internal_hostname);
             log.debug("about to run '{}'", cmd2);
-            return ssh.exec(cmd2, 1, TimeUnit.MINUTES);
+            ssh.exec(cmd2, 1, TimeUnit.MINUTES);
+            d.getSpace().store(Core.ID.createChild("galaxy", "installer"),
+                               host.getId().toExternalForm(),
+                               uri.getFragment());
+            return "installed";
         }
         catch (Exception e) {
             log.warn("unable to install galaxy component", e);

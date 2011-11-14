@@ -16,12 +16,12 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class StartCommand implements Callable<Void>
+public class UpdateCommand implements Callable<Void>
 {
-    private static final Logger logger = Logger.get(StartCommand.class);
+    private static final Logger logger = Logger.get(UpdateCommand.class);
     private final MainOptions mainOptions;
 
-    public StartCommand(MainOptions mainOptions)
+    public UpdateCommand(MainOptions mainOptions)
     {
         this.mainOptions = mainOptions;
     }

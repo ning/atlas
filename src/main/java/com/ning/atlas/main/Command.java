@@ -26,11 +26,25 @@ public enum Command
                 return new InitCommand(mo);
             }
         },
+    update
+        {
+            public Callable<?> create(MainOptions mo)
+            {
+                return new UpdateCommand(mo);
+            }
+        },
+    udpate
+        {
+            public Callable<?> create(MainOptions mo)
+            {
+                return new UpdateCommand(mo);
+            }
+        },
     start
         {
             public Callable<?> create(MainOptions mo)
             {
-                return new StartCommand(mo);
+                return new UpdateCommand(mo);
             }
         },
     ssh
