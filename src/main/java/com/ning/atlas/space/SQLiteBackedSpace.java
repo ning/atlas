@@ -34,7 +34,6 @@ public class SQLiteBackedSpace extends BaseSpace
         }
     }
 
-
     private final Dao dao;
 
     private SQLiteBackedSpace(File dbFile) throws IOException
