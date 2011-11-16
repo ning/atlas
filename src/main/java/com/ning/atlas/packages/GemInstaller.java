@@ -8,7 +8,11 @@ import com.ning.atlas.SSH;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
+import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Uri;
+import com.ning.atlas.spi.protocols.SSHCredentials;
+import com.ning.atlas.spi.protocols.Server;
+import com.ning.atlas.spi.space.Missing;
 
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -29,6 +33,21 @@ public class GemInstaller extends ConcurrentComponent
         SSH ssh = new SSH(host, d.getSpace(), credentialName);
         try {
             String out = ssh.exec("sudo gem install " + uri.getFragment().replaceAll(",", " ") + " --no-ri --no-rdoc");
+            log.info(out);
+            return out;
+        }
+        finally {
+            ssh.close();
+        }
+    }
+
+    @Override
+    public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
+    {
+        log.info("unwinding %s on %s", uri, hostId);
+        SSH ssh = new SSH(hostId, credentialName, d.getSpace());
+        try {
+            String out = ssh.exec("sudo gem uninstall " + uri.getFragment().replaceAll(",", " "));
             log.info(out);
             return out;
         }

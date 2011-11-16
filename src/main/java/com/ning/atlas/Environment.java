@@ -6,7 +6,7 @@ import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.tuple.Pair;

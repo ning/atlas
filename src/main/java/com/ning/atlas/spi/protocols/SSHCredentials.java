@@ -1,9 +1,10 @@
 package com.ning.atlas.spi.protocols;
 
-import com.ning.atlas.space.Missing;
+import com.ning.atlas.spi.space.Core;
+import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Maybe;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.space.Space;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -31,7 +32,7 @@ public class SSHCredentials
     }
 
     private static Identity createId(String name) {
-        return Identity.root().createChild("atlas", "private").createChild("credentials", name);
+        return Core.ID.createChild("ssh", "config").createChild("credentials", name);
     }
 
     public static void store(Space space, SSHCredentials credentials, String name) {

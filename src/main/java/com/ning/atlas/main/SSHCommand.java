@@ -1,15 +1,14 @@
 package com.ning.atlas.main;
 
-import com.google.common.base.Joiner;
 import com.kenai.constantine.platform.Errno;
 import com.ning.atlas.Environment;
 import com.ning.atlas.Host;
 import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.logging.Logger;
-import com.ning.atlas.space.Missing;
+import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.space.SQLiteBackedSpace;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
 import org.jruby.ext.posix.POSIX;

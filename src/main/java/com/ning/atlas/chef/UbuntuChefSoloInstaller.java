@@ -9,7 +9,8 @@ import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.ConcurrentComponent;
 import com.ning.atlas.Host;
 import com.ning.atlas.SSH;
-import com.ning.atlas.space.Missing;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Maybe;
@@ -107,6 +108,12 @@ public class UbuntuChefSoloInstaller extends ConcurrentComponent
     public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
         return initServer(host, createNodeJsonFor(uri.getFragment()), d);
+    }
+
+    @Override
+    public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
+    {
+        throw new IllegalStateException("No unwinding chef stuff for now");
     }
 
     private String initServer(Host host, String nodeJson, Deployment d) throws IOException

@@ -2,7 +2,7 @@ package com.ning.atlas.main;
 
 import com.ning.atlas.space.SQLiteBackedSpace;
 import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.space.Space;
 
 import java.io.File;
 import java.util.concurrent.Callable;

@@ -27,6 +27,12 @@ public class NoOpProvisioner extends BaseComponent implements Provisioner
     }
 
     @Override
+    public Future<Status> destroy(Identity hostId, Uri<Provisioner> uri, Deployment deployment)
+    {
+        return Futures.immediateFuture(Status.okay());
+    }
+
+    @Override
     public Future<String> describe(Host server, Uri<? extends Component> uri, Deployment deployment)
     {
         return Futures.immediateFuture("do nothing with " + uri.toString());

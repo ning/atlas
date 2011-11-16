@@ -13,6 +13,10 @@ public interface Provisioner extends Component
                                     Uri<Provisioner> uri,
                                     Deployment deployment);
 
+    public Future<Status> destroy(Identity hostId,
+                                  Uri<Provisioner> uri,
+                                  Deployment deployment);
+
     public Future<String> describe(Host server,
                                    Uri<? extends Component> uri,
                                    Deployment deployment);

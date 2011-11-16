@@ -1,7 +1,8 @@
-package com.ning.atlas.spi;
+package com.ning.atlas.spi.space;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
+import com.ning.atlas.spi.Identity;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 public final class SpaceKey

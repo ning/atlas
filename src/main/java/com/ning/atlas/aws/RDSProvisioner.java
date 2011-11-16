@@ -15,13 +15,12 @@ import com.ning.atlas.ConcurrentComponent;
 import com.ning.atlas.Host;
 import com.ning.atlas.base.MapConfigSource;
 import com.ning.atlas.logging.Logger;
-import com.ning.atlas.space.Missing;
+import com.ning.atlas.spi.Maybe;
+import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.protocols.AWS;
-import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.Uri;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -31,7 +30,6 @@ import org.skife.config.ConfigurationObjectFactory;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class RDSProvisioner extends ConcurrentComponent
 {
@@ -43,7 +41,7 @@ public class RDSProvisioner extends ConcurrentComponent
     {
 
         AWS.Credentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class, Missing.RequireAll)
-            .otherwise(new IllegalStateException("AWS credentials are not available"));
+                                 .otherwise(new IllegalStateException("AWS credentials are not available"));
 
         AmazonRDSClient rds = new AmazonRDSClient(new BasicAWSCredentials(creds.getAccessKey(), creds.getSecretKey()));
 
@@ -123,6 +121,22 @@ public class RDSProvisioner extends ConcurrentComponent
     }
 
     @Override
+    public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
+    {
+        AWS.Credentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class, Missing.RequireAll)
+                                 .otherwise(new IllegalStateException("AWS credentials are not available"));
+
+        AmazonRDSClient rds = new AmazonRDSClient(new BasicAWSCredentials(creds.getAccessKey(), creds.getSecretKey()));
+
+        String mid = d.getSpace().get(hostId, "instance-id")
+                      .otherwise(new IllegalStateException("No instance id found, cannot unwind"));
+
+        DeleteDBInstanceRequest req = new DeleteDBInstanceRequest(mid);
+        rds.deleteDBInstance(req);
+        return "cleared";
+    }
+
+    @Override
     public Future<String> describe(Host server,
                                    Uri<? extends Component> uri,
                                    Deployment deployment)
@@ -133,7 +147,7 @@ public class RDSProvisioner extends ConcurrentComponent
     public void destroy(Identity id, Deployment d)
     {
         AWS.Credentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class, Missing.RequireAll)
-            .otherwise(new IllegalStateException("AWS credentials are not available"));
+                                 .otherwise(new IllegalStateException("AWS credentials are not available"));
 
         AmazonRDSClient rds = new AmazonRDSClient(new BasicAWSCredentials(creds.getAccessKey(), creds.getSecretKey()));
 

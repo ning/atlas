@@ -1,4 +1,4 @@
-package com.ning.atlas.space;
+package com.ning.atlas.spi.space;
 
 public enum Missing
 {

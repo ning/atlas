@@ -8,7 +8,7 @@ import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.protocols.Server;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
 import org.junit.Ignore;
 import org.junit.Test;

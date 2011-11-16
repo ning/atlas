@@ -2,15 +2,18 @@ package com.ning.atlas.space;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.Space;
-import com.ning.atlas.spi.SpaceKey;
+import com.ning.atlas.spi.space.Space;
+import com.ning.atlas.spi.space.SpaceKey;
+import com.ning.atlas.spi.space.Missing;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.beans.PropertyDescriptor;
 import java.util.Map;
+import java.util.Set;
 
 public class InMemorySpace implements Space
 {
@@ -132,5 +135,35 @@ public class InMemorySpace implements Space
             }
         }
         return rs;
+    }
+
+    @Override
+    public Set<Identity> findAllIdentities()
+    {
+        Set<Identity> rs = Sets.newHashSet();
+        for (SpaceKey key : values.keySet()) {
+            rs.add(key.getIdentity());
+        }
+        return rs;
+    }
+
+    @Override
+    public void deleteAll(Identity identity)
+    {
+        Set<SpaceKey> to_remove = Sets.newHashSet();
+        for (SpaceKey key : values.keySet()) {
+            if (key.getIdentity().equals(identity)) {
+                to_remove.add(key);
+            }
+        }
+        for (SpaceKey key : to_remove) {
+            values.remove(key);
+        }
+    }
+
+    @Override
+    public <T> Maybe<T> get(Identity id, Class<T> type)
+    {
+        return get(id, type, Missing.RequireAll);
     }
 }

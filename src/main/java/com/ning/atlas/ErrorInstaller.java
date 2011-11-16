@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
+import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
@@ -29,5 +30,11 @@ public class ErrorInstaller extends BaseComponent implements Installer
     public Future<Status> install(Host server, Uri<Installer> uri, Deployment deployment)
     {
         return Futures.immediateFuture(Status.fail(uri.getFragment()));
+    }
+
+    @Override
+    public Future<Status> uninstall(Identity hostId, Uri<Installer> uri, Deployment deployment)
+    {
+        return Futures.immediateFuture(Status.fail("no unwinding of error installaer"));
     }
 }

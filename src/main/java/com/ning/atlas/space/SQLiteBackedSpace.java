@@ -1,10 +1,11 @@
 package com.ning.atlas.space;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.space.Space;
 import org.apache.commons.lang3.tuple.Pair;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.StatementContext;
@@ -20,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SQLiteBackedSpace extends BaseSpace
 {
@@ -90,6 +92,22 @@ public class SQLiteBackedSpace extends BaseSpace
         @SqlQuery("select key, value from space where id = :id")
         @Mapper(MyMapper.class)
         List<Pair<String, String>> readAll(@Bind("id") String id);
+
+        @SqlQuery("select distinct id from space")
+        @Mapper(MyIdMapper.class)
+        List<Identity> findAllIds();
+
+        @SqlUpdate("delete from space where id = :id")
+        void deleteAllWithId(@Bind("id") String id);
+    }
+
+    public static class MyIdMapper implements ResultSetMapper<Identity> {
+
+        @Override
+        public Identity map(int index, ResultSet r, StatementContext ctx) throws SQLException
+        {
+            return Identity.valueOf(r.getString("id"));
+        }
     }
 
     public static class MyMapper implements ResultSetMapper<Pair<String, String>>
@@ -99,5 +117,17 @@ public class SQLiteBackedSpace extends BaseSpace
         {
             return Pair.of(r.getString("key"), r.getString("value"));
         }
+    }
+
+    @Override
+    public Set<Identity> findAllIdentities()
+    {
+        return Sets.newHashSet(dao.findAllIds());
+    }
+
+    @Override
+    public void deleteAll(Identity identity)
+    {
+        dao.deleteAllWithId(identity.toExternalForm());
     }
 }

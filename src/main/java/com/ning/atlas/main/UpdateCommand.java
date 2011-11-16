@@ -7,8 +7,8 @@ import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.space.SQLiteBackedSpace;
-import com.ning.atlas.spi.Space;
-import com.ning.atlas.spi.SpaceKey;
+import com.ning.atlas.spi.space.Space;
+import com.ning.atlas.spi.space.SpaceKey;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;

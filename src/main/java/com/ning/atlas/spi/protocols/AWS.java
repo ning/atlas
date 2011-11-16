@@ -1,12 +1,15 @@
 package com.ning.atlas.spi.protocols;
 
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.space.Core;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 public class AWS
 {
-    public static final Identity ID = Identity.root().createChild("atlas", "private").createChild("config", "aws");
+    public static final Identity ID = Core.ID.createChild("aws", "config");
 
     public static class Credentials
     {
@@ -31,6 +34,11 @@ public class AWS
         public void setSecretKey(String secretKey)
         {
             this.secretKey.set(secretKey);
+        }
+
+        public AWSCredentials toAWSCredentials()
+        {
+            return new BasicAWSCredentials(this.getAccessKey(), this.getSecretKey());
         }
     }
 

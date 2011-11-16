@@ -5,8 +5,10 @@ import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.ConcurrentComponent;
 import com.ning.atlas.Host;
 import com.ning.atlas.SSH;
+import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
+import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Uri;
 
 import java.io.File;
@@ -16,6 +18,7 @@ import java.util.concurrent.Future;
 
 public class FileInstaller extends ConcurrentComponent
 {
+    private final Logger log = Logger.get(FileInstaller.class);
 
     private final String credentials;
 
@@ -41,6 +44,24 @@ public class FileInstaller extends ConcurrentComponent
             ssh.close();
         }
         return "copied " + from + " to " + to;
+    }
+
+    @Override
+    public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
+    {
+        log.info("unwinding %s on %s", uri, hostId);
+        SSH ssh = new SSH(hostId, credentials, d.getSpace());
+        try {
+            Iterator<String> itty = Splitter.on('>').trimResults().split(uri.getFragment()).iterator();
+            itty.next(); // from
+            String to = itty.next();
+            String out = ssh.exec("sudo rm " + to);
+            log.info(out);
+            return out;
+        }
+        finally {
+            ssh.close();
+        }
     }
 
     @Override

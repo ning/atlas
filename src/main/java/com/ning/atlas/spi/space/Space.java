@@ -1,8 +1,11 @@
-package com.ning.atlas.spi;
+package com.ning.atlas.spi.space;
 
-import com.ning.atlas.space.Missing;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.Maybe;
+import com.sun.xml.internal.xsom.impl.Ref;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @todo Add garbage collection via mark and sweep (marked if read or written during a deployment, sweep at end)
@@ -28,4 +31,9 @@ public interface Space
 
     Map<SpaceKey, String> getAllFor(Identity id);
 
+    Set<Identity> findAllIdentities();
+
+    void deleteAll(Identity identity);
+
+    <T> Maybe<T> get(Identity id, Class<T> type);
 }

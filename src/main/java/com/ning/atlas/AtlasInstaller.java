@@ -3,11 +3,12 @@ package com.ning.atlas;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.logging.Logger;
-import com.ning.atlas.space.Missing;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Maybe;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
@@ -25,8 +26,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static com.ning.atlas.spi.protocols.SSHCredentials.defaultCredentials;
@@ -125,6 +124,20 @@ public class AtlasInstaller extends ConcurrentComponent
 
         }
         return "finished";
+    }
+
+    @Override
+    public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
+    {
+        SSH ssh = new SSH(hostId, this.credentialName, d.getSpace());
+        try {
+            ssh.exec("sudo rm /etc/atlas/node_info.json");
+            ssh.exec("sudo rm /etc/atlas/system_map.json");
+            return "cleared";
+        }
+        finally {
+            ssh.close();
+        }
     }
 
 

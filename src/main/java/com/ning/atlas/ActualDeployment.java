@@ -7,12 +7,13 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Deployment;
+import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.spi.Space;
-import com.ning.atlas.spi.StepType;
+import com.ning.atlas.spi.space.Missing;
+import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -213,9 +214,102 @@ public class ActualDeployment implements Deployment
         fire(Events.finishInstall, listeners);
         log.info("finished install");
 
+        // whack anything that no longer exists.
+        Set<Identity> identities = space.findAllIdentities();
+        for (Identity identity : identities) {
+            Maybe<WhatWasDone> mwwd = space.get(identity.createChild("atlas", "unwind"),
+                                                WhatWasDone.class,
+                                                Missing.RequireAll);
+            if (mwwd.isKnown()) {
+                WhatWasDone wwd = mwwd.getValue();
+
+                for (Uri<Installer> in : Lists.reverse(wwd.getInstallations())) {
+                    try {
+                        environment.resolveInstaller(in).uninstall(identity, in, this).get();
+                    }
+                    catch (Exception e) {
+                        log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
+                    }
+                }
+
+                for (Uri<Installer> in : Lists.reverse(wwd.getInitializations())) {
+                    try {
+                        environment.resolveInstaller(in).uninstall(identity, in, this).get();
+                    }
+                    catch (Exception e) {
+                        log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
+                    }
+                }
+
+                try {
+                    environment.resolveProvisioner(wwd.getProvisioner().getScheme()).destroy(identity,
+                                                                                             wwd.getProvisioner(),
+                                                                                             this).get();
+                }
+                catch (Exception e) {
+                    log.warn(e, "unable to destroy %s on %s", wwd.getProvisioner().toString(), identity.toExternalForm());
+                }
+
+                space.deleteAll(identity);
+
+            }
+        }
+
+        // store what was done in case we need to unwind it.
+        for (Host host : map.findLeaves()) {
+            try {
+                WhatWasDone wwd = new WhatWasDone();
+                Base b = environment.findBase(host.getBase()).getValue();
+                wwd.setProvisioner(b.getProvisionUri());
+                wwd.setInitializations(b.getInitializations());
+                wwd.setInstallations(host.getInstallations());
+                space.store(host.getId().createChild("atlas", "unwind"), wwd);
+            }
+            catch (Exception e) {
+                log.warn(e, "broke trying to record unwind data for a host %s", host.getId());
+            }
+        }
+
         // finishDeploy (no one can listen for this yet)
         fire(Events.finishDeployment, listeners);
         es.shutdown();
+    }
+
+    public static class WhatWasDone
+    {
+        private Uri<Provisioner>     provisioner;
+        private List<Uri<Installer>> initializations;
+        private List<Uri<Installer>> installations;
+
+        public Uri<Provisioner> getProvisioner()
+        {
+            return provisioner;
+        }
+
+        public void setProvisioner(Uri<Provisioner> provisioner)
+        {
+            this.provisioner = provisioner;
+        }
+
+        public List<Uri<Installer>> getInitializations()
+        {
+            return initializations;
+        }
+
+        public void setInitializations(List<Uri<Installer>> initializations)
+        {
+            this.initializations = initializations;
+        }
+
+        public List<Uri<Installer>> getInstallations()
+        {
+            return installations;
+        }
+
+        public void setInstallations(List<Uri<Installer>> installations)
+        {
+            this.installations = installations;
+        }
     }
 
     private void install(ListeningExecutorService es, Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>> f)
@@ -244,7 +338,7 @@ public class ActualDeployment implements Deployment
             try {
                 future.get();
             }
-            catch (Exception  e) {
+            catch (Exception e) {
                 log.warn(e, "Exception trying to execute installation");
                 throw new UnsupportedOperationException("Not Yet Implemented!", e);
             }
@@ -266,7 +360,7 @@ public class ActualDeployment implements Deployment
             @Override
             public Object call() throws Exception
             {
-                log.info("installing on %s : %s", server.getId(), installations );
+                log.info("installing on %s : %s", server.getId(), installations);
                 for (Pair<Uri<Installer>, Installer> installation : installations) {
                     log.info("installing %s on %s", installation.getKey().toString(), server.getId());
                     installation.getValue().install(server, installation.getKey(), ActualDeployment.this).get();

@@ -10,6 +10,7 @@ import com.ning.atlas.SSH;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
+import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Uri;
 import org.jruby.CompatVersion;
 import org.jruby.RubyInstanceConfig;
@@ -74,5 +75,23 @@ public class ERBFileInstaller extends ConcurrentComponent
         String to = itty.next();
 
         return Futures.immediateFuture(format("process %s and upload it to %s", from, to));
+    }
+
+    @Override
+    public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
+    {
+        log.info("unwinding %s on %s", uri, hostId);
+        SSH ssh = new SSH(hostId, creds, d.getSpace());
+        try {
+            Iterator<String> itty = Splitter.on('>').trimResults().split(uri.getFragment()).iterator();
+            itty.next(); // from
+            String to = itty.next();
+            String out = ssh.exec("sudo rm " + to);
+            log.info(out);
+            return out;
+        }
+        finally {
+            ssh.close();
+        }
     }
 }

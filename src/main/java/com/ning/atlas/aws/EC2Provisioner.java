@@ -16,20 +16,15 @@ import com.ning.atlas.ConcurrentComponent;
 import com.ning.atlas.Host;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.logging.Logger;
-import com.ning.atlas.space.Missing;
-import com.ning.atlas.spi.BaseComponent;
+import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.protocols.AWS;
 import com.ning.atlas.spi.protocols.Server;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -42,8 +37,8 @@ public class EC2Provisioner extends ConcurrentComponent
 {
     private final static Logger logger = Logger.get(EC2Provisioner.class);
 
-    private final AtomicReference<AmazonEC2Client> ec2 = new AtomicReference<AmazonEC2Client>();
-    private final AtomicReference<String> keypairId = new AtomicReference<String>();
+    private final AtomicReference<AmazonEC2Client> ec2       = new AtomicReference<AmazonEC2Client>();
+    private final AtomicReference<String>          keypairId = new AtomicReference<String>();
 
     public EC2Provisioner()
     {
@@ -60,8 +55,8 @@ public class EC2Provisioner extends ConcurrentComponent
             // we have an ec2 instance for this node already
             logger.info("using existing ec2 instance %s for %s",
                         space.get(node.getId(), EC2InstanceInfo.class, Missing.RequireAll)
-                            .getValue()
-                            .getEc2InstanceId(),
+                             .getValue()
+                             .getEc2InstanceId(),
                         node.getId().toExternalForm());
 
             return "using existing ec2 instance " + ec2info.getValue().getEc2InstanceId();
@@ -130,6 +125,20 @@ public class EC2Provisioner extends ConcurrentComponent
 
     }
 
+    @Override
+    public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
+    {
+        EC2InstanceInfo ec2info = d.getSpace().get(hostId, EC2InstanceInfo.class, Missing.RequireAll)
+                                   .otherwise(new IllegalStateException("Nop instance id found"));
+        final AmazonEC2Client ec2 = EC2Provisioner.this.ec2.get();
+
+        TerminateInstancesRequest req = new TerminateInstancesRequest(asList(ec2info.getEc2InstanceId()));
+
+        ec2.terminateInstances(req);
+
+        return "terminated ec2 instance";
+    }
+
     public EC2Provisioner(AWSConfig config)
     {
         BasicAWSCredentials credentials = new BasicAWSCredentials(config.getAccessKey(), config.getSecretKey());
@@ -149,7 +158,7 @@ public class EC2Provisioner extends ConcurrentComponent
                                                                   creds.getSecretKey());
 
         AWS.SSHKeyPairInfo info = s.get(AWS.ID, AWS.SSHKeyPairInfo.class, Missing.RequireAll)
-            .otherwise(new IllegalStateException("unable to find aws ssh keypair info"));
+                                   .otherwise(new IllegalStateException("unable to find aws ssh keypair info"));
 
         this.keypairId.set(info.getKeyPairId());
         this.ec2.set(new AmazonEC2AsyncClient(credentials));

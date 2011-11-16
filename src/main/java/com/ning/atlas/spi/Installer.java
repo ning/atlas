@@ -13,6 +13,10 @@ public interface Installer extends Component
                                   final Uri<Installer> uri,
                                   final Deployment deployment);
 
+    public Future<Status> uninstall(final Identity hostId,
+                                    final Uri<Installer> uri,
+                                    final Deployment deployment);
+
     public Future<String> describe(Host server,
                                    Uri<? extends Component> uri,
                                    Deployment deployment);

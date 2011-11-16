@@ -1,8 +1,9 @@
 package com.ning.atlas;
 
 import com.ning.atlas.logging.Logger;
-import com.ning.atlas.space.Missing;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.space.Missing;
+import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
 import net.schmizz.sshj.SSHClient;
@@ -90,6 +91,16 @@ public class SSH
     public SSH(Host host, Space space) throws IOException
     {
         this(host, space, SSHCredentials.DEFAULT_CREDENTIAL_NAME);
+    }
+
+    public SSH(Identity hostId, String credentialName, Space space) throws IOException
+    {
+        this(SSHCredentials.lookup(space, credentialName)
+                           .otherwise(SSHCredentials.defaultCredentials(space))
+                           .otherwise(new IllegalStateException("Unable to find ssh credentials for " + credentialName)),
+             space.get(hostId, Server.class, Missing.RequireAll)
+                  .otherwise(new IllegalStateException("Unable to find server info to ssh into " + hostId))
+                  .getExternalAddress());
     }
 
     public void close() throws IOException

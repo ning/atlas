@@ -1,6 +1,6 @@
 package com.ning.atlas.space;
 
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.space.Space;
 
 import java.io.File;
 import java.io.IOException;

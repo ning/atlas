@@ -8,8 +8,7 @@ import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.spi.Space;
-import com.ning.atlas.spi.StepType;
+import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
@@ -28,7 +27,7 @@ public class TestActualDeployment
 {
     private Environment env;
     private SystemMap   map;
-    private Space       space;
+    private Space space;
 
     @Before
     public void setUp() throws Exception

@@ -3,7 +3,6 @@ package com.ning.atlas;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.StepType;
 
 import java.util.List;
 import java.util.Map;

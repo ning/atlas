@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
+import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Uri;
 
 import java.util.Map;
@@ -32,6 +33,12 @@ public class ExecInstaller extends ConcurrentComponent
         finally {
             ssh.close();
         }
+    }
+
+    @Override
+    public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
+    {
+        throw new IllegalStateException("No clearing exec actions");
     }
 
     @Override

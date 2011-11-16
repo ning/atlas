@@ -5,7 +5,7 @@ import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.ConcurrentComponent;
 import com.ning.atlas.Host;
 import com.ning.atlas.SSH;
-import com.ning.atlas.space.Missing;
+import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
@@ -93,5 +93,11 @@ public class OracleLoaderInstaller extends ConcurrentComponent
         finally {
             ssh.close();
         }
+    }
+
+    @Override
+    public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
+    {
+        throw new IllegalStateException("unable to unwind oracle load");
     }
 }

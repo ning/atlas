@@ -5,19 +5,21 @@ import com.google.common.collect.Maps;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.Space;
-import com.ning.atlas.spi.SpaceKey;
+import com.ning.atlas.spi.space.Space;
+import com.ning.atlas.spi.space.SpaceKey;
+import com.ning.atlas.spi.space.Missing;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.codehaus.jackson.map.ObjectMapper;
-import sun.rmi.runtime.Log;
 
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class BaseSpace implements Space
 {
-    private static final Logger log = Logger.get(BaseSpace.class);
+    private static final Logger       log    = Logger.get(BaseSpace.class);
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private final Map<String, String> scratchSpace = Maps.newConcurrentMap();
@@ -31,7 +33,8 @@ public abstract class BaseSpace implements Space
                 String prop_name = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, pd.getName());
                 try {
                     Object value = pd.getReadMethod().invoke(it);
-                    store(id, prop_name, String.valueOf(value));
+                    String json = mapper.writeValueAsString(value);
+                    write(id, prop_name, json);
                 }
                 catch (Exception e) {
                     throw new IllegalStateException("unable to read property '" + pd.getName() + "' from " + it, e);
@@ -44,7 +47,7 @@ public abstract class BaseSpace implements Space
     public void store(Identity id, String key, String value)
     {
         try {
-            write(id, key, value);
+            write(id, key, mapper.writeValueAsString(value));
         }
         catch (IOException e) {
             throw new IllegalStateException("unable to write", e);
@@ -60,11 +63,6 @@ public abstract class BaseSpace implements Space
     @Override
     public Maybe<String> get(String key)
     {
-        return getScratch(key);
-    }
-
-    protected Maybe<String> getScratch(String key)
-    {
         return Maybe.elideNull(this.scratchSpace.get(key));
     }
 
@@ -72,7 +70,8 @@ public abstract class BaseSpace implements Space
     public Maybe<String> get(Identity id, String key)
     {
         try {
-            return getScratch(id.toExternalForm() + ":" + key).otherwise(Maybe.elideNull(read(id, key)));
+            // return Maybe.elideNull( mapper.readValue(read(id, key), String.class));
+            return Maybe.elideNull(read(id, key));
         }
         catch (IOException e) {
             throw new IllegalStateException("unable to read from persistent store", e);
@@ -97,7 +96,12 @@ public abstract class BaseSpace implements Space
                 String json_val = get(id, prop_name).otherwise((String) null);
                 final Object val;
                 if (json_val != null) {
-                    val = mapper.convertValue(String.valueOf(json_val), pd.getPropertyType());
+                    try {
+                        val = mapper.readValue(json_val, pd.getPropertyType());
+                    }
+                    catch (IOException e) {
+                        throw new IllegalStateException(e.getMessage());
+                    }
                 }
                 else {
                     switch (behavior) {
@@ -143,13 +147,19 @@ public abstract class BaseSpace implements Space
         try {
             Map<String, String> local_vals = readAll(id);
             for (Map.Entry<String, String> entry : local_vals.entrySet()) {
-                rs.put(SpaceKey.from(id, entry.getKey()), entry.getValue());
+                rs.put(SpaceKey.from(id, entry.getKey()), mapper.readValue(entry.getValue(), String.class));
             }
             return rs;
         }
         catch (IOException e) {
             throw new IllegalStateException("unable to read from storage", e);
         }
+    }
+
+    @Override
+    public <T> Maybe<T> get(Identity id, Class<T> type)
+    {
+        return get(id, type, Missing.RequireAll);
     }
 
     protected abstract String read(Identity id, String key) throws IOException;

@@ -6,14 +6,13 @@ import com.ning.atlas.Environment;
 import com.ning.atlas.Host;
 import com.ning.atlas.SystemMap;
 import com.ning.atlas.space.InMemorySpace;
-import com.ning.atlas.space.Missing;
+import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Status;
-import com.ning.atlas.spi.protocols.Server;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -38,7 +37,7 @@ import static org.junit.Assume.assumeThat;
 public class TestEC2Provisioner
 {
     private EC2Provisioner   ec2;
-    private Space            space;
+    private Space space;
     private Host             node;
     private SystemMap        map;
     private Environment      environment;

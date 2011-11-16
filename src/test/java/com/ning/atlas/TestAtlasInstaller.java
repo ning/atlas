@@ -10,13 +10,12 @@ import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.protocols.Server;
-import com.ning.atlas.spi.Space;
+import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 
 import static com.ning.atlas.aws.TestEC2Provisioner.isAvailable;

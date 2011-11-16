@@ -4,8 +4,8 @@ import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
+import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.spi.Space;
 import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
 
@@ -28,6 +28,12 @@ public class ErrorProvisioner extends BaseComponent implements Provisioner
     public Future<Status> provision(Host node, Uri<Provisioner> uri, Deployment deployment)
     {
         return Futures.immediateFuture(Status.fail(uri.getFragment()));
+    }
+
+    @Override
+    public Future<Status> destroy(Identity hostId, Uri<Provisioner> uri, Deployment deployment)
+    {
+        return Futures.immediateFuture(Status.fail("no unprovisioning on he failure provisioner"));
     }
 
     @Override

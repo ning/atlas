@@ -32,6 +32,12 @@ public class NoOpInstaller extends BaseComponent implements Installer
         return Futures.immediateFuture(Status.okay(uri.toString()));
     }
 
+    @Override
+    public Future<Status> uninstall(Identity hostId, Uri<Installer> uri, Deployment deployment)
+    {
+        return Futures.immediateFuture(Status.okay());
+    }
+
     public static Iterable<Pair<Identity,Uri<Installer>>> getInstalled()
     {
         return installed;

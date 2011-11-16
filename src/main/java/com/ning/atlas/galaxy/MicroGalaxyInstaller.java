@@ -3,7 +3,8 @@ package com.ning.atlas.galaxy;
 import com.ning.atlas.ConcurrentComponent;
 import com.ning.atlas.Host;
 import com.ning.atlas.SSH;
-import com.ning.atlas.space.Missing;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Uri;
@@ -37,18 +38,12 @@ public class MicroGalaxyInstaller extends ConcurrentComponent
     }
 
     @Override
-    public String perform(Host host, Uri<? extends Component> uri, Deployment d)
+    public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws IOException
     {
-        final SSHCredentials creds = lookup(d.getSpace(), credentialName)
-                    .otherwise(defaultCredentials(d.getSpace()))
-                    .otherwise(new IllegalStateException("unable to locate any ssh credentials"));
-
         String fragment = uri.getFragment();
-        Server server = d.getSpace().get(host.getId(), Server.class, Missing.RequireAll).getValue();
-        SSH ssh = null;
+        SSH ssh = new SSH(host, d.getSpace(), credentialName);
         try {
-            ssh = new SSH(creds, server.getExternalAddress());
-            log.debug("installing {} on {}", fragment, server.getExternalAddress());
+            log.debug("installing {} on {}", fragment, host.getId());
             //
             String cmd = format("echo 'cd ~%s; sudo -u %s ugx stop; sudo -u %s ugx clean; sudo -u %s ugx -b %s deploy; sudo -u %s ugx start' > /tmp/ugx_install",
                                 microGalaxyUser,
@@ -68,14 +63,23 @@ public class MicroGalaxyInstaller extends ConcurrentComponent
             return e.getMessage();
         }
         finally {
-            if (ssh != null) {
-                try {
-                    ssh.close();
-                }
-                catch (IOException e) {
-                    log.warn("unable to close ssh connection", e);
-                }
-            }
+            ssh.close();
+        }
+    }
+
+    @Override
+    public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
+    {
+        log.info("unwinding {} on {}", uri, hostId);
+        SSH ssh = new SSH(hostId, credentialName, d.getSpace());
+        try {
+            String cmd = format("echo 'cd ~%s; sudo -u %s ugx clean' > /tmp/unwind", microGalaxyUser, microGalaxyUser);
+            ssh.exec(cmd);
+            ssh.exec("sh /tmp/unwind");
+            return "okay";
+        }
+        finally {
+            ssh.close();
         }
     }
 

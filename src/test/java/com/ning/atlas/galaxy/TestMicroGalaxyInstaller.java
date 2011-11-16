@@ -6,7 +6,7 @@ import com.ning.atlas.Host;
 import com.ning.atlas.SSH;
 import com.ning.atlas.aws.EC2Helper;
 import com.ning.atlas.chef.UbuntuChefSoloInstaller;
-import com.ning.atlas.space.Missing;
+import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Uri;
