@@ -144,7 +144,6 @@ public abstract class BaseSpaceTest
     }
 
     @Test
-    @Ignore
     public void testComplexObjectBehavior2() throws Exception
     {
         Identity id = Identity.root().createChild("waffle", "ketchup");

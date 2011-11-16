@@ -2,6 +2,7 @@ package com.ning.atlas.space;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.collect.Maps;
+import com.google.common.primitives.Primitives;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Identity;
@@ -19,7 +20,7 @@ import java.util.Set;
 
 public abstract class BaseSpace implements Space
 {
-    private static final Logger       log    = Logger.get(BaseSpace.class);
+    private static final Logger log = Logger.get(BaseSpace.class);
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private final Map<String, String> scratchSpace = Maps.newConcurrentMap();
@@ -33,7 +34,15 @@ public abstract class BaseSpace implements Space
                 String prop_name = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, pd.getName());
                 try {
                     Object value = pd.getReadMethod().invoke(it);
-                    String json = mapper.writeValueAsString(value);
+                    Class pt = pd.getPropertyType();
+                    String json;
+                    if (String.class.equals(pt) || Primitives.allPrimitiveTypes().contains(pt)) {
+                        json = mapper.convertValue(value, String.class);
+                    }
+                    else {
+                        json = mapper.writeValueAsString(value);
+                    }
+
                     write(id, prop_name, json);
                 }
                 catch (Exception e) {
@@ -47,7 +56,7 @@ public abstract class BaseSpace implements Space
     public void store(Identity id, String key, String value)
     {
         try {
-            write(id, key, mapper.writeValueAsString(value));
+            write(id, key, value);
         }
         catch (IOException e) {
             throw new IllegalStateException("unable to write", e);
@@ -94,13 +103,19 @@ public abstract class BaseSpace implements Space
             if (pd.getWriteMethod() != null) {
                 String prop_name = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, pd.getName());
                 String json_val = get(id, prop_name).otherwise((String) null);
+                Class pt = pd.getPropertyType();
                 final Object val;
                 if (json_val != null) {
-                    try {
-                        val = mapper.readValue(json_val, pd.getPropertyType());
+                    if (String.class.equals(pt) || Primitives.allPrimitiveTypes().contains(pt)) {
+                        val = mapper.convertValue(json_val, pt);
                     }
-                    catch (IOException e) {
-                        throw new IllegalStateException(e.getMessage());
+                    else {
+                        try {
+                            val = mapper.readValue(json_val, pd.getPropertyType());
+                        }
+                        catch (IOException e) {
+                            throw new IllegalStateException(e.getMessage());
+                        }
                     }
                 }
                 else {
@@ -147,7 +162,7 @@ public abstract class BaseSpace implements Space
         try {
             Map<String, String> local_vals = readAll(id);
             for (Map.Entry<String, String> entry : local_vals.entrySet()) {
-                rs.put(SpaceKey.from(id, entry.getKey()), mapper.readValue(entry.getValue(), String.class));
+                rs.put(SpaceKey.from(id, entry.getKey()), entry.getValue());
             }
             return rs;
         }
