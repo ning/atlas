@@ -12,9 +12,9 @@ import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.space.Space;
-import com.ning.atlas.spi.Uri;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -31,9 +31,9 @@ public class ActualDeployment implements Deployment
 {
     private static final Logger log = Logger.get(ActualDeployment.class);
 
-    private final SystemMap   map;
+    private final SystemMap map;
     private final Environment environment;
-    private final Space       space;
+    private final Space space;
 
     public ActualDeployment(SystemMap map, Environment environment, Space space)
     {
@@ -131,8 +131,44 @@ public class ActualDeployment implements Deployment
          *            per deployment stage (ie, same type, diff installer for init vs install)" and let it accumulate
          *            whatever state it wants.
          */
+        final ListeningExecutorService es = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
+        List<LifecycleListener> listeners = gatherListeners();
 
-        List<LifecycleListener> listeners = Lists.transform(environment.getListeners(), new Function<Pair<Class<? extends LifecycleListener>, Map<String, String>>, LifecycleListener>()
+        startDeployment(listeners);
+        provision(listeners);
+        initialize(listeners, es);
+        install(listeners, es);
+        unwind(listeners, es);
+        finishDeployment(listeners);
+
+        es.shutdown();
+    }
+
+    private void finishDeployment(List<LifecycleListener> listeners)
+    {
+        for (Host host : map.findLeaves()) {
+            try {
+                WhatWasDone wwd = new WhatWasDone();
+                Base b = environment.findBase(host.getBase()).getValue();
+                wwd.setProvisioner(b.getProvisionUri());
+                wwd.setInitializations(b.getInitializations());
+                wwd.setInstallations(host.getInstallations());
+                space.store(host.getId().createChild("atlas", "unwind"), wwd);
+            }
+            catch (Exception e) {
+                log.warn(e, "broke trying to record unwind data for a host %s", host.getId());
+            }
+        }
+
+        // finishDeploy (no one can listen for this yet)
+        fire(Events.finishDeployment, listeners);
+    }
+
+    private void startDeployment(List<LifecycleListener> listeners) {fire(Events.startDeployment, listeners);}
+
+    private List<LifecycleListener> gatherListeners()
+    {
+        return Lists.transform(environment.getListeners(), new Function<Pair<Class<? extends LifecycleListener>, Map<String, String>>, LifecycleListener>()
         {
             @Override
             public LifecycleListener apply(Pair<Class<? extends LifecycleListener>, Map<String, String>> input)
@@ -146,22 +182,112 @@ public class ActualDeployment implements Deployment
                 }
             }
         });
+    }
 
-        final ListeningExecutorService es = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
+    private void unwind(List<LifecycleListener> listeners, ListeningExecutorService es)
+    {
+        log.info("beginning unwind");
+        fire(Events.startUnwind, listeners);
 
-        // startDeploy (no one can listen for this yet)
-        fire(Events.startDeployment, listeners);
+        List<Future<?>> futures = Lists.newArrayList();
 
-        log.info("starting provision");
-        fire(Events.startProvision, listeners);
-        provision();
-        fire(Events.finishProvision, listeners);
-        log.info("finished provision");
+        Set<Identity> identities = space.findAllIdentities();
+        for (final Identity identity : identities) {
+            futures.add(es.submit(new Callable<Object>()
+            {
+                @Override
+                public Object call() throws Exception
+                {
+                    Maybe<WhatWasDone> mwwd = space.get(identity.createChild("atlas", "unwind"),
+                                                        WhatWasDone.class,
+                                                        Missing.RequireAll);
+                    if (mwwd.isKnown()) {
+                        WhatWasDone wwd = mwwd.getValue();
 
-        // initializers
+                        for (Uri<Installer> in : Lists.reverse(wwd.getInstallations())) {
+                            try {
+                                environment.resolveInstaller(in).uninstall(identity, in, ActualDeployment.this).get();
+                            }
+                            catch (Exception e) {
+                                log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
+                            }
+                        }
+
+                        for (Uri<Installer> in : Lists.reverse(wwd.getInitializations())) {
+                            try {
+                                environment.resolveInstaller(in).uninstall(identity, in, ActualDeployment.this).get();
+                            }
+                            catch (Exception e) {
+                                log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
+                            }
+                        }
+
+                        try {
+                            environment.resolveProvisioner(wwd.getProvisioner().getScheme())
+                                .destroy(identity,
+                                         wwd.getProvisioner(),
+                                         ActualDeployment.this).get();
+                        }
+                        catch (Exception e) {
+                            log.warn(e, "unable to destroy %s on %s",
+                                     wwd.getProvisioner().toString(),
+                                     identity.toExternalForm());
+                        }
+
+                        space.deleteAll(identity);
+                    }
+                    return null;
+                }
+            }));
+
+        }
+
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            }
+            catch (Exception e) {
+                log.warn(e, "Exception while unwindind");
+            }
+        }
+        log.info("finished unwind");
+        fire(Events.finishUnwind, listeners);
+    }
+
+    private void install(List<LifecycleListener> listeners, ListeningExecutorService es)
+    {
+        log.info("starting install");
+        fire(Events.startInstall, listeners);
+        performInstalls(es, new Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>>()
+        {
+            @Override
+            public List<Pair<Uri<Installer>, Installer>> apply(Pair<Host, Map<String, Installer>> input)
+            {
+                final List<Pair<Uri<Installer>, Installer>> rs = Lists.newArrayList();
+                for (Uri<Installer> uri : input.getLeft().getInstallations()) {
+                    Installer i;
+                    if (input.getRight().containsKey(uri.getScheme())) {
+                        i = input.getRight().get(uri.getScheme());
+                    }
+                    else {
+                        i = environment.resolveInstaller(uri);
+                        input.getRight().put(uri.getScheme(), i);
+                    }
+
+                    rs.add(Pair.of(uri, i));
+                }
+                return rs;
+            }
+        });
+        fire(Events.finishInstall, listeners);
+        log.info("finished install");
+    }
+
+    private void initialize(List<LifecycleListener> listeners, ListeningExecutorService es)
+    {
         log.info("starting init");
         fire(Events.startInit, listeners);
-        install(es, new Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>>()
+        performInstalls(es, new Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>>()
         {
             @Override
             public List<Pair<Uri<Installer>, Installer>> apply(Pair<Host, Map<String, Installer>> input)
@@ -186,98 +312,11 @@ public class ActualDeployment implements Deployment
         });
         fire(Events.finishInit, listeners);
         log.info("finished init");
-
-        // installers
-        log.info("starting install");
-        fire(Events.startInstall, listeners);
-        install(es, new Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>>()
-        {
-            @Override
-            public List<Pair<Uri<Installer>, Installer>> apply(Pair<Host, Map<String, Installer>> input)
-            {
-                final List<Pair<Uri<Installer>, Installer>> rs = Lists.newArrayList();
-                for (Uri<Installer> uri : input.getLeft().getInstallations()) {
-                    Installer i;
-                    if (input.getRight().containsKey(uri.getScheme())) {
-                        i = input.getRight().get(uri.getScheme());
-                    }
-                    else {
-                        i = environment.resolveInstaller(uri);
-                        input.getRight().put(uri.getScheme(), i);
-                    }
-
-                    rs.add(Pair.of(uri, i));
-                }
-                return rs;
-            }
-        });
-        fire(Events.finishInstall, listeners);
-        log.info("finished install");
-
-        // whack anything that no longer exists.
-        Set<Identity> identities = space.findAllIdentities();
-        for (Identity identity : identities) {
-            Maybe<WhatWasDone> mwwd = space.get(identity.createChild("atlas", "unwind"),
-                                                WhatWasDone.class,
-                                                Missing.RequireAll);
-            if (mwwd.isKnown()) {
-                WhatWasDone wwd = mwwd.getValue();
-
-                for (Uri<Installer> in : Lists.reverse(wwd.getInstallations())) {
-                    try {
-                        environment.resolveInstaller(in).uninstall(identity, in, this).get();
-                    }
-                    catch (Exception e) {
-                        log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
-                    }
-                }
-
-                for (Uri<Installer> in : Lists.reverse(wwd.getInitializations())) {
-                    try {
-                        environment.resolveInstaller(in).uninstall(identity, in, this).get();
-                    }
-                    catch (Exception e) {
-                        log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
-                    }
-                }
-
-                try {
-                    environment.resolveProvisioner(wwd.getProvisioner().getScheme()).destroy(identity,
-                                                                                             wwd.getProvisioner(),
-                                                                                             this).get();
-                }
-                catch (Exception e) {
-                    log.warn(e, "unable to destroy %s on %s", wwd.getProvisioner().toString(), identity.toExternalForm());
-                }
-
-                space.deleteAll(identity);
-
-            }
-        }
-
-        // store what was done in case we need to unwind it.
-        for (Host host : map.findLeaves()) {
-            try {
-                WhatWasDone wwd = new WhatWasDone();
-                Base b = environment.findBase(host.getBase()).getValue();
-                wwd.setProvisioner(b.getProvisionUri());
-                wwd.setInitializations(b.getInitializations());
-                wwd.setInstallations(host.getInstallations());
-                space.store(host.getId().createChild("atlas", "unwind"), wwd);
-            }
-            catch (Exception e) {
-                log.warn(e, "broke trying to record unwind data for a host %s", host.getId());
-            }
-        }
-
-        // finishDeploy (no one can listen for this yet)
-        fire(Events.finishDeployment, listeners);
-        es.shutdown();
     }
 
     public static class WhatWasDone
     {
-        private Uri<Provisioner>     provisioner;
+        private Uri<Provisioner> provisioner;
         private List<Uri<Installer>> initializations;
         private List<Uri<Installer>> installations;
 
@@ -312,7 +351,7 @@ public class ActualDeployment implements Deployment
         }
     }
 
-    private void install(ListeningExecutorService es, Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>> f)
+    private void performInstalls(ListeningExecutorService es, Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>> f)
     {
         final Map<String, Installer> installers = Maps.newHashMap();
         final Set<Host> servers = map.findLeaves();
@@ -370,8 +409,11 @@ public class ActualDeployment implements Deployment
         });
     }
 
-    private void provision()
+    private void provision(List<LifecycleListener> listeners)
     {
+        log.info("starting provision");
+        fire(Events.startProvision, listeners);
+
         final Set<Host> servers = map.findLeaves();
         final Map<String, Provisioner> provisioners = Maps.newHashMap();
         final Map<Host, Pair<Provisioner, Uri<Provisioner>>> s_to_p = Maps.newHashMap();
@@ -418,6 +460,8 @@ public class ActualDeployment implements Deployment
         for (Provisioner provisioner : provisioners.values()) {
             provisioner.finish(this);
         }
+        fire(Events.finishProvision, listeners);
+        log.info("finished provision");
     }
 
     public SystemMap getSystemMap()
@@ -515,6 +559,22 @@ public class ActualDeployment implements Deployment
                 public Future<?> fire(LifecycleListener listener, Deployment d)
                 {
                     return listener.finishDeployment(d);
+                }
+            },
+        startUnwind
+            {
+                @Override
+                public Future<?> fire(LifecycleListener listener, Deployment d)
+                {
+                    return listener.startUnwind(d);
+                }
+            },
+        finishUnwind
+            {
+                @Override
+                public Future<?> fire(LifecycleListener listener, Deployment d)
+                {
+                    return listener.finishUnwind(d);
                 }
             };
 

@@ -1,5 +1,7 @@
 package com.ning.atlas.spi;
 
+import com.ning.atlas.ActualDeployment;
+
 import java.util.concurrent.Future;
 
 public interface LifecycleListener
@@ -11,5 +13,7 @@ public interface LifecycleListener
     public Future<?> finishInit(Deployment d);
     public Future<?> startInstall(Deployment d);
     public Future<?> finishInstall(Deployment d);
+    public Future<?> startUnwind(Deployment d);
+    public Future<?> finishUnwind(Deployment d);
     public Future<?> finishDeployment(Deployment d);
 }
