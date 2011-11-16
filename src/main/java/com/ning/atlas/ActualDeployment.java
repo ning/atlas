@@ -110,29 +110,8 @@ public class ActualDeployment implements Deployment
 
     public void perform()
     {
-        /**
-         * lifecycle: startDeploy ->
-         *            startProvision -> provision[] -> finishProvision ->
-         *            startInitialize -> initialize[] -> finishInitialize ->
-         *            startInstall -> install[] -> finishInstall ->
-         *            finishDeploy
-         *
-         *            start[action] is fired once per deployment
-         *            [action] is fired once per action
-         *            finish[action] is fired once per deployment
-         *
-         *            the idea is to be able to group together things, cosmos for instance
-         *            could accumulate everything being changed and on finishInstall actually
-         *            run cosmos. This, of course, means that finishInstall needs to be able to
-         *            report per-server failures, which can be a tricky alignment issue, I think.
-         *
-         *            This model implies we need some per-deployment state variable which can accumulate
-         *            stuff across stages in a given provisioner/installer. We could say "one component instance
-         *            per deployment stage (ie, same type, diff installer for init vs install)" and let it accumulate
-         *            whatever state it wants.
-         */
-        final ListeningExecutorService es = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
-        List<LifecycleListener> listeners = gatherListeners();
+        ListeningExecutorService es = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
+        List<LifecycleListener> listeners = createListeners();
 
         startDeployment(listeners);
         provision(listeners);
@@ -166,7 +145,7 @@ public class ActualDeployment implements Deployment
 
     private void startDeployment(List<LifecycleListener> listeners) {fire(Events.startDeployment, listeners);}
 
-    private List<LifecycleListener> gatherListeners()
+    private List<LifecycleListener> createListeners()
     {
         return Lists.transform(environment.getListeners(), new Function<Pair<Class<? extends LifecycleListener>, Map<String, String>>, LifecycleListener>()
         {
