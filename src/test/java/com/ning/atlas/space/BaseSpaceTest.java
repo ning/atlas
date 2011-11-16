@@ -1,21 +1,18 @@
 package com.ning.atlas.space;
 
 import com.google.common.collect.Lists;
-import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.Maybe;
+import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.space.SpaceKey;
-import com.ning.atlas.spi.space.Missing;
-import junit.framework.AssertionFailedError;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.beans.Beans;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +43,7 @@ public abstract class BaseSpaceTest
         localTearDown();
     }
 
-    protected void localTearDown() throws Exception {};
+    protected void localTearDown() throws Exception {}
 
     @Test
     public void testFoo() throws Exception
@@ -159,6 +156,19 @@ public abstract class BaseSpaceTest
         assertThat(name, equalTo("fred"));
     }
 
+    @Test
+    public void testComplexObjectBehaviorWithWrappers() throws Exception
+    {
+        Identity id = Identity.root().createChild("waffle", "ketchup");
+        ThingWithWrapper ct = new ThingWithWrapper();
+        ct.setNumber(7);
+        space.store(id, ct);
+
+        String number = space.get(id, "number").otherwise(new IllegalStateException("fail"));
+
+        assertThat(number, equalTo("7"));
+    }
+
     public static class NameOnly
     {
         private String name;
@@ -209,6 +219,21 @@ public abstract class BaseSpaceTest
         public void setAgeOfPetDog(Integer ageOfPetDog)
         {
             this.ageOfPetDog = ageOfPetDog;
+        }
+    }
+
+    public static class ThingWithWrapper
+    {
+        private Integer number;
+
+        public Integer getNumber()
+        {
+            return number;
+        }
+
+        public void setNumber(Integer number)
+        {
+            this.number = number;
         }
     }
 
