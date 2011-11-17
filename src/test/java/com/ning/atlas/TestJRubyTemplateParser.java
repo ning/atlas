@@ -169,6 +169,8 @@ public class TestJRubyTemplateParser
                                                        "finishInit",
                                                        "startInstall",
                                                        "finishInstall",
+                                                       "startUnwind",
+                                                       "finishUnwind",
                                                        "finishDeployment")));
     }
 
