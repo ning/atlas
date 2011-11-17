@@ -330,7 +330,8 @@ public class ActualDeployment implements Deployment
         }
     }
 
-    private void performInstalls(ListeningExecutorService es, Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>> f)
+    private void performInstalls(ListeningExecutorService es,
+                                 Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>> f)
     {
         final Map<String, Installer> installers = Maps.newHashMap();
         final Set<Host> servers = map.findLeaves();
@@ -469,7 +470,7 @@ public class ActualDeployment implements Deployment
                 f.get();
             }
             catch (Exception e) {
-                log.warn("exception from listener ", e);
+                log.warn(e, "exception from listener");
             }
         }
     }

@@ -63,6 +63,18 @@ public class ListenerThing implements LifecycleListener
     }
 
     @Override
+    public Future<?> startUnwind(Deployment d)
+    {
+        return add("startUnwind");
+    }
+
+    @Override
+    public Future<?> finishUnwind(Deployment d)
+    {
+        return add("finishUnwind");
+    }
+
+    @Override
     public Future<?> finishDeployment(Deployment d)
     {
         return add("finishDeployment");

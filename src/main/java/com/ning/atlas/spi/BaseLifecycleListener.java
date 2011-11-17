@@ -59,6 +59,18 @@ public class BaseLifecycleListener implements LifecycleListener
     }
 
     @Override
+    public Future<?> startUnwind(Deployment d)
+    {
+        return NO_OP;
+    }
+
+    @Override
+    public Future<?> finishUnwind(Deployment d)
+    {
+        return NO_OP;
+    }
+
+    @Override
     public Future<?> finishDeployment(Deployment d)
     {
         return NO_OP;

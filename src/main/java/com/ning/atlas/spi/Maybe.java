@@ -11,15 +11,30 @@ import java.util.Iterator;
  */
 public abstract class Maybe<T> implements Iterable<T>
 {
-    public abstract boolean isKnown();
-
     public abstract T otherwise(T defaultValue);
 
     public abstract Maybe<T> otherwise(Maybe<T> maybeDefaultValue);
 
     public abstract <U> Maybe<U> to(Function<? super T, ? extends U> mapping);
 
-    public abstract Maybe<Boolean> query(Predicate<? super T> mapping);
+    public abstract T getValue();
+
+    public abstract boolean isKnown();
+
+    public abstract <E extends Exception> T otherwise(E e) throws E;
+
+
+    public static <T> Maybe<T> definitely(final T theValue)
+    {
+        return new DefiniteValue<T>(theValue);
+    }
+
+
+    public static <T> Maybe<T> elideNull(T value)
+    {
+        return value == null ? Maybe.<T>unknown() : definitely(value);
+    }
+
 
     public static <T> Maybe<T> unknown()
     {
@@ -50,12 +65,6 @@ public abstract class Maybe<T> implements Iterable<T>
 
             @Override
             public <U> Maybe<U> to(Function<? super T, ? extends U> mapping)
-            {
-                return unknown();
-            }
-
-            @Override
-            public Maybe<Boolean> query(Predicate<? super T> mapping)
             {
                 return unknown();
             }
@@ -92,20 +101,6 @@ public abstract class Maybe<T> implements Iterable<T>
             }
         };
     }
-
-    public static <T> Maybe<T> definitely(final T theValue)
-    {
-        return new DefiniteValue<T>(theValue);
-    }
-
-    public abstract T getValue();
-
-    public static <T> Maybe<T> elideNull(T value)
-    {
-        return value == null ? Maybe.<T>unknown() : definitely(value);
-    }
-
-    public abstract <E extends Exception> T otherwise(E e) throws E;
 
     private static class DefiniteValue<T> extends Maybe<T>
     {
@@ -144,13 +139,7 @@ public abstract class Maybe<T> implements Iterable<T>
         public <U> Maybe<U> to(Function<? super T, ? extends U> mapping)
         {
             // cast is to make e.g. Eclipse happy with this line
-            return (Maybe<U>)definitely(mapping.apply(theValue));
-        }
-
-        @Override
-        public Maybe<Boolean> query(Predicate<? super T> mapping)
-        {
-            return definitely(mapping.apply(theValue));
+            return (Maybe<U>) definitely(mapping.apply(theValue));
         }
 
         @Override
@@ -176,11 +165,8 @@ public abstract class Maybe<T> implements Iterable<T>
         {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-
             DefiniteValue that = (DefiniteValue) o;
-
             return theValue.equals(that.theValue);
-
         }
 
         @Override
