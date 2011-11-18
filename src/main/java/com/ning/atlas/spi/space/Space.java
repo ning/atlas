@@ -2,7 +2,6 @@ package com.ning.atlas.spi.space;
 
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Maybe;
-import com.sun.xml.internal.xsom.impl.Ref;
 
 import java.util.Map;
 import java.util.Set;
