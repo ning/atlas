@@ -54,6 +54,13 @@ public enum Command
                 return new SSHCommand(mo);
             }
         },
+    scp
+        {
+            public Callable<?> create(MainOptions mo)
+            {
+                return new SCPCommand(mo);
+            }
+        },
     destroy
         {
             public Callable<?> create(MainOptions mo)
