@@ -281,11 +281,7 @@ public class ActualDeployment implements Deployment
 
         List<Future<?>> futures = Lists.newArrayList();
         for (final Identity identity : ids) {
-            final Maybe<WhatWasDone> mwwd = space.get(identity.createChild("atlas", "unwind"),
-                                                      WhatWasDone.class,
-                                                      Missing.RequireAll);
-
-
+            final Maybe<WhatWasDone> mwwd = space.get(identity.createChild("atlas", "unwind"), WhatWasDone.class);
             futures.add(es.submit(new Callable<Object>()
             {
                 @Override
@@ -295,9 +291,7 @@ public class ActualDeployment implements Deployment
 
                     for (Uri<Installer> in : transform(reverse(wwd.getInstallations()), Uri.<Installer>stringToUri())) {
                         try {
-                            installer_cache.get(in.getScheme())
-                                           .uninstall(identity, in, ActualDeployment.this)
-                                           .get();
+                            installer_cache.get(in.getScheme()).uninstall(identity, in, ActualDeployment.this).get();
                         }
                         catch (Exception e) {
                             log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
@@ -306,9 +300,7 @@ public class ActualDeployment implements Deployment
 
                     for (Uri<Installer> in : transform(reverse(wwd.getInitializations()), Uri.<Installer>stringToUri())) {
                         try {
-                            installer_cache.get(in.getScheme())
-                                           .uninstall(identity, in, ActualDeployment.this)
-                                           .get();
+                            installer_cache.get(in.getScheme()).uninstall(identity, in, ActualDeployment.this).get();
                         }
                         catch (Exception e) {
                             log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
@@ -317,9 +309,7 @@ public class ActualDeployment implements Deployment
 
                     try {
                         provisioner_cache.get(wwd.getProvisioner().getScheme())
-                                         .destroy(identity,
-                                                  wwd.getProvisioner(),
-                                                  ActualDeployment.this).get();
+                                         .destroy(identity, wwd.getProvisioner(), ActualDeployment.this).get();
                     }
                     catch (Exception e) {
                         log.warn(e, "unable to destroy %s on %s",
@@ -327,6 +317,7 @@ public class ActualDeployment implements Deployment
                                  identity.toExternalForm());
                     }
 
+                    log.info("unwound " + identity);
                     space.deleteAll(identity);
                     return null;
                 }

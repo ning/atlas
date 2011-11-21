@@ -85,7 +85,7 @@ module Atlas
                  Hash.new
                end
 
-      uri = if p 
+      uri = if p
               com.ning.atlas.spi.Uri.valueOf2(p, params)
             else
               nil
@@ -152,8 +152,24 @@ module Atlas
       end
     end
 
-    def server name, args={}, &block
-      @children << ServerParser.new(name, args, block).__parse
+    def server name, args={}
+      installers  = Atlas.parse_install_list(args[:install])
+
+      # cardinality can be nil, a number, or an array
+      cardinality = case it = args[:cardinality]
+                      when Array
+                        it
+                      when Integer
+                        it.downto(1).map { |i| i - 1 }.reverse
+                      else
+                        ["0"]
+                    end
+
+      @children << com.ning.atlas.ServerTemplate.new(name,
+                                                     args[:base].to_s,
+                                                     cardinality,
+                                                     installers,
+                                                     args.inject({}) { |a, (k, v)| a[k.to_s] = v; a })
     end
 
     def system name="system", args={}, &block
@@ -199,6 +215,7 @@ module Atlas
 
     def system name="system", args={}, &block
       if args[:external]
+        @children << Atlas.parse_system(args[:external], name)
       else
         @children << SystemParser.new(name, args, block).__parse
       end

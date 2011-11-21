@@ -17,8 +17,10 @@ import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.ConcurrentComponent;
 import com.ning.atlas.Host;
+import com.ning.atlas.SSH;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.logging.Logger;
+import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
@@ -28,6 +30,8 @@ import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.protocols.AWS;
 import com.ning.atlas.spi.protocols.Server;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -41,13 +45,23 @@ public class EC2Provisioner extends ConcurrentComponent
 {
     private final static Logger logger = Logger.get(EC2Provisioner.class);
 
-    private final ConcurrentMap<String, Boolean>    instanceState = Maps.newConcurrentMap();
+    private final ConcurrentMap<String, Boolean>   instanceState = Maps.newConcurrentMap();
     private final AtomicReference<AmazonEC2Client> ec2           = new AtomicReference<AmazonEC2Client>();
     private final AtomicReference<String>          keypairId     = new AtomicReference<String>();
+    private final String credentialName;
 
-    public EC2Provisioner()
+    public EC2Provisioner(Map<String, String> props)
     {
-        // used by jruby processor
+        this.credentialName = props.get("credentials");
+    }
+
+
+    public EC2Provisioner(AWSConfig config)
+    {
+        BasicAWSCredentials credentials = new BasicAWSCredentials(config.getAccessKey(), config.getSecretKey());
+        ec2.set(new AmazonEC2AsyncClient(credentials));
+        keypairId.set(config.getKeyPairId());
+        this.credentialName = null;
     }
 
     @Override
@@ -59,7 +73,8 @@ public class EC2Provisioner extends ConcurrentComponent
         if (s.isKnown()
             && ec2info.isKnown()
             && instanceState.containsKey(ec2info.getValue().getEc2InstanceId())
-            && instanceState.get(ec2info.getValue().getEc2InstanceId())) {
+            && instanceState.get(ec2info.getValue().getEc2InstanceId()))
+        {
             // we have an ec2 instance for this node already
             logger.info("using existing ec2 instance %s for %s",
                         space.get(node.getId(), EC2InstanceInfo.class, Missing.RequireAll)
@@ -103,7 +118,7 @@ public class EC2Provisioner extends ConcurrentComponent
                 }
                 if (res != null) {
                     Instance i2 = res.getReservations().get(0).getInstances().get(0);
-                    if ("running".equals(i2.getState().getName())) {
+                    if ("running".equals(i2.getState().getName()) && canSshIn(i2, deployment)) {
                         logger.info("Obtained instance %s at %s for %s",
                                     i2.getInstanceId(), i2.getPublicDnsName(), node.getId());
                         Server server = new Server();
@@ -130,6 +145,23 @@ public class EC2Provisioner extends ConcurrentComponent
         }
     }
 
+    private boolean canSshIn(Instance i2, Deployment deployment)
+    {
+        try {
+            SSH ssh = new SSH(SSHCredentials.lookup(deployment.getSpace(), credentialName)
+                                            .otherwise(SSHCredentials.defaultCredentials(deployment.getSpace()))
+                                            .otherwise(new IllegalStateException("No SSH credentials available")),
+                              i2.getPublicDnsName());
+            ssh.exec("ls -l");
+            ssh.close();
+            return true;
+        }
+        catch (IOException e) {
+            // cannot get there yet!
+        }
+        return false;
+    }
+
     @Override
     public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
     {
@@ -142,14 +174,6 @@ public class EC2Provisioner extends ConcurrentComponent
         ec2.terminateInstances(req);
 
         return "terminated ec2 instance";
-    }
-
-    public EC2Provisioner(AWSConfig config)
-    {
-        BasicAWSCredentials credentials = new BasicAWSCredentials(config.getAccessKey(), config.getSecretKey());
-        ec2.set(new AmazonEC2AsyncClient(credentials));
-        keypairId.set(config.getKeyPairId());
-
     }
 
     @Override
