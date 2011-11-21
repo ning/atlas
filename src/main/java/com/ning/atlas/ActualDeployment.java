@@ -23,7 +23,6 @@ import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.space.Space;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.security.SecureRandomSpi;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -123,7 +122,27 @@ public class ActualDeployment implements Deployment
         List<LifecycleListener> listeners = createListeners();
 
         startDeployment(listeners);
-        unwind(listeners, es);
+
+        log.info("beginning unwind");
+        fire(Events.startUnwind, listeners);
+
+        Set<Identity> identities = space.findAllIdentities();
+        Set<Identity> to_unwind = Sets.newHashSet();
+        for (Identity identity : identities) {
+            final Maybe<WhatWasDone> mwwd = space.get(identity.createChild("atlas", "unwind"),
+                                                      WhatWasDone.class,
+                                                      Missing.RequireAll);
+            if (mwwd.isKnown()) {
+                to_unwind.add(identity);
+            }
+        }
+
+        unwindAll(es, to_unwind);
+
+        log.info("finished unwind");
+        fire(Events.finishUnwind, listeners);
+
+
         finishDeployment(listeners);
 
         es.shutdown();
@@ -189,6 +208,30 @@ public class ActualDeployment implements Deployment
         log.info("beginning unwind");
         fire(Events.startUnwind, listeners);
 
+        final Set<Identity> deployed = Sets.newHashSet();
+        for (Host host : map.findLeaves()) {
+            deployed.add(host.getId());
+        }
+        Set<Identity> identities = space.findAllIdentities();
+        Set<Identity> to_unwind = Sets.newHashSet();
+        for (Identity identity : identities) {
+            final Maybe<WhatWasDone> mwwd = space.get(identity.createChild("atlas", "unwind"),
+                                                      WhatWasDone.class,
+                                                      Missing.RequireAll);
+            if (!deployed.contains(identity) && mwwd.isKnown()) {
+                to_unwind.add(identity);
+            }
+        }
+
+        unwindAll(es, to_unwind);
+
+
+        log.info("finished unwind");
+        fire(Events.finishUnwind, listeners);
+    }
+
+    private void unwindAll(ListeningExecutorService es, Set<Identity> ids)
+    {
 
         final Cache<String, Installer> installer_cache = CacheBuilder.newBuilder()
                                                                      .maximumSize(Integer.MAX_VALUE)
@@ -237,63 +280,57 @@ public class ActualDeployment implements Deployment
                                                                          });
 
         List<Future<?>> futures = Lists.newArrayList();
-        final Set<Identity> deployed = Sets.newHashSet();
-        for (Host host : map.findLeaves()) {
-            deployed.add(host.getId());
-        }
-        Set<Identity> identities = space.findAllIdentities();
-        for (final Identity identity : identities) {
+        for (final Identity identity : ids) {
             final Maybe<WhatWasDone> mwwd = space.get(identity.createChild("atlas", "unwind"),
                                                       WhatWasDone.class,
                                                       Missing.RequireAll);
 
-            if (!deployed.contains(identity) && mwwd.isKnown()) {
-                futures.add(es.submit(new Callable<Object>()
+
+            futures.add(es.submit(new Callable<Object>()
+            {
+                @Override
+                public Object call() throws Exception
                 {
-                    @Override
-                    public Object call() throws Exception
-                    {
-                        WhatWasDone wwd = mwwd.getValue();
+                    WhatWasDone wwd = mwwd.getValue();
 
-                        for (Uri<Installer> in : transform(reverse(wwd.getInstallations()), Uri.<Installer>stringToUri())) {
-                            try {
-                                installer_cache.get(in.getScheme())
-                                               .uninstall(identity, in, ActualDeployment.this)
-                                               .get();
-                            }
-                            catch (Exception e) {
-                                log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
-                            }
-                        }
-
-                        for (Uri<Installer> in : transform(reverse(wwd.getInitializations()), Uri.<Installer>stringToUri())) {
-                            try {
-                                installer_cache.get(in.getScheme())
-                                               .uninstall(identity, in, ActualDeployment.this)
-                                               .get();
-                            }
-                            catch (Exception e) {
-                                log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
-                            }
-                        }
-
+                    for (Uri<Installer> in : transform(reverse(wwd.getInstallations()), Uri.<Installer>stringToUri())) {
                         try {
-                            provisioner_cache.get(wwd.getProvisioner().getScheme())
-                                             .destroy(identity,
-                                                      wwd.getProvisioner(),
-                                                      ActualDeployment.this).get();
+                            installer_cache.get(in.getScheme())
+                                           .uninstall(identity, in, ActualDeployment.this)
+                                           .get();
                         }
                         catch (Exception e) {
-                            log.warn(e, "unable to destroy %s on %s",
-                                     wwd.getProvisioner().toString(),
-                                     identity.toExternalForm());
+                            log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
                         }
-
-                        space.deleteAll(identity);
-                        return null;
                     }
-                }));
-            }
+
+                    for (Uri<Installer> in : transform(reverse(wwd.getInitializations()), Uri.<Installer>stringToUri())) {
+                        try {
+                            installer_cache.get(in.getScheme())
+                                           .uninstall(identity, in, ActualDeployment.this)
+                                           .get();
+                        }
+                        catch (Exception e) {
+                            log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
+                        }
+                    }
+
+                    try {
+                        provisioner_cache.get(wwd.getProvisioner().getScheme())
+                                         .destroy(identity,
+                                                  wwd.getProvisioner(),
+                                                  ActualDeployment.this).get();
+                    }
+                    catch (Exception e) {
+                        log.warn(e, "unable to destroy %s on %s",
+                                 wwd.getProvisioner().toString(),
+                                 identity.toExternalForm());
+                    }
+
+                    space.deleteAll(identity);
+                    return null;
+                }
+            }));
         }
 
         for (Future<?> future : futures) {
@@ -301,15 +338,14 @@ public class ActualDeployment implements Deployment
                 future.get();
             }
             catch (Exception e) {
-                log.warn(e, "Exception while unwindind");
+                log.warn(e, "Exception while unwinding");
             }
         }
 
-
+        // will cause the components to be finish()ed
         installer_cache.invalidateAll();
         provisioner_cache.invalidateAll();
-        log.info("finished unwind");
-        fire(Events.finishUnwind, listeners);
+
     }
 
     private void install(List<LifecycleListener> listeners, ListeningExecutorService es)
