@@ -20,6 +20,7 @@ import org.jruby.ext.posix.POSIXHandler;
 import java.io.File;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 public class SSHCommand implements Callable<Void>
@@ -99,7 +100,18 @@ public class SSHCommand implements Callable<Void>
     public Void call() throws Exception
     {
         Space space = SQLiteBackedSpace.create(new File(".atlas", "space.db"));
+
         String looksee = mainOptions.getCommandArguments()[0];
+        Maybe<String[]> remote_commands;
+        if (mainOptions.getCommandArguments().length > 1) {
+            // execute a remote command rather than shell in
+            remote_commands = Maybe.definitely(Arrays.copyOfRange(mainOptions.getCommandArguments(),
+                                                                  1, mainOptions.getCommandArguments().length));
+        }
+        else {
+            remote_commands = Maybe.unknown();
+        }
+
         SSHCredentials creds = SSHCredentials.defaultCredentials(space)
                                              .otherwise(new IllegalStateException("need to use default creds for ssh right now"));
 
@@ -111,6 +123,13 @@ public class SSHCommand implements Callable<Void>
                     "/usr/bin/ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", "-i", creds.getKeyFilePath(), String
                     .format("%s@%s", creds.getUserName(), server.getValue().getExternalAddress())
                 };
+                if (remote_commands.isKnown()) {
+                    String[] new_args = new String[args.length + remote_commands.getValue().length];
+                    System.arraycopy(args, 0, new_args, 0, args.length);
+                    System.arraycopy(remote_commands.getValue(), 0,
+                                     new_args, args.length, remote_commands.getValue().length);
+                    args = new_args;
+                }
                 posix.execv("/usr/bin/ssh", args);
             }
         }
