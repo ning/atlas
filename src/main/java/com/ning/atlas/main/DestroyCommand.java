@@ -36,10 +36,10 @@ public class DestroyCommand implements Callable<Void>
                                .otherwise(new IllegalStateException("System not initialized"));
 
         JRubyTemplateParser p = new JRubyTemplateParser();
-        SystemMap map = p.parseSystem(new File(sys_path)).normalize();
+//        SystemMap map = p.parseSystem(new File(sys_path)).normalize();
         Environment env = p.parseEnvironment(new File(env_path));
 
-        ActualDeployment d = new ActualDeployment(map, env, space);
+        ActualDeployment d = new ActualDeployment(new SystemMap(), env, space);
         d.destroy();
 
         for (Host host : d.getSystemMap().findLeaves()) {

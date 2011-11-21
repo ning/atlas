@@ -64,7 +64,7 @@ public abstract class BaseSpace implements Space
     }
 
     @Override
-    public void scratch(String key, String value)
+    public void put(String key, String value)
     {
         this.scratchSpace.put(key, value);
     }
