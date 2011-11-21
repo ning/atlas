@@ -14,8 +14,10 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.map.JsonSerializer;
 import org.codehaus.jackson.map.SerializerProvider;
+import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import javax.annotation.Nullable;
@@ -140,6 +142,7 @@ public class Uri<T>
         }
     }
 
+    @JsonCreator
     public static <T> Uri<T> valueOf(String uri)
     {
         return valueOf(uri, Collections.<String, Collection<String>>emptyMap());
@@ -160,6 +163,30 @@ public class Uri<T>
                 return input == null || input.isEmpty() ? null : input.iterator().next();
             }
         });
+    }
+
+    public static <T> Function<? super String, ? extends Uri<T>> stringToUri()
+    {
+        return new Function<String, Uri<T>>()
+        {
+            @Override
+            public Uri<T> apply(@Nullable String s)
+            {
+                return Uri.valueOf(s);
+            }
+        };
+    }
+
+    public static Function<? super Uri<?>, ? extends String> urisToStrings()
+    {
+        return new Function<Uri<?>, String>()
+        {
+            @Override
+            public String apply(Uri<?> uri)
+            {
+                return uri.toString();
+            }
+        };
     }
 
     public static class UriJsonSerializer extends JsonSerializer<Uri>

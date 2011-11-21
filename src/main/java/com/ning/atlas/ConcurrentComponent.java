@@ -80,7 +80,6 @@ public abstract class ConcurrentComponent extends BaseComponent implements Provi
                     return Status.okay(unwind(hostId, uri, deployment));
                 }
                 catch (Exception e) {
-                    log.warn(e, "failed to unwind %s on %s", uri, hostId);
                     return Status.fail(e.getMessage());
                 }
             }

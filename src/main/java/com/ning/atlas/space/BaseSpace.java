@@ -124,7 +124,6 @@ public abstract class BaseSpace implements Space
                             val = null;
                             break;
                         case RequireAll:
-                            log.info("Failing get because of missing property '%s'", prop_name);
                             return Maybe.unknown();
                         default:
                             throw new UnsupportedOperationException("Not Yet Implemented!");

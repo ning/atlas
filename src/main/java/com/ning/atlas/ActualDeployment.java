@@ -3,6 +3,7 @@ package com.ning.atlas;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.logging.Logger;
@@ -26,6 +27,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.reverse;
+import static com.google.common.collect.Lists.transform;
 
 public class ActualDeployment implements Deployment
 {
@@ -130,8 +133,8 @@ public class ActualDeployment implements Deployment
                 WhatWasDone wwd = new WhatWasDone();
                 Base b = environment.findBase(host.getBase()).getValue();
                 wwd.setProvisioner(b.getProvisionUri());
-                wwd.setInitializations(b.getInitializations());
-                wwd.setInstallations(host.getInstallations());
+                wwd.setInitializations(transform(b.getInitializations(), Uri.urisToStrings()));
+                wwd.setInstallations(transform(host.getInstallations(), Uri.urisToStrings()));
                 space.store(host.getId().createChild("atlas", "unwind"), wwd);
             }
             catch (Exception e) {
@@ -169,7 +172,10 @@ public class ActualDeployment implements Deployment
         fire(Events.startUnwind, listeners);
 
         List<Future<?>> futures = Lists.newArrayList();
-
+        final Set<Identity> deployed = Sets.newHashSet();
+        for (Host host : map.findLeaves()) {
+            deployed.add(host.getId());
+        }
         Set<Identity> identities = space.findAllIdentities();
         for (final Identity identity : identities) {
             futures.add(es.submit(new Callable<Object>()
@@ -180,10 +186,10 @@ public class ActualDeployment implements Deployment
                     Maybe<WhatWasDone> mwwd = space.get(identity.createChild("atlas", "unwind"),
                                                         WhatWasDone.class,
                                                         Missing.RequireAll);
-                    if (mwwd.isKnown()) {
+                    if (!deployed.contains(identity) && mwwd.isKnown()) {
                         WhatWasDone wwd = mwwd.getValue();
 
-                        for (Uri<Installer> in : Lists.reverse(wwd.getInstallations())) {
+                        for (Uri<Installer> in : transform(reverse(wwd.getInstallations()), Uri.<Installer>stringToUri())) {
                             try {
                                 environment.resolveInstaller(in).uninstall(identity, in, ActualDeployment.this).get();
                             }
@@ -192,7 +198,7 @@ public class ActualDeployment implements Deployment
                             }
                         }
 
-                        for (Uri<Installer> in : Lists.reverse(wwd.getInitializations())) {
+                        for (Uri<Installer> in : transform(reverse(wwd.getInitializations()), Uri.<Installer>stringToUri())) {
                             try {
                                 environment.resolveInstaller(in).uninstall(identity, in, ActualDeployment.this).get();
                             }
@@ -296,8 +302,8 @@ public class ActualDeployment implements Deployment
     public static class WhatWasDone
     {
         private Uri<Provisioner> provisioner;
-        private List<Uri<Installer>> initializations;
-        private List<Uri<Installer>> installations;
+        private List<String> initializations;
+        private List<String> installations;
 
         public Uri<Provisioner> getProvisioner()
         {
@@ -309,22 +315,22 @@ public class ActualDeployment implements Deployment
             this.provisioner = provisioner;
         }
 
-        public List<Uri<Installer>> getInitializations()
+        public List<String> getInitializations()
         {
             return initializations;
         }
 
-        public void setInitializations(List<Uri<Installer>> initializations)
+        public void setInitializations(List<String> initializations)
         {
             this.initializations = initializations;
         }
 
-        public List<Uri<Installer>> getInstallations()
+        public List<String> getInstallations()
         {
             return installations;
         }
 
-        public void setInstallations(List<Uri<Installer>> installations)
+        public void setInstallations(List<String> installations)
         {
             this.installations = installations;
         }
