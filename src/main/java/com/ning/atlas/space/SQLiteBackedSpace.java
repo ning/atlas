@@ -1,18 +1,23 @@
 package com.ning.atlas.space;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.space.Space;
+import com.ning.atlas.spi.space.SpaceKey;
 import org.apache.commons.lang3.tuple.Pair;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.StatementContext;
+import org.skife.jdbi.v2.logging.PrintStreamLog;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
+import org.skife.jdbi.v2.sqlobject.customizers.Define;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
+import org.skife.jdbi.v2.sqlobject.stringtemplate.StringTemplate3StatementLocator;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
 import java.io.File;
@@ -44,7 +49,8 @@ public class SQLiteBackedSpace extends BaseSpace
         log.debug("storing data in %s", dbFile.getAbsolutePath());
 
         String url = "jdbc:sqlite:" + dbFile.getAbsolutePath();
-        this.dao = new DBI(url).onDemand(Dao.class);
+        DBI dbi = new DBI(url);
+        this.dao = dbi.onDemand(Dao.class);
 
         dao.create();
     }
@@ -68,14 +74,29 @@ public class SQLiteBackedSpace extends BaseSpace
     }
 
     @Override
-    protected Map<String, String> readAll(Identity prefix) throws IOException
+    protected Map<SpaceKey, String> readAll(Identity prefix) throws IOException
     {
-        List<Pair<String, String>> pairs = dao.readAll(prefix.toExternalForm());
-        Map<String, String> rs = Maps.newHashMap();
-        for (Pair<String, String> pair : pairs) {
-            rs.put(pair.getKey(), pair.getValue());
+        List<List<String>> pairs = dao.readAll(prefix.toExternalForm(), prefix.toExternalForm() + "/%");
+        Map<SpaceKey, String> rs = Maps.newHashMap();
+        for (List<String> pair : pairs) {
+            Identity id = Identity.valueOf(pair.get(0));
+            SpaceKey key = SpaceKey.from(id, pair.get(1));
+            rs.put(key, pair.get(2));
         }
         return rs;
+    }
+
+
+    @Override
+    public Set<Identity> findAllIdentities()
+    {
+        return Sets.newHashSet(dao.findAllIds());
+    }
+
+    @Override
+    public void deleteAll(Identity identity)
+    {
+        dao.deleteAllWithId(identity.toExternalForm());
     }
 
     public static interface Dao
@@ -89,9 +110,9 @@ public class SQLiteBackedSpace extends BaseSpace
         @SqlQuery("select value from space where id = :id and key = :key")
         String read(@Bind("id") String id, @Bind("key") String key);
 
-        @SqlQuery("select key, value from space where id = :id")
+        @SqlQuery("select id, key, value from space where (id = :id) or (id like :id_pattern)")
         @Mapper(MyMapper.class)
-        List<Pair<String, String>> readAll(@Bind("id") String id);
+        List<List<String>> readAll(@Bind("id") String id, @Bind("id_pattern") String idPattern);
 
         @SqlQuery("select distinct id from space")
         @Mapper(MyIdMapper.class)
@@ -101,7 +122,8 @@ public class SQLiteBackedSpace extends BaseSpace
         void deleteAllWithId(@Bind("id") String id);
     }
 
-    public static class MyIdMapper implements ResultSetMapper<Identity> {
+    public static class MyIdMapper implements ResultSetMapper<Identity>
+    {
 
         @Override
         public Identity map(int index, ResultSet r, StatementContext ctx) throws SQLException
@@ -110,24 +132,12 @@ public class SQLiteBackedSpace extends BaseSpace
         }
     }
 
-    public static class MyMapper implements ResultSetMapper<Pair<String, String>>
+    public static class MyMapper implements ResultSetMapper<List<String>>
     {
         @Override
-        public Pair<String, String> map(int index, ResultSet r, StatementContext ctx) throws SQLException
+        public List<String> map(int index, ResultSet r, StatementContext ctx) throws SQLException
         {
-            return Pair.of(r.getString("key"), r.getString("value"));
+            return ImmutableList.of(r.getString("id"), r.getString("key"), r.getString("value"));
         }
-    }
-
-    @Override
-    public Set<Identity> findAllIdentities()
-    {
-        return Sets.newHashSet(dao.findAllIds());
-    }
-
-    @Override
-    public void deleteAll(Identity identity)
-    {
-        dao.deleteAllWithId(identity.toExternalForm());
     }
 }

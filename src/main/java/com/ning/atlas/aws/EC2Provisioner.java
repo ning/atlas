@@ -7,10 +7,13 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.collect.Lists;
+import com.google.common.collect.MapMaker;
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.ConcurrentComponent;
 import com.ning.atlas.Host;
@@ -25,6 +28,7 @@ import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.protocols.AWS;
 import com.ning.atlas.spi.protocols.Server;
 
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -37,8 +41,9 @@ public class EC2Provisioner extends ConcurrentComponent
 {
     private final static Logger logger = Logger.get(EC2Provisioner.class);
 
-    private final AtomicReference<AmazonEC2Client> ec2       = new AtomicReference<AmazonEC2Client>();
-    private final AtomicReference<String>          keypairId = new AtomicReference<String>();
+    private final ConcurrentMap<String, Boolean>    instanceState = Maps.newConcurrentMap();
+    private final AtomicReference<AmazonEC2Client> ec2           = new AtomicReference<AmazonEC2Client>();
+    private final AtomicReference<String>          keypairId     = new AtomicReference<String>();
 
     public EC2Provisioner()
     {
@@ -51,7 +56,10 @@ public class EC2Provisioner extends ConcurrentComponent
         final Space space = deployment.getSpace();
         final Maybe<Server> s = space.get(node.getId(), Server.class, Missing.RequireAll);
         Maybe<EC2InstanceInfo> ec2info = space.get(node.getId(), EC2InstanceInfo.class, Missing.RequireAll);
-        if (s.isKnown() && ec2info.isKnown()) {
+        if (s.isKnown()
+            && ec2info.isKnown()
+            && instanceState.containsKey(ec2info.getValue().getEc2InstanceId())
+            && instanceState.get(ec2info.getValue().getEc2InstanceId())) {
             // we have an ec2 instance for this node already
             logger.info("using existing ec2 instance %s for %s",
                         space.get(node.getId(), EC2InstanceInfo.class, Missing.RequireAll)
@@ -119,10 +127,7 @@ public class EC2Provisioner extends ConcurrentComponent
                     }
                 }
             }
-
         }
-
-
     }
 
     @Override
@@ -162,6 +167,14 @@ public class EC2Provisioner extends ConcurrentComponent
 
         this.keypairId.set(info.getKeyPairId());
         this.ec2.set(new AmazonEC2AsyncClient(credentials));
+
+        DescribeInstancesResult rs = this.ec2.get().describeInstances();
+        for (Reservation reservation : rs.getReservations()) {
+            for (Instance instance : reservation.getInstances()) {
+                instanceState.put(instance.getInstanceId(), instance.getState().getName().equals("running"));
+            }
+        }
+
     }
 
 

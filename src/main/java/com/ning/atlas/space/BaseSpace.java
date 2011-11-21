@@ -157,16 +157,11 @@ public abstract class BaseSpace implements Space
     @Override
     public Map<SpaceKey, String> getAllFor(Identity id)
     {
-        Map<SpaceKey, String> rs = Maps.newHashMap();
         try {
-            Map<String, String> local_vals = readAll(id);
-            for (Map.Entry<String, String> entry : local_vals.entrySet()) {
-                rs.put(SpaceKey.from(id, entry.getKey()), entry.getValue());
-            }
-            return rs;
+            return readAll(id);
         }
         catch (IOException e) {
-            throw new IllegalStateException("unable to read from storage", e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -180,5 +175,5 @@ public abstract class BaseSpace implements Space
 
     protected abstract void write(Identity id, String key, String value) throws IOException;
 
-    protected abstract Map<String, String> readAll(Identity prefix) throws IOException;
+    protected abstract Map<SpaceKey, String> readAll(Identity prefix) throws IOException;
 }

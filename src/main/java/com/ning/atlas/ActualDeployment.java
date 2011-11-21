@@ -1,6 +1,9 @@
 package com.ning.atlas;
 
 import com.google.common.base.Function;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -34,9 +37,9 @@ public class ActualDeployment implements Deployment
 {
     private static final Logger log = Logger.get(ActualDeployment.class);
 
-    private final SystemMap map;
+    private final SystemMap   map;
     private final Environment environment;
-    private final Space space;
+    private final Space       space;
 
     public ActualDeployment(SystemMap map, Environment environment, Space space)
     {
@@ -63,12 +66,12 @@ public class ActualDeployment implements Deployment
             provision_futures.add(Pair.of(server, p.describe(server, base.getProvisionUri(), this)));
 
             for (Uri<Installer> uri : base.getInitializations()) {
-                Installer i = environment.resolveInstaller(uri);
+                Installer i = environment.resolveInstaller(uri.getScheme());
                 init_futures.add(Pair.of(server, i.describe(server, uri, this)));
             }
 
             for (Uri<Installer> uri : server.getInstallations()) {
-                Installer i = environment.resolveInstaller(uri);
+                Installer i = environment.resolveInstaller(uri.getScheme());
                 install_futures.add(Pair.of(server, i.describe(server, uri, this)));
             }
         }
@@ -111,7 +114,18 @@ public class ActualDeployment implements Deployment
         return new Description(descriptors.values());
     }
 
-    public void perform()
+    public void destroy() {
+        ListeningExecutorService es = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
+        List<LifecycleListener> listeners = createListeners();
+
+        startDeployment(listeners);
+        unwind(listeners, es);
+        finishDeployment(listeners);
+
+        es.shutdown();
+    }
+
+    public void update()
     {
         ListeningExecutorService es = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
         List<LifecycleListener> listeners = createListeners();
@@ -171,6 +185,34 @@ public class ActualDeployment implements Deployment
         log.info("beginning unwind");
         fire(Events.startUnwind, listeners);
 
+        final Cache<String, Installer> installer_cache = CacheBuilder.newBuilder()
+                                                                     .maximumSize(Integer.MAX_VALUE)
+                                                                     .concurrencyLevel(10)
+                                                                     .build(new CacheLoader<String, Installer>()
+                                                                     {
+                                                                         @Override
+                                                                         public Installer load(String key) throws Exception
+                                                                         {
+                                                                             Installer installer = environment.resolveInstaller(key);
+                                                                             installer.start(ActualDeployment.this);
+                                                                             return installer;
+                                                                         }
+                                                                     });
+
+        final Cache<String, Provisioner> provisioner_cache = CacheBuilder.newBuilder()
+                                                                         .maximumSize(Integer.MAX_VALUE)
+                                                                         .concurrencyLevel(10)
+                                                                         .build(new CacheLoader<String, Provisioner>()
+                                                                         {
+                                                                             @Override
+                                                                             public Provisioner load(String key) throws Exception
+                                                                             {
+                                                                                 Provisioner p = environment.resolveProvisioner(key);
+                                                                                 p.start(ActualDeployment.this);
+                                                                                 return p;
+                                                                             }
+                                                                         });
+
         List<Future<?>> futures = Lists.newArrayList();
         final Set<Identity> deployed = Sets.newHashSet();
         for (Host host : map.findLeaves()) {
@@ -178,20 +220,23 @@ public class ActualDeployment implements Deployment
         }
         Set<Identity> identities = space.findAllIdentities();
         for (final Identity identity : identities) {
-            futures.add(es.submit(new Callable<Object>()
-            {
-                @Override
-                public Object call() throws Exception
+            final Maybe<WhatWasDone> mwwd = space.get(identity.createChild("atlas", "unwind"),
+                                                      WhatWasDone.class,
+                                                      Missing.RequireAll);
+
+            if (!deployed.contains(identity) && mwwd.isKnown()) {
+                futures.add(es.submit(new Callable<Object>()
                 {
-                    Maybe<WhatWasDone> mwwd = space.get(identity.createChild("atlas", "unwind"),
-                                                        WhatWasDone.class,
-                                                        Missing.RequireAll);
-                    if (!deployed.contains(identity) && mwwd.isKnown()) {
+                    @Override
+                    public Object call() throws Exception
+                    {
                         WhatWasDone wwd = mwwd.getValue();
 
                         for (Uri<Installer> in : transform(reverse(wwd.getInstallations()), Uri.<Installer>stringToUri())) {
                             try {
-                                environment.resolveInstaller(in).uninstall(identity, in, ActualDeployment.this).get();
+                                installer_cache.get(in.getScheme())
+                                               .uninstall(identity, in, ActualDeployment.this)
+                                               .get();
                             }
                             catch (Exception e) {
                                 log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
@@ -200,7 +245,9 @@ public class ActualDeployment implements Deployment
 
                         for (Uri<Installer> in : transform(reverse(wwd.getInitializations()), Uri.<Installer>stringToUri())) {
                             try {
-                                environment.resolveInstaller(in).uninstall(identity, in, ActualDeployment.this).get();
+                                installer_cache.get(in.getScheme())
+                                               .uninstall(identity, in, ActualDeployment.this)
+                                               .get();
                             }
                             catch (Exception e) {
                                 log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
@@ -208,10 +255,10 @@ public class ActualDeployment implements Deployment
                         }
 
                         try {
-                            environment.resolveProvisioner(wwd.getProvisioner().getScheme())
-                                .destroy(identity,
-                                         wwd.getProvisioner(),
-                                         ActualDeployment.this).get();
+                            provisioner_cache.get(wwd.getProvisioner().getScheme())
+                                             .destroy(identity,
+                                                      wwd.getProvisioner(),
+                                                      ActualDeployment.this).get();
                         }
                         catch (Exception e) {
                             log.warn(e, "unable to destroy %s on %s",
@@ -220,11 +267,17 @@ public class ActualDeployment implements Deployment
                         }
 
                         space.deleteAll(identity);
+                        return null;
                     }
-                    return null;
-                }
-            }));
+                }));
+            }
 
+            for (Map.Entry<String, Installer> entry : installer_cache.activeEntries(Integer.MAX_VALUE)) {
+                entry.getValue().finish(this);
+            }
+            for (Map.Entry<String, Provisioner> entry : provisioner_cache.activeEntries(Integer.MAX_VALUE)) {
+                entry.getValue().finish(this);
+            }
         }
 
         for (Future<?> future : futures) {
@@ -235,6 +288,8 @@ public class ActualDeployment implements Deployment
                 log.warn(e, "Exception while unwindind");
             }
         }
+
+
         log.info("finished unwind");
         fire(Events.finishUnwind, listeners);
     }
@@ -255,7 +310,7 @@ public class ActualDeployment implements Deployment
                         i = input.getRight().get(uri.getScheme());
                     }
                     else {
-                        i = environment.resolveInstaller(uri);
+                        i = environment.resolveInstaller(uri.getScheme());
                         input.getRight().put(uri.getScheme(), i);
                     }
 
@@ -287,7 +342,7 @@ public class ActualDeployment implements Deployment
                         i = input.getRight().get(uri.getScheme());
                     }
                     else {
-                        i = environment.resolveInstaller(uri);
+                        i = environment.resolveInstaller(uri.getScheme());
                         input.getRight().put(uri.getScheme(), i);
                     }
                     rs.add(Pair.of(uri, i));
@@ -302,8 +357,8 @@ public class ActualDeployment implements Deployment
     public static class WhatWasDone
     {
         private Uri<Provisioner> provisioner;
-        private List<String> initializations;
-        private List<String> installations;
+        private List<String>     initializations;
+        private List<String>     installations;
 
         public Uri<Provisioner> getProvisioner()
         {

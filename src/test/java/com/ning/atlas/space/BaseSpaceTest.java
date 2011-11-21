@@ -62,6 +62,36 @@ public abstract class BaseSpaceTest
     }
 
     @Test
+    public void testReadAll() throws Exception
+    {
+        Identity id = Identity.root().createChild("test", "0");
+        space.store(id, "hello", "world");
+        space.store(id, "favorite", "color");
+        space.store(id, "flavor", "strawberry");
+
+        Map<SpaceKey, String> rs = space.getAllFor(id);
+        assertThat(rs.size(), equalTo(3));
+        assertThat(rs.get(SpaceKey.from(id, "hello")), equalTo("world"));
+        assertThat(rs.get(SpaceKey.from(id, "favorite")), equalTo("color"));
+        assertThat(rs.get(SpaceKey.from(id, "flavor")), equalTo("strawberry"));
+    }
+
+    @Test
+    public void testReadAllWithChildIdentitis() throws Exception
+    {
+        Identity id = Identity.root().createChild("test", "0");
+        space.store(id, "hello", "world");
+        space.store(id.createChild("color", "wheel"), "favorite", "color");
+        space.store(id, "flavor", "strawberry");
+
+        Map<SpaceKey, String> rs = space.getAllFor(id);
+        assertThat(rs.size(), equalTo(3));
+        assertThat(rs.get(SpaceKey.from(id, "hello")), equalTo("world"));
+        assertThat(rs.get(SpaceKey.from(id.createChild("color", "wheel"), "favorite")), equalTo("color"));
+        assertThat(rs.get(SpaceKey.from(id, "flavor")), equalTo("strawberry"));
+    }
+
+    @Test
     public void testOtherObjectsSameProperties() throws Exception
     {
         Identity id = Identity.root().createChild("test", "0").createChild("waffle", "9");

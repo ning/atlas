@@ -161,7 +161,7 @@ public class TestJRubyTemplateParser
         Space space = InMemorySpace.newInstance();
         ActualDeployment d = new ActualDeployment(map, env, space);
 
-        d.perform();
+        d.update();
         assertThat(ListenerThing.calls, equalTo(asList("startDeployment",
                                                        "startProvision",
                                                        "finishProvision",

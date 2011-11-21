@@ -16,12 +16,12 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-public class UpdateCommand implements Callable<Void>
+public class DestroyCommand implements Callable<Void>
 {
     private static final Logger logger = Logger.get(UpdateCommand.class);
     private final MainOptions mainOptions;
 
-    public UpdateCommand(MainOptions mainOptions)
+    public DestroyCommand(MainOptions mainOptions)
     {
         this.mainOptions = mainOptions;
     }
@@ -31,16 +31,16 @@ public class UpdateCommand implements Callable<Void>
     {
         Space space = SQLiteBackedSpace.create(new File(".atlas", "space.db"));
         String sys_path = space.get(InitCommand.ID, "system-path")
-            .otherwise(new IllegalStateException("System not initialized"));
+                               .otherwise(new IllegalStateException("System not initialized"));
         String env_path = space.get(InitCommand.ID, "environment-path")
-            .otherwise(new IllegalStateException("System not initialized"));
+                               .otherwise(new IllegalStateException("System not initialized"));
 
         JRubyTemplateParser p = new JRubyTemplateParser();
         SystemMap map = p.parseSystem(new File(sys_path)).normalize();
         Environment env = p.parseEnvironment(new File(env_path));
 
         ActualDeployment d = new ActualDeployment(map, env, space);
-        d.update();
+        d.destroy();
 
         for (Host host : d.getSystemMap().findLeaves()) {
             System.out.println(host.getId() + " :");
@@ -52,4 +52,5 @@ public class UpdateCommand implements Callable<Void>
         }
         return null;
     }
+
 }

@@ -34,12 +34,12 @@ public class InMemorySpace extends BaseSpace
     }
 
     @Override
-    protected Map<String, String> readAll(Identity prefix) throws IOException
+    protected Map<SpaceKey, String> readAll(Identity prefix) throws IOException
     {
-        Map<String, String> rs = Maps.newHashMap();
+        Map<SpaceKey, String> rs = Maps.newHashMap();
         for (Map.Entry<SpaceKey, String> entry : values.entrySet()) {
-            if (entry.getKey().getIdentity().equals(prefix)) {
-                rs.put(entry.getKey().getKey(), entry.getValue());
+            if (prefix.equals(entry.getKey().getIdentity()) || prefix.isParentOf(entry.getKey().getIdentity())) {
+                rs.put(entry.getKey(), entry.getValue());
             }
         }
         return rs;

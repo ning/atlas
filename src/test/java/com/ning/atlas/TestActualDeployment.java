@@ -92,7 +92,7 @@ public class TestActualDeployment
     public void testPerformHitsProvisioner() throws Exception
     {
         ActualDeployment dp = env.planDeploymentFor(map, space);
-        dp.perform();
+        dp.update();
 
         assertThat(NoOpProvisioner.getProvisioned(),
                    hasItem(Pair.of(Identity.valueOf("/root.0/child.a"), Uri.<Provisioner>valueOf("noop:happy"))));
@@ -104,7 +104,7 @@ public class TestActualDeployment
     public void testPerformHitsInitializations() throws Exception
     {
         ActualDeployment dp = env.planDeploymentFor(map, space);
-        dp.perform();
+        dp.update();
 
         assertThat(NoOpInstaller.getInstalled(),
                    hasItem(Pair.of(Identity.valueOf("/root.0/child.a"), Uri.<Installer>valueOf("foo:init"))));
@@ -116,7 +116,7 @@ public class TestActualDeployment
     public void testPerformHitsInstalls() throws Exception
     {
         ActualDeployment dp = env.planDeploymentFor(map, space);
-        dp.perform();
+        dp.update();
 
         assertThat(NoOpInstaller.getInstalled(),
                    hasItem(Pair.of(Identity.valueOf("/root.0/child.a"), Uri.<Installer>valueOf("foo:install"))));

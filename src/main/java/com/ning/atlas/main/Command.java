@@ -53,6 +53,13 @@ public enum Command
             {
                 return new SSHCommand(mo);
             }
+        },
+    destroy
+        {
+            public Callable<?> create(MainOptions mo)
+            {
+                return new DestroyCommand(mo);
+            }
         };
 
     public abstract Callable<?> create(MainOptions mo);

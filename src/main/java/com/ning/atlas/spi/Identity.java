@@ -79,6 +79,11 @@ public final class Identity
         return externalForm;
     }
 
+    public boolean isParentOf(Identity possibleChild)
+    {
+        return possibleChild.toExternalForm().startsWith(toExternalForm() + "/");
+    }
+
     public String toString()
     {
         return toExternalForm();

@@ -90,10 +90,10 @@ public class Environment
         }
     }
 
-    public Maybe<Installer> findInstaller(Uri<Installer> uri)
+    public Maybe<Installer> findInstaller(String scheme)
     {
-        if (installers.containsKey(uri.getScheme())) {
-            Pair<Class<? extends Installer>, Map<String, String>> pair = installers.get(uri.getScheme());
+        if (installers.containsKey(scheme)) {
+            Pair<Class<? extends Installer>, Map<String, String>> pair = installers.get(scheme);
             try {
                 return Maybe.definitely(Instantiator.create(pair.getLeft(), pair.getRight()));
             }
@@ -111,9 +111,9 @@ public class Environment
         return findProvisioner(scheme).otherwise(new ErrorProvisioner());
     }
 
-    public Installer resolveInstaller(Uri<Installer> uri)
+    public Installer resolveInstaller(String scheme)
     {
-        return findInstaller(uri).otherwise(new ErrorInstaller(Collections.<String, String>emptyMap()));
+        return findInstaller(scheme).otherwise(new ErrorInstaller(Collections.<String, String>emptyMap()));
     }
 
     public List<Pair<Class<? extends LifecycleListener>, Map<String, String>>> getListeners()

@@ -39,14 +39,36 @@ public class RDSProvisioner extends ConcurrentComponent
     @Override
     public String perform(Host node, Uri<? extends Component> uri, Deployment d) throws Exception
     {
-
         AWS.Credentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class, Missing.RequireAll)
                                  .otherwise(new IllegalStateException("AWS credentials are not available"));
 
         AmazonRDSClient rds = new AmazonRDSClient(new BasicAWSCredentials(creds.getAccessKey(), creds.getSecretKey()));
 
-        if (d.getSpace().get(node.getId(), "instance-id").isKnown()) {
-            return "already exists";
+
+        Maybe<String> existing_id = d.getSpace().get(node.getId(), "instance-id");
+        if (existing_id.isKnown()) {
+
+            DescribeDBInstancesRequest req = new DescribeDBInstancesRequest();
+            req.setDBInstanceIdentifier(existing_id.getValue());
+            try {
+                DescribeDBInstancesResult rs = rds.describeDBInstances(req);
+                for (DBInstance instance : rs.getDBInstances()) {
+                    if (existing_id.getValue().equals(instance.getDBInstanceIdentifier())
+                        && "available".equals(instance.getDBInstanceStatus()))
+                    {
+                        return "already exists";
+                    }
+                }
+            }
+            catch (AmazonServiceException e) {
+                // amazon throws an exception if the thing isn't found *sigh*
+                if (e.getStatusCode() == 404) {
+                    // instance no longer exists, this is excpected
+                }
+                else {
+                    throw new IllegalStateException("unexpected error talking to RDS Api", e);
+                }
+            }
         }
 
         log.info("Started provisioning %s, this could take a while", node.getId().toExternalForm());
