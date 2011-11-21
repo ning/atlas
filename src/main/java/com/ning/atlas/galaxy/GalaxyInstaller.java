@@ -145,10 +145,11 @@ public class GalaxyInstaller extends ConcurrentComponent
             String cmd2 = format("galaxy -i %s clear", internal_hostname);
             log.debug("about to run '{}'", cmd2);
             ssh.exec(cmd2, 1, TimeUnit.MINUTES);
-            return "installed";
+            d.getSpace().delete(hostId.createChild("galaxy", "installer"), "current-installation");
+            return "unwound";
         }
         catch (Exception e) {
-            log.warn(e, "unable to install galaxy component");
+            log.warn(e, "unable to uninstall galaxy component");
             return e.getMessage();
         }
         finally {

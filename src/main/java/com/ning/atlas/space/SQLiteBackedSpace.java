@@ -99,6 +99,12 @@ public class SQLiteBackedSpace extends BaseSpace
         dao.deleteAllWithId(identity.toExternalForm(), identity.toExternalForm() + "/%");
     }
 
+    @Override
+    public void delete(Identity identity, String key)
+    {
+        dao.delete(identity.toExternalForm(), key);
+    }
+
     public static interface Dao
     {
         @SqlUpdate("create table if not exists space ( id varchar, key varchar, value varchar, primary key (id, key))")
@@ -120,6 +126,9 @@ public class SQLiteBackedSpace extends BaseSpace
 
         @SqlUpdate("delete from space where id = :id or id like :id_pattern")
         void deleteAllWithId(@Bind("id") String id, @Bind("id_pattern") String pattern);
+
+        @SqlUpdate("delete from space where id = :id and key = :key")
+        void delete(@Bind("id") String id, @Bind("key") String key);
     }
 
     public static class MyIdMapper implements ResultSetMapper<Identity>

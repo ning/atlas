@@ -68,4 +68,10 @@ public class InMemorySpace extends BaseSpace
             values.remove(key);
         }
     }
+
+    @Override
+    public void delete(Identity identity, String key)
+    {
+        values.remove(SpaceKey.from(identity, key));
+    }
 }

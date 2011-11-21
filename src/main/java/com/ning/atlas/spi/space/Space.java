@@ -35,4 +35,6 @@ public interface Space
     void deleteAll(Identity identity);
 
     <T> Maybe<T> get(Identity id, Class<T> type);
+
+    void delete(Identity identity, String key);
 }
