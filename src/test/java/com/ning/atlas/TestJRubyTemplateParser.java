@@ -1,6 +1,8 @@
 package com.ning.atlas;
 
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.base.MorePredicates;
 import com.ning.atlas.space.InMemorySpace;
@@ -19,7 +21,11 @@ import org.junit.Test;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
 
 import static com.ning.atlas.base.MorePredicates.beanPropertyEquals;
 import static java.util.Arrays.asList;
@@ -156,7 +162,8 @@ public class TestJRubyTemplateParser
         JRubyTemplateParser p = new JRubyTemplateParser();
         Environment env = p.parseEnvironment(new File("src/test/ruby/ex1/env-with-listener.rb"));
 
-        Host h = new Host(Identity.root().createChild("some", "thing"), "concrete", new My(), Collections.<Uri<Installer>>emptyList());
+        Host h = new Host(Identity.root()
+                                  .createChild("some", "thing"), "concrete", new My(), Collections.<Uri<Installer>>emptyList());
         SystemMap map = new SystemMap(h);
         Space space = InMemorySpace.newInstance();
         ActualDeployment d = new ActualDeployment(map, env, space);
@@ -172,6 +179,36 @@ public class TestJRubyTemplateParser
                                                        "startUnwind",
                                                        "finishUnwind",
                                                        "finishDeployment")));
+        ListenerThing.calls.clear();
+    }
+
+    @Test
+    public void testExternalSystem() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template-with-external.rb"));
+
+        SystemMap map = t.normalize();
+
+        SortedSet<Host> hosts = Sets.newTreeSet(new Comparator<Host>()
+        {
+            @Override
+            public int compare(Host host, Host host1)
+            {
+                return host.getId().toExternalForm().compareTo(host1.getId().toExternalForm());
+            }
+        });
+
+        hosts.addAll(map.findLeaves());
+
+        assertThat(hosts.size(), equalTo(3));
+        Iterator<Host> itty = hosts.iterator();
+        Host one = itty.next();
+        System.out.println(one.getId());
+        Host two = itty.next();
+        System.out.println(two.getId());
+        Host three = itty.next();
+        System.out.println(three.getId());
     }
 
 }
