@@ -4,6 +4,8 @@ import com.google.common.base.Function;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -21,6 +23,7 @@ import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.space.Space;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.security.SecureRandomSpi;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -114,7 +117,8 @@ public class ActualDeployment implements Deployment
         return new Description(descriptors.values());
     }
 
-    public void destroy() {
+    public void destroy()
+    {
         ListeningExecutorService es = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
         List<LifecycleListener> listeners = createListeners();
 
@@ -185,9 +189,19 @@ public class ActualDeployment implements Deployment
         log.info("beginning unwind");
         fire(Events.startUnwind, listeners);
 
+
         final Cache<String, Installer> installer_cache = CacheBuilder.newBuilder()
                                                                      .maximumSize(Integer.MAX_VALUE)
                                                                      .concurrencyLevel(10)
+                                                                     .removalListener(new RemovalListener<String, Installer>()
+                                                                     {
+                                                                         @Override
+                                                                         public void onRemoval(RemovalNotification<String, Installer> event)
+                                                                         {
+                                                                             event.getValue()
+                                                                                  .finish(ActualDeployment.this);
+                                                                         }
+                                                                     })
                                                                      .build(new CacheLoader<String, Installer>()
                                                                      {
                                                                          @Override
@@ -202,6 +216,15 @@ public class ActualDeployment implements Deployment
         final Cache<String, Provisioner> provisioner_cache = CacheBuilder.newBuilder()
                                                                          .maximumSize(Integer.MAX_VALUE)
                                                                          .concurrencyLevel(10)
+                                                                         .removalListener(new RemovalListener<String, Provisioner>()
+                                                                         {
+                                                                             @Override
+                                                                             public void onRemoval(RemovalNotification<String, Provisioner> event)
+                                                                             {
+                                                                                 event.getValue()
+                                                                                      .finish(ActualDeployment.this);
+                                                                             }
+                                                                         })
                                                                          .build(new CacheLoader<String, Provisioner>()
                                                                          {
                                                                              @Override
@@ -271,13 +294,6 @@ public class ActualDeployment implements Deployment
                     }
                 }));
             }
-
-            for (Map.Entry<String, Installer> entry : installer_cache.activeEntries(Integer.MAX_VALUE)) {
-                entry.getValue().finish(this);
-            }
-            for (Map.Entry<String, Provisioner> entry : provisioner_cache.activeEntries(Integer.MAX_VALUE)) {
-                entry.getValue().finish(this);
-            }
         }
 
         for (Future<?> future : futures) {
@@ -290,6 +306,8 @@ public class ActualDeployment implements Deployment
         }
 
 
+        installer_cache.invalidateAll();
+        provisioner_cache.invalidateAll();
         log.info("finished unwind");
         fire(Events.finishUnwind, listeners);
     }
