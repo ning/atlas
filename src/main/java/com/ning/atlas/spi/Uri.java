@@ -145,7 +145,18 @@ public class Uri<T>
     @JsonCreator
     public static <T> Uri<T> valueOf(String uri)
     {
-        return valueOf(uri, Collections.<String, Collection<String>>emptyMap());
+        boolean has_args = false;
+        Multimap<String, String> params = ArrayListMultimap.create();
+        if (uri.contains("?")) {
+            has_args = true;
+            List<NameValuePair> pairs = URLEncodedUtils.parse(URI.create(uri.substring(uri.indexOf("?"))), "UTF8");
+            for (NameValuePair pair : pairs) {
+                params.put(pair.getName(), pair.getValue());
+            }
+        }
+
+        return valueOf(has_args ? uri.substring(0, uri.indexOf("?")) : uri,
+                       params.asMap());
     }
 
     public Map<String, Collection<String>> getParams()
@@ -153,7 +164,7 @@ public class Uri<T>
         return params;
     }
 
-    public Map<String,String> getParamsSimple()
+    public Map<String, String> getParamsSimple()
     {
         return Maps.transformValues(getParams(), new Function<Collection<String>, String>()
         {

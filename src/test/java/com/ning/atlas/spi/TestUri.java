@@ -103,4 +103,26 @@ public class TestUri
 
         assertThat(uri.toString(), equalTo("hello:world?a=hello&a=world&b=hello+world"));
     }
+
+    @Test
+    public void testSchemeWithNoStuff() throws Exception
+    {
+        Uri uri = new Uri("rds", "", ImmutableMap.<String, Collection<String>>of("hello", Arrays.asList("world")));
+        assertThat(uri.getScheme(), equalTo("rds"));
+    }
+
+    @Test
+    public void testSchemeWithNoStuff2() throws Exception
+    {
+        Uri uri = Uri.valueOf("rds", ImmutableMap.<String, Collection<String>>of("hello", Arrays.asList("world")));
+        assertThat(uri.getScheme(), equalTo("rds"));
+    }
+
+    @Test
+    public void testSchemeWithNoStuff3() throws Exception
+    {
+        Uri uri = Uri.valueOf("rds", ImmutableMap.<String, Collection<String>>of("hello", Arrays.asList("world")));
+        Uri dup = Uri.valueOf(uri.toString());
+        assertThat(dup.getScheme(), equalTo("rds"));
+    }
 }

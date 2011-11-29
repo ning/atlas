@@ -2,6 +2,8 @@ package com.ning.atlas;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.ning.atlas.plugin.PluginSystem;
+import com.ning.atlas.plugin.StaticPluginSystem;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
@@ -19,12 +21,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Environment
 {
-    private final Map<String, Pair<Class<? extends Provisioner>, Map<String, String>>> provisioners = Maps.newConcurrentMap();
-    private final Map<String, Pair<Class<? extends Installer>, Map<String, String>>>   installers   = Maps.newConcurrentMap();
     private final List<Pair<Class<? extends LifecycleListener>, Map<String, String>>> listeners = new CopyOnWriteArrayList<Pair<Class<? extends LifecycleListener>, Map<String, String>>>();
 
     private final Map<String, Base>   bases      = Maps.newConcurrentMap();
     private final Map<String, String> properties = Maps.newConcurrentMap();
+
+    private final PluginSystem plugins = new StaticPluginSystem();
 
     public Environment()
     {
@@ -41,8 +43,14 @@ public class Environment
                        Map<String, Base> bases,
                        Map<String, String> properties)
     {
-        this.provisioners.putAll(provisioners);
-        this.installers.putAll(installers);
+        for (Map.Entry<String, Pair<Class<? extends Provisioner>, Map<String, String>>> entry : provisioners.entrySet()) {
+            plugins.registerProvisioner(entry.getKey(), entry.getValue().getKey(), entry.getValue().getValue());
+        }
+
+        for (Map.Entry<String, Pair<Class<? extends Installer>, Map<String, String>>> entry : installers.entrySet()) {
+            plugins.registerInstaller(entry.getKey(), entry.getValue().getKey(), entry.getValue().getValue());
+        }
+
         this.bases.putAll(bases);
         this.properties.putAll(properties);
         this.listeners.addAll(listeners);
@@ -76,44 +84,24 @@ public class Environment
 
     public Maybe<Provisioner> findProvisioner(String provisioner)
     {
-        if (provisioners.containsKey(provisioner)) {
-            Pair<Class<? extends Provisioner>, Map<String, String>> pair = provisioners.get(provisioner);
-            try {
-                return Maybe.definitely(Instantiator.create(pair.getLeft(), pair.getRight()));
-            }
-            catch (Exception e) {
-                throw new IllegalStateException("Unable to instantiate provisioner " + provisioner, e);
-            }
-        }
-        else {
-            return Maybe.unknown();
-        }
+        return plugins.findProvisioner(provisioner);
     }
 
     public Maybe<Installer> findInstaller(String scheme)
     {
-        if (installers.containsKey(scheme)) {
-            Pair<Class<? extends Installer>, Map<String, String>> pair = installers.get(scheme);
-            try {
-                return Maybe.definitely(Instantiator.create(pair.getLeft(), pair.getRight()));
-            }
-            catch (Exception e) {
-                throw new IllegalStateException("Unable to instantiate provisioner", e);
-            }
-        }
-        else {
-            return Maybe.unknown();
-        }
+        return plugins.findInstaller(scheme);
     }
 
     public Provisioner resolveProvisioner(String scheme)
     {
-        return findProvisioner(scheme).otherwise(new ErrorProvisioner());
+        return plugins.findProvisioner(scheme).otherwise(new IllegalStateException("unable to locate provisioner for " +
+                                                                                   scheme));
     }
 
     public Installer resolveInstaller(String scheme)
     {
-        return findInstaller(scheme).otherwise(new ErrorInstaller(Collections.<String, String>emptyMap()));
+        return plugins.findInstaller(scheme).otherwise(new IllegalStateException("unable to locate installer for " +
+                                                                                 scheme));
     }
 
     public List<Pair<Class<? extends LifecycleListener>, Map<String, String>>> getListeners()
