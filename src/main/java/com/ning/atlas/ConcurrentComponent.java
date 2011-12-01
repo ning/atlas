@@ -36,12 +36,17 @@ public abstract class ConcurrentComponent extends BaseComponent implements Provi
             @Override
             public Status call() throws Exception
             {
+                String name = Thread.currentThread().getName();
                 try {
+                    Thread.currentThread().setName(name + "-install-" + server.getId().toExternalForm());
                     return Status.okay(perform(server, uri, deployment));
                 }
                 catch (Exception e) {
                     log.warn(e, "exception performing actual installation");
                     return Status.fail(e.getMessage());
+                }
+                finally {
+                    Thread.currentThread().setName(name);
                 }
             }
         });
@@ -56,12 +61,17 @@ public abstract class ConcurrentComponent extends BaseComponent implements Provi
             @Override
             public Status call() throws Exception
             {
+                String name = Thread.currentThread().getName();
                 try {
+                    Thread.currentThread().setName(name + "-provision-" + node.getId().toExternalForm());
                     return Status.okay(perform(node, uri, deployment));
                 }
                 catch (Exception e) {
                     log.warn(e, "exception performing provision on %s", node.getId());
                     return Status.fail(e.getMessage());
+                }
+                finally {
+                    Thread.currentThread().setName(name);
                 }
 
             }
@@ -76,11 +86,16 @@ public abstract class ConcurrentComponent extends BaseComponent implements Provi
             @Override
             public Status call() throws Exception
             {
+                String name = Thread.currentThread().getName();
                 try {
+                    Thread.currentThread().setName(name + "-uninstall-" + hostId.toExternalForm());
                     return Status.okay(unwind(hostId, uri, deployment));
                 }
                 catch (Exception e) {
                     return Status.fail(e.getMessage());
+                }
+                finally {
+                    Thread.currentThread().setName(name);
                 }
             }
         });
@@ -94,12 +109,17 @@ public abstract class ConcurrentComponent extends BaseComponent implements Provi
             @Override
             public Status call() throws Exception
             {
+                String name = Thread.currentThread().getName();
                 try {
+                    Thread.currentThread().setName(name + "-destroy-" + hostId.toExternalForm());
                     return Status.okay(unwind(hostId, uri, deployment));
                 }
                 catch (Exception e) {
                     log.warn(e, "failed to unwind %s on %s", uri, hostId);
                     return Status.fail(e.getMessage());
+                }
+                finally {
+                    Thread.currentThread().setName(name);
                 }
             }
         });
