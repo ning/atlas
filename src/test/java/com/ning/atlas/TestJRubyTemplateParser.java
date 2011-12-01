@@ -110,7 +110,7 @@ public class TestJRubyTemplateParser
         Maybe<Base> cs = e.findBase("concrete");
         assertThat(cs.getValue(), notNullValue());
         Base b = cs.getValue();
-        Uri<Installer> u = Uri.valueOf("chef-solo:{ \"run_list\": \"role[java-core]\" }");
+        Uri<Installer> u = Uri.valueOf("ubuntu-chef-solo:{ \"run_list\": \"role[java-core]\" }");
         assertThat(b.getInitializations(), equalTo(asList(u)));
     }
 

@@ -17,7 +17,7 @@ module Atlas
   def self.parse_install_list xs
 
     # handle case of ["uri:stuff", { :param => 7}] is single uri
-    _, p =  Array(xs)
+    _, p = Array(xs)
     if p and p.is_a? Hash
       xs = [xs]
     end
@@ -64,12 +64,13 @@ module Atlas
     def initialize block
       @block                                          = block
       @properties, @provisioners, @installers, @bases = {}, {}, {}, {}
-      @listeners = []
+      @listeners                                      = []
     end
 
     def __parse
       instance_eval &@block
-      com.ning.atlas.Environment.new @provisioners,
+      com.ning.atlas.Environment.new com.ning.atlas.plugin.StaticPluginSystem.new,
+                                     @provisioners,
                                      @installers,
                                      @listeners,
                                      @bases,
@@ -99,16 +100,12 @@ module Atlas
       end
     end
 
-    def provisioner name, type, args={}
-      attr                = Atlas.stringify args
-      pair                = org.apache.commons.lang3.tuple.Pair.of(type.java_class , attr)
-      @provisioners[name] = pair
+    def provisioner name, args={}
+      @provisioners[name] = Atlas.stringify(args)
     end
 
-    def installer name, type, args = {}
-      attr              = Atlas.stringify args
-      pair              = org.apache.commons.lang3.tuple.Pair.of(type.java_class, attr)
-      @installers[name] = pair
+    def installer name, args = {}
+      @installers[name] = Atlas.stringify(args)
     end
 
     def system *args

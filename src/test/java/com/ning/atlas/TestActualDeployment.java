@@ -3,6 +3,7 @@ package com.ning.atlas;
 import com.google.common.collect.ImmutableMap;
 import com.ning.atlas.noop.NoOpInstaller;
 import com.ning.atlas.noop.NoOpProvisioner;
+import com.ning.atlas.plugin.StaticPluginSystem;
 import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
@@ -42,22 +43,21 @@ public class TestActualDeployment
                                                  Collections.<String, Object>emptyMap(),
                                                  asList("0"),
                                                  Arrays.<Template>asList(child));
-
+        StaticPluginSystem plugins = new StaticPluginSystem();
         NoOpProvisioner.reset();
-        Map<String, Pair<Class<? extends Provisioner>, Map<String, String>>> provisioners =
-            ImmutableMap.of("noop", Pair.<Class<? extends Provisioner>, Map<String, String>>of(NoOpProvisioner.class, Collections
-                .<String, String>emptyMap()));
+        plugins.registerProvisioner("noop", NoOpProvisioner.class, Collections.<String, String>emptyMap());
 
         NoOpInstaller.reset();
-        Map<String, Pair<Class<? extends Installer>, Map<String, String>>> installers =
-            ImmutableMap.of("foo", Pair.<Class<? extends Installer>, Map<String, String>>of(NoOpInstaller.class, Collections
-                .<String, String>emptyMap()));
+        plugins.registerInstaller("foo", NoOpInstaller.class, Collections.<String, String>emptyMap());
 
         Map<String, Base> bases = ImmutableMap.of("base", new Base(Uri.<Provisioner>valueOf("noop:happy"),
                                                                    Arrays.asList(Uri.<Installer>valueOf("foo:init"))));
 
-        env = new Environment(provisioners,
-                              installers,
+
+
+        env = new Environment(plugins,
+                              Collections.<String, Map<String,String>>emptyMap(),
+                              Collections.<String, Map<String,String>>emptyMap(),
                               Collections.<Pair<Class<? extends LifecycleListener>, Map<String, String>>>emptyList(),
                               bases,
                               Collections.<String, String>emptyMap());

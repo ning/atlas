@@ -154,6 +154,7 @@ public class RDSProvisioner extends ConcurrentComponent
                       .otherwise(new IllegalStateException("No instance id found, cannot unwind"));
 
         DeleteDBInstanceRequest req = new DeleteDBInstanceRequest(mid);
+        req.setSkipFinalSnapshot(true);
         rds.deleteDBInstance(req);
         return "cleared";
     }

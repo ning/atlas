@@ -13,6 +13,8 @@ public interface PluginSystem
     Maybe<Installer> findInstaller(String scheme);
 
     void registerProvisioner(String prefix, Class<? extends Provisioner> type, Map<String, String> args);
+    void registerProvisionerConfig(String prefix, Map<String, String> args);
 
     void registerInstaller(String prefix, Class<? extends Installer> type, Map<String, String> args);
+    void registerInstallerConfig(String prefix, Map<String, String> args);
 }

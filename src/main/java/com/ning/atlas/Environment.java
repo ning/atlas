@@ -26,29 +26,32 @@ public class Environment
     private final Map<String, Base>   bases      = Maps.newConcurrentMap();
     private final Map<String, String> properties = Maps.newConcurrentMap();
 
-    private final PluginSystem plugins = new StaticPluginSystem();
+    private final PluginSystem plugins;
 
     public Environment()
     {
-        this(Collections.<String, Pair<Class<? extends Provisioner>, Map<String, String>>>emptyMap(),
-             Collections.<String, Pair<Class<? extends Installer>, Map<String, String>>>emptyMap(),
+        this(new StaticPluginSystem(),
+             Collections.<String, Map<String, String>>emptyMap(),
+             Collections.<String, Map<String, String>>emptyMap(),
              Collections.<Pair<Class<? extends LifecycleListener>, Map<String, String>>>emptyList(),
              Collections.<String, Base>emptyMap(),
              Collections.<String, String>emptyMap());
     }
 
-    public Environment(Map<String, Pair<Class<? extends Provisioner>, Map<String, String>>> provisioners,
-                       Map<String, Pair<Class<? extends Installer>, Map<String, String>>> installers,
+    public Environment(PluginSystem plugins,
+                       Map<String, Map<String, String>> provisioners,
+                       Map<String, Map<String, String>> installers,
                        Collection<Pair<Class<? extends LifecycleListener>, Map<String, String>>> listeners,
                        Map<String, Base> bases,
                        Map<String, String> properties)
     {
-        for (Map.Entry<String, Pair<Class<? extends Provisioner>, Map<String, String>>> entry : provisioners.entrySet()) {
-            plugins.registerProvisioner(entry.getKey(), entry.getValue().getKey(), entry.getValue().getValue());
+        this.plugins = plugins;
+        for (Map.Entry<String, Map<String, String>> entry : provisioners.entrySet()) {
+            plugins.registerProvisionerConfig(entry.getKey(), entry.getValue());
         }
 
-        for (Map.Entry<String, Pair<Class<? extends Installer>, Map<String, String>>> entry : installers.entrySet()) {
-            plugins.registerInstaller(entry.getKey(), entry.getValue().getKey(), entry.getValue().getValue());
+        for (Map.Entry<String, Map<String, String>> entry : installers.entrySet()) {
+            plugins.registerInstallerConfig(entry.getKey(), entry.getValue());
         }
 
         this.bases.putAll(bases);

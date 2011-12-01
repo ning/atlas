@@ -60,7 +60,7 @@ public abstract class ConcurrentComponent extends BaseComponent implements Provi
                     return Status.okay(perform(node, uri, deployment));
                 }
                 catch (Exception e) {
-                    log.warn(e, "exception performing provision");
+                    log.warn(e, "exception performing provision on %s", node.getId());
                     return Status.fail(e.getMessage());
                 }
 
