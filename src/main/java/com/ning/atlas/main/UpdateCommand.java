@@ -18,14 +18,6 @@ import java.util.concurrent.Callable;
 
 public class UpdateCommand implements Callable<Void>
 {
-    private static final Logger logger = Logger.get(UpdateCommand.class);
-    private final MainOptions mainOptions;
-
-    public UpdateCommand(MainOptions mainOptions)
-    {
-        this.mainOptions = mainOptions;
-    }
-
     @Override
     public Void call() throws IOException
     {
@@ -42,14 +34,6 @@ public class UpdateCommand implements Callable<Void>
         ActualDeployment d = new ActualDeployment(map, env, space);
         d.update();
 
-        for (Host host : d.getSystemMap().findLeaves()) {
-            System.out.println(host.getId() + " :");
-            for (Map.Entry<SpaceKey, String> entry : space.getAllFor(host.getId()).entrySet()) {
-                System.out.printf("    %s : %s\n",
-                                  entry.getKey().getKey(),
-                                  StringUtils.abbreviate(entry.getValue(), 80).replaceAll("\n", "\\n"));
-            }
-        }
         return null;
     }
 }

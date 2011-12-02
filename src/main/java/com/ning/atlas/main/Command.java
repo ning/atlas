@@ -30,21 +30,21 @@ public enum Command
         {
             public Callable<?> create(MainOptions mo)
             {
-                return new UpdateCommand(mo);
+                return new UpdateCommand();
             }
         },
     udpate
         {
             public Callable<?> create(MainOptions mo)
             {
-                return new UpdateCommand(mo);
+                return new UpdateCommand();
             }
         },
     start
         {
             public Callable<?> create(MainOptions mo)
             {
-                return new UpdateCommand(mo);
+                return new UpdateCommand();
             }
         },
     ssh
