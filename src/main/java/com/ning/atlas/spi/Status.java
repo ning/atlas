@@ -14,6 +14,15 @@ public final class Status
     }
 
     @Override
+    public String toString()
+    {
+        return "Status{" +
+               "msg='" + msg + '\'' +
+               ", type=" + type +
+               '}';
+    }
+
+    @Override
     public boolean equals(Object o)
     {
         return EqualsBuilder.reflectionEquals(this, o);

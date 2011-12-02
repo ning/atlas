@@ -6,6 +6,7 @@ import com.ning.atlas.ErrorInstaller;
 import com.ning.atlas.ErrorProvisioner;
 import com.ning.atlas.ExecInstaller;
 import com.ning.atlas.Instantiator;
+import com.ning.atlas.PrettyTerminalListener;
 import com.ning.atlas.ScratchInstaller;
 import com.ning.atlas.aws.AWSConfigurator;
 import com.ning.atlas.aws.EC2Provisioner;
@@ -67,6 +68,7 @@ public class StaticPluginSystem implements PluginSystem
         registerInstaller("ubuntu-chef-solo", UbuntuChefSoloInstaller.class, EMPTY_MAP);
 
         registerListener("aws-config", AWSConfigurator.class, EMPTY_MAP);
+        registerListener("progress-bars", PrettyTerminalListener.class, EMPTY_MAP);
     }
 
     @Override

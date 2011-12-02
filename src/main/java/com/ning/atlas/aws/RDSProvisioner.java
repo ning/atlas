@@ -44,7 +44,6 @@ public class RDSProvisioner extends ConcurrentComponent
 
         AmazonRDSClient rds = new AmazonRDSClient(new BasicAWSCredentials(creds.getAccessKey(), creds.getSecretKey()));
 
-
         Maybe<String> existing_id = d.getSpace().get(node.getId(), "instance-id");
         if (existing_id.isKnown()) {
 

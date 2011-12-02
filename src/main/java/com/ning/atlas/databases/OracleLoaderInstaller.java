@@ -49,17 +49,7 @@ public class OracleLoaderInstaller extends ConcurrentComponent
     @Override
     public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
-        SSHCredentials creds = SSHCredentials.lookup(d.getSpace(), credentialName)
-            .otherwise(SSHCredentials.defaultCredentials(d.getSpace()))
-            .otherwise(new IllegalStateException("unable to find ssh credentials"));
-
         String fragment = uri.getFragment();
-        String oracle_shell_id = d.getSpace().require("oracle-shell");
-        String attrs = d.getSpace().get(host.getId(), "extra-atlas-attributes").getValue();
-        Map<String, String> attr = new ObjectMapper().readValue(attrs, Map.class);
-        Server shell = d.getSpace().get(Identity.valueOf(oracle_shell_id), Server.class, Missing.RequireAll).getValue();
-        Server server = d.getSpace().get(host.getId(), Server.class, Missing.RequireAll).getValue();
-
         final StringTemplate sql_url_t = new StringTemplate(sqlUrlTemplate);
         final Splitter equal_splitter = Splitter.on('=');
         for (String pair : Splitter.on(';').split(fragment)) {
@@ -67,6 +57,24 @@ public class OracleLoaderInstaller extends ConcurrentComponent
             sql_url_t.setAttribute(itty.next(), itty.next());
         }
         String sql_url = sql_url_t.toString();
+
+        if (d.getSpace().get(host.getId(), sql_url).isKnown()) {
+            return "already installed";
+        }
+
+        SSHCredentials creds = SSHCredentials.lookup(d.getSpace(), credentialName)
+            .otherwise(SSHCredentials.defaultCredentials(d.getSpace()))
+            .otherwise(new IllegalStateException("unable to find ssh credentials"));
+
+
+        String oracle_shell_id = d.getSpace().require("oracle-shell");
+        String attrs = d.getSpace().get(host.getId(), "extra-atlas-attributes").getValue();
+        Map<String, String> attr = new ObjectMapper().readValue(attrs, Map.class);
+        Server shell = d.getSpace().get(Identity.valueOf(oracle_shell_id), Server.class, Missing.RequireAll).getValue();
+        Server server = d.getSpace().get(host.getId(), Server.class, Missing.RequireAll).getValue();
+
+
+
 
         if (d.getSpace().get(host.getId(), sql_url).isKnown()) {
             return "Nothing to be done for " + sql_url;

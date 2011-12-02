@@ -11,14 +11,21 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.ning.atlas.bus.GuavaNotificationBus;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Deployment;
+import com.ning.atlas.spi.Status;
+import com.ning.atlas.spi.bus.FinishedServerInstall;
+import com.ning.atlas.spi.bus.FinishedServerProvision;
+import com.ning.atlas.spi.bus.NotificationBus;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Uri;
+import com.ning.atlas.spi.bus.StartServerInstall;
+import com.ning.atlas.spi.bus.StartServerProvision;
 import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.space.Space;
 import org.apache.commons.lang3.tuple.Pair;
@@ -30,6 +37,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.reverse;
@@ -38,6 +47,8 @@ import static com.google.common.collect.Lists.transform;
 public class ActualDeployment implements Deployment
 {
     private static final Logger log = Logger.get(ActualDeployment.class);
+
+    private final GuavaNotificationBus bus = new GuavaNotificationBus();
 
     private final SystemMap   map;
     private final Environment environment;
@@ -183,13 +194,15 @@ public class ActualDeployment implements Deployment
         fire(Events.finishDeployment, listeners);
     }
 
-    private void startDeployment(List<LifecycleListener> listeners) {
+    private void startDeployment(List<LifecycleListener> listeners)
+    {
         fire(Events.startDeployment, listeners);
     }
 
     private void unwind(List<LifecycleListener> listeners, ListeningExecutorService es)
     {
         log.info("beginning unwind");
+        bus.startNewStage();
         fire(Events.startUnwind, listeners);
 
         final Set<Identity> deployed = Sets.newHashSet();
@@ -324,6 +337,7 @@ public class ActualDeployment implements Deployment
     private void install(List<LifecycleListener> listeners, ListeningExecutorService es)
     {
         log.info("starting install");
+        bus.startNewStage();
         fire(Events.startInstall, listeners);
         performInstalls(es, new Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>>()
         {
@@ -353,6 +367,7 @@ public class ActualDeployment implements Deployment
     private void initialize(List<LifecycleListener> listeners, ListeningExecutorService es)
     {
         log.info("starting init");
+        bus.startNewStage();
         fire(Events.startInit, listeners);
         performInstalls(es, new Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>>()
         {
@@ -458,21 +473,26 @@ public class ActualDeployment implements Deployment
 
     }
 
-    private Future<?> installAllOnHost(ListeningExecutorService es,
-                                       final Host server,
-                                       final List<Pair<Uri<Installer>, Installer>> installations)
+    private Future<Status> installAllOnHost(ListeningExecutorService es,
+                                            final Host server,
+                                            final List<Pair<Uri<Installer>, Installer>> installations)
     {
-        return es.submit(new Callable<Object>()
+        return es.submit(new Callable<Status>()
         {
             @Override
-            public Object call() throws Exception
+            public Status call() throws Exception
             {
                 log.info("installing on %s : %s", server.getId(), installations);
+                Status last_status = Status.okay();
                 for (Pair<Uri<Installer>, Installer> installation : installations) {
                     log.info("installing %s on %s", installation.getKey().toString(), server.getId());
-                    installation.getValue().install(server, installation.getKey(), ActualDeployment.this).get();
+                    bus.post(new StartServerInstall(server.getId(), installation.getLeft()));
+                    last_status = installation.getValue()
+                                              .install(server, installation.getKey(), ActualDeployment.this)
+                                              .get();
+                    bus.post(new FinishedServerInstall(server.getId(), installation.getLeft()));
                 }
-                return null;
+                return last_status;
             }
         });
     }
@@ -480,6 +500,7 @@ public class ActualDeployment implements Deployment
     private void provision(List<LifecycleListener> listeners)
     {
         log.info("starting provision");
+        bus.startNewStage();
         fire(Events.startProvision, listeners);
 
         final Set<Host> servers = map.findLeaves();
@@ -504,23 +525,28 @@ public class ActualDeployment implements Deployment
         }
 
         // provision
-        final List<Future<?>> futures = Lists.newArrayListWithExpectedSize(servers.size());
+        final List<ProvisionServer> provision_servers = Lists.newArrayList();
+
         for (final Host server : servers) {
             final Pair<Provisioner, Uri<Provisioner>> pair = s_to_p.get(server);
-            final Provisioner p = pair.getLeft();
-            log.info("provisioning %s for %s", pair.getRight(), server.getId());
-            futures.add(p.provision(server, pair.getRight(), this));
+            ProvisionServer ps = new ProvisionServer(this, server, pair.getKey(), pair.getValue());
+            ps.provision();
+            provision_servers.add(ps);
         }
 
-        for (Future<?> future : futures) {
+        while (!provision_servers.isEmpty()) {
+            Set<ProvisionServer> finished = Sets.newIdentityHashSet();
+            for (ProvisionServer ps : provision_servers) {
+                if (ps.isFinished()) {
+                    finished.add(ps);
+                }
+            }
+            provision_servers.removeAll(finished);
             try {
-                future.get();
+                Thread.sleep(100);
             }
             catch (InterruptedException e) {
-                throw new UnsupportedOperationException("Not Yet Implemented!", e);
-            }
-            catch (ExecutionException e) {
-                throw new UnsupportedOperationException("Not Yet Implemented!", e);
+                Thread.currentThread().interrupt();
             }
         }
 
@@ -540,6 +566,12 @@ public class ActualDeployment implements Deployment
     public Environment getEnvironment()
     {
         return environment;
+    }
+
+    @Override
+    public NotificationBus getEventBus()
+    {
+        return this.bus;
     }
 
     public Space getSpace()
@@ -648,7 +680,55 @@ public class ActualDeployment implements Deployment
 
 
         public abstract Future<?> fire(LifecycleListener listener, Deployment d);
+    }
 
+    private static class ProvisionServer
+    {
 
+        private final ActualDeployment deployment;
+        private final Host             server;
+        private final Provisioner      provisioner;
+        private final Uri<Provisioner> uri;
+        private final AtomicReference<Future<Status>> future = new AtomicReference<Future<Status>>();
+
+        public ProvisionServer(ActualDeployment deployment, Host server, Provisioner provisioner, Uri<Provisioner> uri)
+        {
+            this.deployment = deployment;
+            this.server = server;
+            this.provisioner = provisioner;
+            this.uri = uri;
+        }
+
+        public void provision()
+        {
+            deployment.bus.post(new StartServerProvision(server.getId(), uri));
+            future.set(provisioner.provision(server, uri, deployment));
+        }
+
+        public boolean isFinished()
+        {
+            if (future.get().isDone()) {
+                Status s;
+                try {
+                    s = future.get().get();
+                }
+                catch (InterruptedException e) {
+                    log.debug("Provisioning %s was interrupted", server.getId());
+                    Thread.currentThread().interrupt();
+                    s = Status.abort("interrupted");
+                }
+                catch (ExecutionException e) {
+                    log.warn(e, "unexpected exception provisioning %s", server.getId());
+                    s = Status.abort("unexpected exception, killing deployment");
+                }
+
+                // TODO use this status stuff
+                log.info("%s finished provisioning with status %s", server.getId(),  s);
+                deployment.bus.post(new FinishedServerProvision(server.getId(), uri));
+
+                return true;
+            }
+            return false;
+        }
     }
 }
