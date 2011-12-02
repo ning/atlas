@@ -2,7 +2,7 @@ environment "test" do
 
   set "xn.base-domain" => "waffles.test"
 
-  listener com.ning.atlas.ListenerThing
+  listener "testy"
 
   installer "ugx", {
       :ssh_user     => "ubuntu",

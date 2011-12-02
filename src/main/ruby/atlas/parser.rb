@@ -62,9 +62,8 @@ module Atlas
   class EnvironmentParser
 
     def initialize block
-      @block                                          = block
-      @properties, @provisioners, @installers, @bases = {}, {}, {}, {}
-      @listeners                                      = []
+      @block                                                      = block
+      @properties, @provisioners, @installers, @bases, @listeners = {}, {}, {}, {}, {}
     end
 
     def __parse
@@ -112,9 +111,8 @@ module Atlas
       #no-op
     end
 
-    def listener type, args= {}
-      attr = Atlas.stringify args
-      @listeners << org.apache.commons.lang3.tuple.Pair.of(type.java_class, attr)
+    def listener name, args= {}
+      @listeners[name] = Atlas.stringify(args)
     end
 
     def set args

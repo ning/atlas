@@ -58,7 +58,7 @@ public class TestActualDeployment
         env = new Environment(plugins,
                               Collections.<String, Map<String,String>>emptyMap(),
                               Collections.<String, Map<String,String>>emptyMap(),
-                              Collections.<Pair<Class<? extends LifecycleListener>, Map<String, String>>>emptyList(),
+                              Collections.<String, Map<String,String>>emptyMap(),
                               bases,
                               Collections.<String, String>emptyMap());
 

@@ -28,7 +28,7 @@ import java.util.concurrent.Future;
 
 public class AWSConfigurator extends BaseLifecycleListener
 {
-    private final ExecutorService              es            = Executors.newCachedThreadPool();
+    private final ExecutorService            es            = Executors.newCachedThreadPool();
     private final List<Pair<String, String>> credentialIds = new CopyOnWriteArrayList<Pair<String, String>>();
 
     public AWSConfigurator(Map<String, String> attributes)

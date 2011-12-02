@@ -119,7 +119,7 @@ public class ActualDeployment implements Deployment
     public void destroy()
     {
         ListeningExecutorService es = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
-        List<LifecycleListener> listeners = createListeners();
+        List<LifecycleListener> listeners = environment.getListeners();
 
         startDeployment(listeners);
 
@@ -151,7 +151,7 @@ public class ActualDeployment implements Deployment
     public void update()
     {
         ListeningExecutorService es = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
-        List<LifecycleListener> listeners = createListeners();
+        List<LifecycleListener> listeners = environment.getListeners();
 
         startDeployment(listeners);
         provision(listeners);
@@ -183,24 +183,8 @@ public class ActualDeployment implements Deployment
         fire(Events.finishDeployment, listeners);
     }
 
-    private void startDeployment(List<LifecycleListener> listeners) {fire(Events.startDeployment, listeners);}
-
-    private List<LifecycleListener> createListeners()
-    {
-        return Lists.transform(environment.getListeners(), new Function<Pair<Class<? extends LifecycleListener>, Map<String, String>>, LifecycleListener>()
-        {
-            @Override
-            public LifecycleListener apply(Pair<Class<? extends LifecycleListener>, Map<String, String>> input)
-            {
-                checkNotNull(input);
-                try {
-                    return Instantiator.create(input.getKey(), input.getValue());
-                }
-                catch (Exception e) {
-                    throw new IllegalStateException("unable to instantiate listener " + input.getKey().getName(), e);
-                }
-            }
-        });
+    private void startDeployment(List<LifecycleListener> listeners) {
+        fire(Events.startDeployment, listeners);
     }
 
     private void unwind(List<LifecycleListener> listeners, ListeningExecutorService es)
@@ -224,8 +208,6 @@ public class ActualDeployment implements Deployment
         }
 
         unwindAll(es, to_unwind);
-
-
         log.info("finished unwind");
         fire(Events.finishUnwind, listeners);
     }

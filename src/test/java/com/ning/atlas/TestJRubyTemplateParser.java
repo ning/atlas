@@ -2,6 +2,7 @@ package com.ning.atlas;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.base.MorePredicates;
@@ -161,6 +162,7 @@ public class TestJRubyTemplateParser
         ListenerThing.calls.clear();
         JRubyTemplateParser p = new JRubyTemplateParser();
         Environment env = p.parseEnvironment(new File("src/test/ruby/ex1/env-with-listener.rb"));
+        env.getPluginSystem().registerListener("testy", ListenerThing.class, Collections.<String, String>emptyMap());
 
         Host h = new Host(Identity.root()
                                   .createChild("some", "thing"), "concrete", new My(), Collections.<Uri<Installer>>emptyList());

@@ -7,6 +7,7 @@ import com.ning.atlas.ErrorProvisioner;
 import com.ning.atlas.ExecInstaller;
 import com.ning.atlas.Instantiator;
 import com.ning.atlas.ScratchInstaller;
+import com.ning.atlas.aws.AWSConfigurator;
 import com.ning.atlas.aws.EC2Provisioner;
 import com.ning.atlas.aws.ELBInstaller;
 import com.ning.atlas.aws.RDSProvisioner;
@@ -23,22 +24,26 @@ import com.ning.atlas.noop.NoOpProvisioner;
 import com.ning.atlas.packages.AptInstaller;
 import com.ning.atlas.packages.GemInstaller;
 import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Provisioner;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Map;
 
 public class StaticPluginSystem implements PluginSystem
 {
-    private static final Logger log = Logger.get(StaticPluginSystem.class);
-
     private static final Map<String, String> EMPTY_MAP = Collections.emptyMap();
 
-    private final Map<String, Pair<Class<? extends Provisioner>, Map<String, String>>> provisioners = Maps.newConcurrentMap();
-    private final Map<String, Pair<Class<? extends Installer>, Map<String, String>>>   installers   = Maps.newConcurrentMap();
+    private final Map<String, Class<? extends Provisioner>>       provisioners = Maps.newConcurrentMap();
+    private final Map<String, Class<? extends Installer>>         installers   = Maps.newConcurrentMap();
+    private final Map<String, Class<? extends LifecycleListener>> listeners    = Maps.newConcurrentMap();
 
+    private final Map<String, Map<String, String>> provisionerConfigs = Maps.newConcurrentMap();
+    private final Map<String, Map<String, String>> installerConfigs   = Maps.newConcurrentMap();
+    private final Map<String, Map<String, String>> listenerConfigs    = Maps.newConcurrentMap();
 
     public StaticPluginSystem()
     {
@@ -60,59 +65,57 @@ public class StaticPluginSystem implements PluginSystem
         registerInstaller("script", ScriptInstaller.class, EMPTY_MAP);
         registerInstaller("exec", ExecInstaller.class, EMPTY_MAP);
         registerInstaller("ubuntu-chef-solo", UbuntuChefSoloInstaller.class, EMPTY_MAP);
+
+        registerListener("aws-config", AWSConfigurator.class, EMPTY_MAP);
     }
 
     @Override
     public void registerProvisioner(String prefix, Class<? extends Provisioner> type, Map<String, String> args)
     {
-        provisioners.put(prefix, Pair.<Class<? extends Provisioner>, Map<String, String>>of(type, args));
+        provisioners.put(prefix, type);
+        provisionerConfigs.put(prefix, args);
     }
 
     @Override
     public void registerProvisionerConfig(String prefix, Map<String, String> args)
     {
+        provisionerConfigs.put(prefix, args);
+    }
 
-        if (provisioners.containsKey(prefix)) {
-            Pair<Class<? extends Provisioner>, Map<String, String>> old = provisioners.get(prefix);
-            Pair<Class<? extends Provisioner>, Map<String, String>> noo =
-                Pair.<Class<? extends Provisioner>, Map<String, String>>of(old.getKey(), args);
-            provisioners.put(prefix, noo);
-        }
-        else {
-            throw new IllegalStateException("asked to configure a non existent provisioner: " + prefix);
-        }
+    @Override
+    public void registerListener(String prefix, Class<? extends LifecycleListener> type, Map<String, String> args)
+    {
+        listeners.put(prefix, type);
+        listenerConfigs.put(prefix, args);
+    }
 
-
+    @Override
+    public void registerListenerConfig(String prefix, Map<String, String> args)
+    {
+        listenerConfigs.put(prefix, args);
     }
 
     @Override
     public void registerInstaller(String prefix, Class<? extends Installer> type, Map<String, String> args)
     {
-        installers.put(prefix, Pair.<Class<? extends Installer>, Map<String, String>>of(type, args));
+        installers.put(prefix, type);
+        installerConfigs.put(prefix, args);
     }
 
     @Override
     public void registerInstallerConfig(String prefix, Map<String, String> args)
     {
-        if (installers.containsKey(prefix)) {
-            Pair<Class<? extends Installer>, Map<String, String>> old = installers.get(prefix);
-
-            Pair<Class<? extends Installer>, Map<String, String>> noo =
-                Pair.<Class<? extends Installer>, Map<String, String>>of(old.getKey(), args);
-            installers.put(prefix, noo);
-        }
-        else {
-            throw new IllegalStateException("asked to configure a non existent installer: " + prefix);
-        }
+        installerConfigs.put(prefix, args);
     }
 
     @Override
     public Maybe<Provisioner> findProvisioner(String provisioner)
     {
         if (provisioners.containsKey(provisioner)) {
-            Pair<Class<? extends Provisioner>, Map<String, String>> pair = provisioners.get(provisioner);
+            Class<? extends Provisioner> type = provisioners.get(provisioner);
+            Map<String, String> args = provisionerConfigs.get(provisioner);
             try {
-                return Maybe.definitely(Instantiator.create(pair.getLeft(), pair.getRight()));
+                return Maybe.definitely(Instantiator.create(type, args));
             }
             catch (Exception e) {
                 throw new IllegalStateException("Unable to instantiate provisioner " + provisioner, e);
@@ -124,15 +127,34 @@ public class StaticPluginSystem implements PluginSystem
     }
 
     @Override
+    public Maybe<LifecycleListener> findListener(String prefix)
+    {
+        if (listeners.containsKey(prefix)) {
+            Class<? extends LifecycleListener> type = listeners.get(prefix);
+            Map<String, String> args = listenerConfigs.get(prefix);
+            try {
+                return Maybe.definitely(Instantiator.create(type, args));
+            }
+            catch (Exception e) {
+                throw new IllegalStateException("Unable to instantiate listener " + prefix, e);
+            }
+        }
+        else {
+            return Maybe.unknown();
+        }
+    }
+
+    @Override
     public Maybe<Installer> findInstaller(String scheme)
     {
         if (installers.containsKey(scheme)) {
-            Pair<Class<? extends Installer>, Map<String, String>> pair = installers.get(scheme);
+            Class<? extends Installer> type = installers.get(scheme);
+            Map<String, String> args = installerConfigs.get(scheme);
             try {
-                return Maybe.definitely(Instantiator.create(pair.getLeft(), pair.getRight()));
+                return Maybe.definitely(Instantiator.create(type, args));
             }
             catch (Exception e) {
-                throw new IllegalStateException("Unable to instantiate provisioner", e);
+                throw new IllegalStateException("Unable to instantiate installer " + scheme, e);
             }
         }
         else {
