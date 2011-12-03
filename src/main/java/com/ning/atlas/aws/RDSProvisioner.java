@@ -16,6 +16,7 @@ import com.ning.atlas.Host;
 import com.ning.atlas.base.MapConfigSource;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Maybe;
+import com.ning.atlas.spi.protocols.Database;
 import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
@@ -85,6 +86,12 @@ public class RDSProvisioner extends ConcurrentComponent
                                : "general-public-license";
 
         req.setLicenseModel(license_model);
+
+        Maybe<String> db_name = Maybe.elideNull(uri.getParamsSimple().get("name"));
+        if (db_name.isKnown()) {
+            req.setDBName(db_name.getValue());
+        }
+
         DBInstance db = rds.createDBInstance(req);
 
         DBInstance instance = null;
@@ -117,6 +124,15 @@ public class RDSProvisioner extends ConcurrentComponent
                  && instance.getDBInstanceStatus().equals("available")
                  && instance.getEndpoint() != null));
 
+
+        Database database = new Database();
+        database.setHost(instance.getEndpoint().getAddress());
+        database.setPort(instance.getEndpoint().getPort());
+        database.setPassword(cfg.getPassword());
+        database.setUsername(cfg.getUsername());
+        database.setName(instance.getDBName() == null ? "" : instance.getDBName());
+        d.getSpace().store(node.getId(), database);
+
         Map<String, String> attrs = Maps.newHashMap();
         attrs.put("port", instance.getEndpoint().getPort().toString());
         attrs.put("instanceId", instance.getDBInstanceIdentifier());
@@ -127,6 +143,7 @@ public class RDSProvisioner extends ConcurrentComponent
         attrs.put("password", cfg.getPassword());
         attrs.put("username", cfg.getUsername());
         attrs.put("storageSize", String.valueOf(cfg.getStorageSize()));
+        attrs.put("host", instance.getEndpoint().getAddress());
 
         log.info("Finished provisioning %s", node.getId().toExternalForm());
 

@@ -100,7 +100,6 @@ public class PrettyTerminalListener extends BaseLifecycleListener
             }
 
             numberOfInstalls = installs.size();
-            progress.render();
         }
 
         synchronized void startProvision()

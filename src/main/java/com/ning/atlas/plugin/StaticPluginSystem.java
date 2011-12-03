@@ -2,12 +2,11 @@ package com.ning.atlas.plugin;
 
 import com.google.common.collect.Maps;
 import com.ning.atlas.AtlasInstaller;
-import com.ning.atlas.ErrorInstaller;
-import com.ning.atlas.ErrorProvisioner;
 import com.ning.atlas.ExecInstaller;
 import com.ning.atlas.Instantiator;
 import com.ning.atlas.PrettyTerminalListener;
 import com.ning.atlas.ScratchInstaller;
+import com.ning.atlas.WaitForScratchValueInstaller;
 import com.ning.atlas.aws.AWSConfigurator;
 import com.ning.atlas.aws.EC2Provisioner;
 import com.ning.atlas.aws.ELBInstaller;
@@ -19,18 +18,16 @@ import com.ning.atlas.files.FileInstaller;
 import com.ning.atlas.files.ScriptInstaller;
 import com.ning.atlas.galaxy.GalaxyInstaller;
 import com.ning.atlas.galaxy.MicroGalaxyInstaller;
-import com.ning.atlas.logging.Logger;
 import com.ning.atlas.noop.NoOpInstaller;
 import com.ning.atlas.noop.NoOpProvisioner;
 import com.ning.atlas.packages.AptInstaller;
 import com.ning.atlas.packages.GemInstaller;
+import com.ning.atlas.packages.TarballInstaller;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Provisioner;
-import org.apache.commons.lang3.tuple.Pair;
 
-import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Map;
 
@@ -66,6 +63,8 @@ public class StaticPluginSystem implements PluginSystem
         registerInstaller("script", ScriptInstaller.class, EMPTY_MAP);
         registerInstaller("exec", ExecInstaller.class, EMPTY_MAP);
         registerInstaller("ubuntu-chef-solo", UbuntuChefSoloInstaller.class, EMPTY_MAP);
+        registerInstaller("tgz", TarballInstaller.class, EMPTY_MAP);
+        registerInstaller("wait-for", WaitForScratchValueInstaller.class, EMPTY_MAP);
 
         registerListener("aws-config", AWSConfigurator.class, EMPTY_MAP);
         registerListener("progress-bars", PrettyTerminalListener.class, EMPTY_MAP);

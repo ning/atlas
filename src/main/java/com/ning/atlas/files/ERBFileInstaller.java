@@ -55,7 +55,7 @@ public class ERBFileInstaller extends ConcurrentComponent
 
         SSH ssh = new SSH(host, d.getSpace(), creds);
         try {
-            ssh.scpUpload(new File(from), "/tmp/hahaha");
+            ssh.scpUpload(tmp, "/tmp/hahaha");
             ssh.exec("sudo mv /tmp/hahaha %s", to);
         }
         finally {
