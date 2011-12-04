@@ -13,17 +13,19 @@ import static java.util.Arrays.asList;
 public class SystemMap
 {
     private final List<Element> roots;
+    private final Environment env;
 
     public SystemMap() {
-        this(Collections.<Element>emptyList());
+        this(Collections.<Element>emptyList(), new Environment());
     }
 
     public SystemMap(Element... elements) {
-        this(asList(elements));
+        this(asList(elements), new Environment());
     }
 
-    public SystemMap(List<Element> roots)
+    public SystemMap(List<Element> roots, Environment env)
     {
+        this.env = env;
         this.roots = ImmutableList.copyOf(roots);
     }
 

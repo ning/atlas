@@ -17,12 +17,12 @@ import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
-import org.antlr.stringtemplate.StringTemplate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.stringtemplate.v4.ST;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,17 +71,17 @@ public class UbuntuChefSoloInstaller extends ConcurrentComponent
 
             this.soloRbFile = File.createTempFile("solo", "rb");
             InputStream in2 = UbuntuChefSoloInstaller.class.getResourceAsStream("/ubuntu-chef-solo-solo.st");
-            StringTemplate template = new StringTemplate(new String(ByteStreams.toByteArray(in2)));
-            template.setAttribute("recipe_url", recipeUrl);
+            ST template = new ST(new String(ByteStreams.toByteArray(in2)));
+            template.add("recipe_url", recipeUrl);
             Files.write(template.toString().getBytes(), this.soloRbFile);
             in2.close();
 
             this.s3InitFile = File.createTempFile("s3_init", ".rb");
             if (s3AccessKey.isKnown() && s3SecretKey.isKnown()) {
                 InputStream in3 = UbuntuChefSoloInstaller.class.getResourceAsStream("/s3_init.rb.st");
-                StringTemplate s3_init_template = new StringTemplate(new String(ByteStreams.toByteArray(in3)));
-                s3_init_template.setAttribute("aws_access_key", s3AccessKey.otherwise(""));
-                s3_init_template.setAttribute("aws_secret_key", s3SecretKey.otherwise(""));
+                ST s3_init_template = new ST(new String(ByteStreams.toByteArray(in3)));
+                s3_init_template.add("aws_access_key", s3AccessKey.otherwise(""));
+                s3_init_template.add("aws_secret_key", s3SecretKey.otherwise(""));
                 Files.write(s3_init_template.toString().getBytes(), this.s3InitFile);
             }
             else {

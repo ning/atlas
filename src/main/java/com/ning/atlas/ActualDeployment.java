@@ -14,16 +14,16 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.ning.atlas.bus.GuavaNotificationBus;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Deployment;
-import com.ning.atlas.spi.Status;
-import com.ning.atlas.spi.bus.FinishedServerInstall;
-import com.ning.atlas.spi.bus.FinishedServerProvision;
-import com.ning.atlas.spi.bus.NotificationBus;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
+import com.ning.atlas.spi.bus.FinishedServerInstall;
+import com.ning.atlas.spi.bus.FinishedServerProvision;
+import com.ning.atlas.spi.bus.NotificationBus;
 import com.ning.atlas.spi.bus.StartServerInstall;
 import com.ning.atlas.spi.bus.StartServerProvision;
 import com.ning.atlas.spi.space.Missing;
@@ -37,10 +37,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.reverse;
 import static com.google.common.collect.Lists.transform;
 
@@ -73,17 +71,16 @@ public class ActualDeployment implements Deployment
         List<Pair<Host, Future<String>>> init_futures = Lists.newArrayList();
         List<Pair<Host, Future<String>>> install_futures = Lists.newArrayList();
         for (Host server : servers) {
-            Base base = environment.findBase(server.getBase()).otherwise(Base.errorBase());
 
-            Provisioner p = environment.resolveProvisioner(base.getProvisionUri().getScheme());
-            provision_futures.add(Pair.of(server, p.describe(server, base.getProvisionUri(), this)));
+            Provisioner p = environment.resolveProvisioner(server.getProvisionerUri().getScheme());
+            provision_futures.add(Pair.of(server, p.describe(server, server.getProvisionerUri(), this)));
 
-            for (Uri<Installer> uri : base.getInitializations()) {
+            for (Uri<Installer> uri : server.getInitializationUris()) {
                 Installer i = environment.resolveInstaller(uri.getScheme());
                 init_futures.add(Pair.of(server, i.describe(server, uri, this)));
             }
 
-            for (Uri<Installer> uri : server.getInstallations()) {
+            for (Uri<Installer> uri : server.getInstallationUris()) {
                 Installer i = environment.resolveInstaller(uri.getScheme());
                 install_futures.add(Pair.of(server, i.describe(server, uri, this)));
             }
@@ -179,10 +176,9 @@ public class ActualDeployment implements Deployment
         for (Host host : map.findLeaves()) {
             try {
                 WhatWasDone wwd = new WhatWasDone();
-                Base b = environment.findBase(host.getBase()).getValue();
-                wwd.setProvisioner(b.getProvisionUri());
-                wwd.setInitializations(transform(b.getInitializations(), Uri.urisToStrings()));
-                wwd.setInstallations(transform(host.getInstallations(), Uri.urisToStrings()));
+                wwd.setProvisioner(host.getProvisionerUri());
+                wwd.setInitializations(transform(host.getInitializationUris(), Uri.urisToStrings()));
+                wwd.setInstallations(transform(host.getInstallationUris(), Uri.urisToStrings()));
                 space.store(host.getId().createChild("atlas", "unwind"), wwd);
             }
             catch (Exception e) {
@@ -345,7 +341,7 @@ public class ActualDeployment implements Deployment
             public List<Pair<Uri<Installer>, Installer>> apply(Pair<Host, Map<String, Installer>> input)
             {
                 final List<Pair<Uri<Installer>, Installer>> rs = Lists.newArrayList();
-                for (Uri<Installer> uri : input.getLeft().getInstallations()) {
+                for (Uri<Installer> uri : input.getLeft().getInstallationUris()) {
                     Installer i;
                     if (input.getRight().containsKey(uri.getScheme())) {
                         i = input.getRight().get(uri.getScheme());
@@ -374,11 +370,8 @@ public class ActualDeployment implements Deployment
             @Override
             public List<Pair<Uri<Installer>, Installer>> apply(Pair<Host, Map<String, Installer>> input)
             {
-                final String base_name = input.getLeft().getBase();
-                final Base base = environment.findBase(base_name).otherwise(Base.errorBase());
-
                 final List<Pair<Uri<Installer>, Installer>> rs = Lists.newArrayList();
-                for (Uri<Installer> uri : base.getInitializations()) {
+                for (Uri<Installer> uri : input.getKey().getInitializationUris()) {
                     Installer i;
                     if (input.getRight().containsKey(uri.getScheme())) {
                         i = input.getRight().get(uri.getScheme());
@@ -507,16 +500,13 @@ public class ActualDeployment implements Deployment
         final Map<String, Provisioner> provisioners = Maps.newHashMap();
         final Map<Host, Pair<Provisioner, Uri<Provisioner>>> s_to_p = Maps.newHashMap();
         for (final Host server : servers) {
-            final Maybe<Base> mb = environment.findBase(server.getBase());
-            final Base base = mb.otherwise(Base.errorBase());
-            final String scheme = base.getProvisionUri().getScheme();
-            if (!provisioners.containsKey(scheme)) {
-                Provisioner p = environment.resolveProvisioner(base.getProvisionUri().getScheme());
-                provisioners.put(scheme, p);
+            if (!provisioners.containsKey(server.getProvisionerUri().getScheme())) {
+                Provisioner p = environment.resolveProvisioner(server.getProvisionerUri().getScheme());
+                provisioners.put(server.getProvisionerUri().getScheme(), p);
             }
-            Provisioner p = provisioners.get(scheme);
+            Provisioner p = provisioners.get(server.getProvisionerUri().getScheme());
 
-            s_to_p.put(server, Pair.of(p, base.getProvisionUri()));
+            s_to_p.put(server, Pair.of(p, server.getProvisionerUri()));
         }
 
         // startProvision

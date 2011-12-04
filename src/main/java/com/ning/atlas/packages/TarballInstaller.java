@@ -26,8 +26,8 @@ public class TarballInstaller extends ConcurrentComponent
     public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
         String url = uri.getFragment();
-        String to = uri.getParamsSimple().get("to");
-        Maybe<String> skiproot = Maybe.elideNull(uri.getParamsSimple().get("skiproot"));
+        String to = uri.getParams().get("to");
+        Maybe<String> skiproot = Maybe.elideNull(uri.getParams().get("skiproot"));
 
         final SSH ssh = new SSH(host.getId(), credentialName, d.getSpace());
         try {

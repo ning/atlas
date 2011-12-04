@@ -34,7 +34,7 @@ public class TestActualDeployment
     public void setUp() throws Exception
     {
         ServerTemplate child = new ServerTemplate("child",
-                                                  "base",
+                                                  Uri.<Base>valueOf("base"),
                                                   asList("a", "b"),
                                                   asList(Uri.<Installer>valueOf("foo:install")),
                                                   Collections.<String, Object>emptyMap());
@@ -62,7 +62,7 @@ public class TestActualDeployment
                               bases,
                               Collections.<String, String>emptyMap());
 
-        map = root.normalize();
+        map = root.normalize(env);
         space = InMemorySpace.newInstance();
     }
 

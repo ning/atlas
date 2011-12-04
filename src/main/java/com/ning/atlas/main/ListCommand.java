@@ -1,5 +1,6 @@
 package com.ning.atlas.main;
 
+import com.ning.atlas.Environment;
 import com.ning.atlas.Host;
 import com.ning.atlas.JRubyTemplateParser;
 import com.ning.atlas.SystemMap;
@@ -20,9 +21,12 @@ public class ListCommand implements Callable<Void>
         Space space = SQLiteBackedSpace.create(new File(".atlas", "space.db"));
         String sys_path = space.get(InitCommand.ID, "system-path")
                                .otherwise(new IllegalStateException("System not initialized"));
+        String env_path = space.get(InitCommand.ID, "environment-path")
+                               .otherwise(new IllegalStateException("System not initialized"));
 
         JRubyTemplateParser p = new JRubyTemplateParser();
-        SystemMap map = p.parseSystem(new File(sys_path)).normalize();
+        Environment e = p.parseEnvironment(new File(env_path));
+        SystemMap map = p.parseSystem(new File(sys_path)).normalize(e);
 
         for (Host host : map.findLeaves()) {
             System.out.println(host.getId() + " :");

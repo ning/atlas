@@ -22,7 +22,7 @@ public class Base
     public Base(Base inheritFrom, Uri<Provisioner> provisioner, List<Uri<Installer>> inits)
     {
         this((provisioner == null ? inheritFrom.getProvisionUri() : provisioner),
-             Lists.newArrayList(Iterables.concat(inheritFrom.getInitializations(), inits)));
+             Lists.newArrayList(Iterables.concat(inheritFrom.getInitUris(), inits)));
     }
 
     public Base(final Uri<Provisioner> provisioner,
@@ -32,7 +32,7 @@ public class Base
         this.provisioner = provisioner;
     }
 
-    public List<Uri<Installer>> getInitializations()
+    public List<Uri<Installer>> getInitUris()
     {
         return initializations;
     }

@@ -72,7 +72,7 @@ public class RDSProvisioner extends ConcurrentComponent
         }
 
         log.info("Started provisioning %s, this could take a while", node.getId().toExternalForm());
-        RDSConfig cfg = new ConfigurationObjectFactory(new MapConfigSource(uri.getParamsSimple())).build(RDSConfig.class);
+        RDSConfig cfg = new ConfigurationObjectFactory(new MapConfigSource(uri.getParams())).build(RDSConfig.class);
 
         String name = "db-" + UUID.randomUUID().toString();
         CreateDBInstanceRequest req = new CreateDBInstanceRequest(name,
@@ -81,13 +81,13 @@ public class RDSProvisioner extends ConcurrentComponent
                                                                   cfg.getEngine(),
                                                                   cfg.getUsername(),
                                                                   cfg.getPassword());
-        String license_model = uri.getParamsSimple().containsKey("license_model")
-                               ? uri.getParamsSimple().get("license_model")
+        String license_model = uri.getParams().containsKey("license_model")
+                               ? uri.getParams().get("license_model")
                                : "general-public-license";
 
         req.setLicenseModel(license_model);
 
-        Maybe<String> db_name = Maybe.elideNull(uri.getParamsSimple().get("name"));
+        Maybe<String> db_name = Maybe.elideNull(uri.getParams().get("name"));
         if (db_name.isKnown()) {
             req.setDBName(db_name.getValue());
         }

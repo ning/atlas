@@ -28,7 +28,7 @@ public class SystemTemplate extends Template
         return children;
     }
 
-    public List<Element> _nom(Identity parent)
+    public List<Element> _normalize(Identity parent, Environment env)
     {
         List<Element> rs = Lists.newArrayList();
         List<String> node_names = getCardinality();
@@ -39,7 +39,7 @@ public class SystemTemplate extends Template
             List<Element> chillins = Lists.newArrayListWithCapacity(getChildren().size());
 
             for (Template child : getChildren()) {
-                Iterable<Element> r2 = child._nom(id);
+                Iterable<Element> r2 = child._normalize(id, env);
                 Iterables.addAll(chillins, r2);
             }
             Bunch me = new Bunch(id, getMy(), chillins);

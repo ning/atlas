@@ -1,8 +1,6 @@
 package com.ning.atlas;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.base.MorePredicates;
@@ -10,6 +8,7 @@ import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
+import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.tree.Trees;
@@ -25,7 +24,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.SortedSet;
 
 import static com.ning.atlas.base.MorePredicates.beanPropertyEquals;
@@ -53,8 +51,8 @@ public class TestJRubyTemplateParser
         ServerTemplate rslv = (ServerTemplate) rslv_t;
 
         assertThat(rslv.getCardinality(), equalTo(asList("0", "1", "2", "3", "4", "5", "6", "7")));
-        assertThat(rslv.getBase(), equalTo("ubuntu-small"));
-        assertThat(rslv.getInstallations(), hasItem(Uri.<Installer>valueOf("cast:load-balancer-9.3")));
+        assertThat(rslv.getBaseUri().getScheme(), equalTo("ubuntu-small"));
+        assertThat(rslv.getInstallUris(), hasItem(Uri.<Installer>valueOf("cast:load-balancer-9.3")));
     }
 
     @Test
@@ -63,7 +61,7 @@ public class TestJRubyTemplateParser
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
         Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
-        SystemMap map = t.normalize();
+        SystemMap map = t.normalize(new Environment());
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
         mapper.writeValue(System.out, map.getSingleRoot());
@@ -112,7 +110,7 @@ public class TestJRubyTemplateParser
         assertThat(cs.getValue(), notNullValue());
         Base b = cs.getValue();
         Uri<Installer> u = Uri.valueOf("ubuntu-chef-solo:{ \"run_list\": \"role[java-core]\" }");
-        assertThat(b.getInitializations(), equalTo(asList(u)));
+        assertThat(b.getInitUris(), equalTo(asList(u)));
     }
 
     @Test
@@ -124,7 +122,7 @@ public class TestJRubyTemplateParser
         ServerTemplate st = Iterables.find(Trees.findInstancesOf(t, ServerTemplate.class),
                                            MorePredicates.<ServerTemplate>beanPropertyEquals("type",
                                                                                              "single-param-install"));
-        List<Uri<Installer>> xs = st.getInstallations();
+        List<Uri<Installer>> xs = st.getInstallUris();
         assertThat(xs, equalTo(asList(Uri.<Installer>valueOf("foo:bar?size=7"))));
 
     }
@@ -138,7 +136,7 @@ public class TestJRubyTemplateParser
         ServerTemplate st = Iterables.find(Trees.findInstancesOf(t, ServerTemplate.class),
                                            MorePredicates.<ServerTemplate>beanPropertyEquals("type",
                                                                                              "single-param-install2"));
-        List<Uri<Installer>> xs = st.getInstallations();
+        List<Uri<Installer>> xs = st.getInstallUris();
         assertThat(xs, equalTo(asList(Uri.<Installer>valueOf("foo:bar?size=7"))));
 
     }
@@ -152,7 +150,7 @@ public class TestJRubyTemplateParser
         ServerTemplate st = Iterables.find(Trees.findInstancesOf(t, ServerTemplate.class),
                                            MorePredicates.<ServerTemplate>beanPropertyEquals("type",
                                                                                              "single-param-install4"));
-        List<Uri<Installer>> xs = st.getInstallations();
+        List<Uri<Installer>> xs = st.getInstallUris();
         assertThat(xs, equalTo(asList(Uri.<Installer>valueOf("hello:world"))));
     }
 
@@ -164,8 +162,11 @@ public class TestJRubyTemplateParser
         Environment env = p.parseEnvironment(new File("src/test/ruby/ex1/env-with-listener.rb"));
         env.getPluginSystem().registerListener("testy", ListenerThing.class, Collections.<String, String>emptyMap());
 
-        Host h = new Host(Identity.root()
-                                  .createChild("some", "thing"), "concrete", new My(), Collections.<Uri<Installer>>emptyList());
+        Host h = new Host(Identity.root().createChild("some", "thing"),
+                          Uri.<Provisioner>valueOf("noop"),
+                          Collections.<Uri<Installer>>emptyList(),
+                          Collections.<Uri<Installer>>emptyList(),
+                          new My());
         SystemMap map = new SystemMap(h);
         Space space = InMemorySpace.newInstance();
         ActualDeployment d = new ActualDeployment(map, env, space);
@@ -189,8 +190,9 @@ public class TestJRubyTemplateParser
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
         Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template-with-external.rb"));
+        Environment env = p.parseEnvironment(new File("src/test/ruby/ex1/env-with-listener.rb"));
 
-        SystemMap map = t.normalize();
+        SystemMap map = t.normalize(env);
 
         SortedSet<Host> hosts = Sets.newTreeSet(new Comparator<Host>()
         {
@@ -211,6 +213,20 @@ public class TestJRubyTemplateParser
         System.out.println(two.getId());
         Host three = itty.next();
         System.out.println(three.getId());
+    }
+
+    @Test
+    public void testTemplatization() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Environment e = p.parseEnvironment(new File("src/test/ruby/test_jruby_template_parser_templatization-env.rb"));
+        Template t = p.parseSystem(new File("src/test/ruby/test_jruby_template_parser_templatization-sys.rb"));
+
+        SystemMap map = t.normalize(e);
+        assertThat(map.findLeaves().size(), equalTo(1));
+        Host h = Iterables.getOnlyElement(map.findLeaves());
+        assertThat(h.getProvisionerUri().getParams().get("name"), equalTo("blog"));
+
     }
 
 }

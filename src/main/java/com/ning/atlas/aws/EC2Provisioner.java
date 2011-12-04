@@ -12,7 +12,6 @@ import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.collect.Lists;
-import com.google.common.collect.MapMaker;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.ConcurrentComponent;
@@ -92,8 +91,8 @@ public class EC2Provisioner extends ConcurrentComponent
             logger.info("Provisioning server for %s", node.getId());
             final String ami_name = uri.getFragment();
             RunInstancesRequest req = new RunInstancesRequest(ami_name, 1, 1);
-            if (uri.getParamsSimple().containsKey("instance_type")) {
-                req.setInstanceType(uri.getParamsSimple().get("instance_type"));
+            if (uri.getParams().containsKey("instance_type")) {
+                req.setInstanceType(uri.getParams().get("instance_type"));
             }
 
             req.setKeyName(keypairId.get());

@@ -5,6 +5,7 @@ import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
+import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
@@ -23,11 +24,13 @@ public class TestScratchInstaller
     {
         Identity id = Identity.root().createChild("hello", "0");
         Host host = new Host(id,
-                             "base",
-                             new My(),
-                             Collections.<Uri<Installer>>emptyList());
-        SystemMap map = new SystemMap(Arrays.<Element>asList(host));
+                             Uri.<Provisioner>valueOf("base"),
+                             Collections.<Uri<Installer>>emptyList(),
+                             Collections.<Uri<Installer>>emptyList(),
+                             new My());
         Environment environment = new Environment();
+        SystemMap map = new SystemMap(Arrays.<Element>asList(host), environment);
+
         Space space = InMemorySpace.newInstance();
         Deployment d = new ActualDeployment(map, environment, space);
 
@@ -42,10 +45,11 @@ public class TestScratchInstaller
     {
         Identity id = Identity.root().createChild("hello", "0");
         Host host = new Host(id,
-                             "base",
-                             new My(),
-                             Collections.<Uri<Installer>>emptyList());
-        SystemMap map = new SystemMap(Arrays.<Element>asList(host));
+                             Uri.<Provisioner>valueOf("base"),
+                             Collections.<Uri<Installer>>emptyList(),
+                             Collections.<Uri<Installer>>emptyList(),
+                             new My());
+        SystemMap map = new SystemMap(Arrays.<Element>asList(host), new Environment());
         Environment environment = new Environment();
         Space space = InMemorySpace.newInstance();
         Deployment d = new ActualDeployment(map, environment, space);
@@ -60,10 +64,11 @@ public class TestScratchInstaller
     {
         Identity id = Identity.root().createChild("hello", "0");
         Host host = new Host(id,
-                             "base",
-                             new My(),
-                             Collections.<Uri<Installer>>emptyList());
-        SystemMap map = new SystemMap(Arrays.<Element>asList(host));
+                             Uri.<Provisioner>valueOf("base"),
+                             Collections.<Uri<Installer>>emptyList(),
+                             Collections.<Uri<Installer>>emptyList(),
+                             new My());
+        SystemMap map = new SystemMap(Arrays.<Element>asList(host), new Environment());
         Environment environment = new Environment();
         Space space = InMemorySpace.newInstance();
         Deployment d = new ActualDeployment(map, environment, space);

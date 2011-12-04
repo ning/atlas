@@ -161,7 +161,7 @@ module Atlas
                     end
 
       @children << com.ning.atlas.ServerTemplate.new(name,
-                                                     args[:base].to_s,
+                                                     com.ning.atlas.spi.Uri.value_of(args[:base].to_s),
                                                      cardinality,
                                                      installers,
                                                      args.inject({}) { |a, (k, v)| a[k.to_s] = v; a })
@@ -230,7 +230,7 @@ module Atlas
                     end
 
       @children << com.ning.atlas.ServerTemplate.new(name,
-                                                     args[:base].to_s,
+                                                     com.ning.atlas.spi.Uri.value_of(args[:base].to_s),
                                                      cardinality,
                                                      installers,
                                                      args.inject({}) { |a, (k, v)| a[k.to_s] = v; a })

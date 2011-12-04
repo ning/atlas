@@ -91,11 +91,11 @@ public class PrettyTerminalListener extends BaseLifecycleListener
                                             Height.fromBottom(offset),
                                             Percentage.show());
 
-            for (Uri<Installer> uri : d.getEnvironment().findBase(host.getBase()).getValue().getInitializations()) {
+            for (Uri<Installer> uri : host.getInitializationUris()) {
                 installs.add(uri);
             }
 
-            for (Uri<Installer> uri : host.getInstallations()) {
+            for (Uri<Installer> uri : host.getInstallationUris()) {
                 installs.add(uri);
             }
 

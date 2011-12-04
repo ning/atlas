@@ -17,6 +17,8 @@ environment "test" do
       :recipe_url   => "https://s3.amazonaws.com/chefplay123/chef-solo.tar.gz"
   }
 
+  base "ubuntu-small", :provisioner => "noop"
+
   base "concrete", {
       :provisioner => "noop"
   }

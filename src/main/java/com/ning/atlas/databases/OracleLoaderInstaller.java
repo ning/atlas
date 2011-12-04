@@ -12,11 +12,11 @@ import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
-import org.antlr.stringtemplate.StringTemplate;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.stringtemplate.v4.ST;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -50,11 +50,11 @@ public class OracleLoaderInstaller extends ConcurrentComponent
     public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
         String fragment = uri.getFragment();
-        final StringTemplate sql_url_t = new StringTemplate(sqlUrlTemplate);
+        final ST sql_url_t = new ST(sqlUrlTemplate);
         final Splitter equal_splitter = Splitter.on('=');
         for (String pair : Splitter.on(';').split(fragment)) {
             Iterator<String> itty = equal_splitter.split(pair).iterator();
-            sql_url_t.setAttribute(itty.next(), itty.next());
+            sql_url_t.add(itty.next(), itty.next());
         }
         String sql_url = sql_url_t.toString();
 

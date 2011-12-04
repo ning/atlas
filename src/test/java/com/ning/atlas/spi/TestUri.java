@@ -1,11 +1,11 @@
 package com.ning.atlas.spi;
 
 import com.google.common.collect.ImmutableMap;
-import com.ning.atlas.spi.Uri;
+import com.ning.atlas.Base;
 import org.junit.Test;
+import org.stringtemplate.v4.ST;
 
 
-import javax.annotation.concurrent.Immutable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -49,7 +49,7 @@ public class TestUri
     public void testParams1() throws Exception
     {
         Uri uri = Uri.valueOf("hello:world?a=1&b=2");
-        Map<String, Collection<String>> params = uri.getParams();
+        Map<String, Collection<String>> params = uri.getFullParams();
         assertThat(params.get("a"), hasItem("1"));
         assertThat(params.get("b"), hasItem("2"));
     }
@@ -58,7 +58,7 @@ public class TestUri
     public void testParams2() throws Exception
     {
         Uri uri = Uri.valueOf("hello?a=1&b=2");
-        Map<String, Collection<String>> params = uri.getParams();
+        Map<String, Collection<String>> params = uri.getFullParams();
         assertThat(params.get("a"), hasItem("1"));
         assertThat(params.get("b"), hasItem("2"));
     }
@@ -67,7 +67,7 @@ public class TestUri
     public void testParams3() throws Exception
     {
         Uri uri = Uri.valueOf("hello:?a=1&b=2");
-        Map<String, Collection<String>> params = uri.getParams();
+        Map<String, Collection<String>> params = uri.getFullParams();
         assertThat(params.get("a"), hasItem("1"));
         assertThat(params.get("b"), hasItem("2"));
     }
@@ -77,7 +77,7 @@ public class TestUri
     {
         Uri uri = Uri.valueOf("hello:?a=1",
                               ImmutableMap.<String, Collection<String>>of("b", Arrays.asList("2")));
-        Map<String, Collection<String>> params = uri.getParams();
+        Map<String, Collection<String>> params = uri.getFullParams();
         assertThat(params.get("a"), hasItem("1"));
         assertThat(params.get("b"), hasItem("2"));
     }
@@ -88,7 +88,7 @@ public class TestUri
         Uri uri = Uri.valueOf("hello",
                               ImmutableMap.<String, Collection<String>>of("a", Arrays.asList("1"),
                                                                           "b", Arrays.asList("2")));
-        Map<String, Collection<String>> params = uri.getParams();
+        Map<String, Collection<String>> params = uri.getFullParams();
         assertThat(params.get("a"), hasItem("1"));
         assertThat(params.get("b"), hasItem("2"));
     }
@@ -124,5 +124,77 @@ public class TestUri
         Uri uri = Uri.valueOf("rds", ImmutableMap.<String, Collection<String>>of("hello", Arrays.asList("world")));
         Uri dup = Uri.valueOf(uri.toString());
         assertThat(dup.getScheme(), equalTo("rds"));
+    }
+
+    @Test
+    public void testTemplateInUri() throws Exception
+    {
+        Uri uri = Uri.valueOf("hello:{name}");
+        assertThat(uri.isTemplate(), equalTo(true));
+    }
+
+    @Test
+    public void testTemplateInUri2() throws Exception
+    {
+        Uri uri = Uri.valueOf("hello:name?{key}=value");
+        assertThat(uri.isTemplate(), equalTo(true));
+    }
+
+    @Test
+    public void testTemplateInUri3() throws Exception
+    {
+        Uri uri = Uri.valueOf("hello:name?key={value}");
+        assertThat(uri.isTemplate(), equalTo(true));
+    }
+
+    @Test
+    public void testTemplateInUri4() throws Exception
+    {
+        Uri uri = Uri.valueOf("{hello}:name?key=value");
+        assertThat(uri.isTemplate(), equalTo(true));
+    }
+
+    @Test
+    public void testNotTemplateInUri() throws Exception
+    {
+        Uri uri = Uri.valueOf("!hello:{name}");
+        assertThat(uri.isTemplate(), equalTo(false));
+        assertThat(uri.getScheme(), equalTo("hello"));
+    }
+
+    @Test
+    public void testNotTemplateInUri2() throws Exception
+    {
+        Uri uri = Uri.valueOf("!hello:name?{key}=value");
+        assertThat(uri.isTemplate(), equalTo(false));
+    }
+
+    @Test
+    public void testNotTemplateInUri3() throws Exception
+    {
+        Uri uri = Uri.valueOf("!hello:name?key={value}");
+        assertThat(uri.isTemplate(), equalTo(false));
+    }
+
+    @Test
+    public void testNotTemplateInUri4() throws Exception
+    {
+        Uri uri = Uri.valueOf("!{hello}:name?key=value");
+        assertThat(uri.isTemplate(), equalTo(false));
+        assertThat(uri.getScheme(), equalTo("{hello}"));
+    }
+
+    @Test
+    public void testActuallyApplyTemplate() throws Exception
+    {
+        Uri<Base> base_uri = Uri.valueOf("mysql:blog");
+
+        Uri<Provisioner> uri = Uri.valueOf("rds?name={base.fragment}&engine=MySQL");
+
+        assertThat(uri.toStringUnEscaped(), equalTo("rds?engine=MySQL&name={base.fragment}"));
+
+        ST st = new ST(uri.toStringUnEscaped(), '{', '}');
+        st.add("base", base_uri);
+        assertThat(st.render(), equalTo("rds?engine=MySQL&name=blog"));
     }
 }

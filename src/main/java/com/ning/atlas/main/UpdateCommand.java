@@ -28,9 +28,8 @@ public class UpdateCommand implements Callable<Void>
             .otherwise(new IllegalStateException("System not initialized"));
 
         JRubyTemplateParser p = new JRubyTemplateParser();
-        SystemMap map = p.parseSystem(new File(sys_path)).normalize();
         Environment env = p.parseEnvironment(new File(env_path));
-
+        SystemMap map = p.parseSystem(new File(sys_path)).normalize(env);
         ActualDeployment d = new ActualDeployment(map, env, space);
         d.update();
 

@@ -61,10 +61,10 @@ public abstract class Template implements Tree
         return my;
     }
 
-    public final SystemMap normalize() {
-        return new SystemMap(_nom(Identity.root()));
+    public final SystemMap normalize(Environment env) {
+        return new SystemMap(_normalize(Identity.root(), env), env);
     }
 
-    protected abstract List<Element> _nom(Identity parent);
+    protected abstract List<Element> _normalize(Identity parent, Environment env);
 
 }

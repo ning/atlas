@@ -1,12 +1,15 @@
 package com.ning.atlas.spi;
 
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.TreeMultimap;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.http.NameValuePair;
@@ -17,7 +20,6 @@ import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.map.JsonSerializer;
 import org.codehaus.jackson.map.SerializerProvider;
-import org.codehaus.jackson.map.annotate.JsonDeserialize;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import javax.annotation.Nullable;
@@ -27,15 +29,19 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @JsonSerialize(using = Uri.UriJsonSerializer.class)
 public class Uri<T>
 {
+    private static final Pattern CONTAINS_TEMPLATE = Pattern.compile(".*\\{.+\\}.*");
+
     private final String                          scheme;
     private final String                          fragment;
     private final Map<String, Collection<String>> params;
+    private final boolean                         isTemplate;
 
     public Uri(String scheme, String fragment)
     {
@@ -47,14 +53,55 @@ public class Uri<T>
         checkNotNull(scheme, "scheme may not be null");
         checkNotNull(fragment, "fragment may not be null");
 
-        this.scheme = scheme.trim();
         this.fragment = fragment.trim();
+        String m_scheme = scheme.trim();
+
+        boolean is_template = false;
+        boolean force_not_template = false;
+
+        if (m_scheme.startsWith("!")) {
+            force_not_template = true;
+            this.scheme = m_scheme.substring(1);
+        }
+        else {
+            this.scheme = m_scheme;
+        }
+
+
         Map<String, Collection<String>> tmp = Maps.newLinkedHashMap();
         for (Map.Entry<String, Collection<String>> entry : params.entrySet()) {
             List<String> values = ImmutableList.copyOf(entry.getValue());
+
+            if ((!force_not_template) && CONTAINS_TEMPLATE.matcher(entry.getKey()).matches()) {
+                is_template = true;
+            }
+
+            if (!force_not_template) {
+                for (String value : values) {
+                    if (CONTAINS_TEMPLATE.matcher(value).matches()) {
+                        is_template = true;
+                    }
+                }
+            }
+
             tmp.put(entry.getKey(), values);
         }
         this.params = ImmutableMap.copyOf(tmp);
+
+        if ((!force_not_template)
+            && (CONTAINS_TEMPLATE.matcher(scheme).matches() ||
+                CONTAINS_TEMPLATE.matcher(fragment).matches()))
+        {
+            is_template = true;
+        }
+
+        isTemplate = is_template && (!force_not_template);
+
+    }
+
+    public boolean isTemplate()
+    {
+        return isTemplate;
     }
 
     public String getScheme()
@@ -83,7 +130,27 @@ public class Uri<T>
                     pairs.add(new BasicNameValuePair(key, value));
                 }
             }
+
             builder.append("?").append(URLEncodedUtils.format(pairs, "UTF8"));
+        }
+        return builder.toString();
+    }
+
+    public String toStringUnEscaped() {
+         StringBuilder builder = new StringBuilder().append(scheme);
+        if (fragment.length() > 0) {
+            builder.append(":").append(fragment);
+        }
+
+        if (!params.isEmpty()) {
+            builder.append("?");
+            List<String> parts = Lists.newArrayList();
+            for (Map.Entry<String, Collection<String>> entry : params.entrySet()) {
+                for (String value : entry.getValue()) {
+                    parts.add(entry.getKey() + "=" + value);
+                }
+            }
+            builder.append(Joiner.on("&").join(parts));
         }
 
         return builder.toString();
@@ -146,27 +213,28 @@ public class Uri<T>
     public static <T> Uri<T> valueOf(String uri)
     {
         boolean has_args = false;
-        Multimap<String, String> params = ArrayListMultimap.create();
+        Multimap<String, String> params = TreeMultimap.create();
         if (uri.contains("?")) {
             has_args = true;
-            List<NameValuePair> pairs = URLEncodedUtils.parse(URI.create(uri.substring(uri.indexOf("?"))), "UTF8");
-            for (NameValuePair pair : pairs) {
-                params.put(pair.getName(), pair.getValue());
+
+            String query = uri.substring(uri.indexOf("?")+1);
+            Map<String, String> bits = Splitter.on('&').withKeyValueSeparator("=").split(query);
+            for (Map.Entry<String, String> entry : bits.entrySet()) {
+                params.put(entry.getKey(), entry.getValue());
             }
         }
 
-        return valueOf(has_args ? uri.substring(0, uri.indexOf("?")) : uri,
-                       params.asMap());
+        return valueOf(has_args ? uri.substring(0, uri.indexOf("?")) : uri, params.asMap());
     }
 
-    public Map<String, Collection<String>> getParams()
+    public Map<String, Collection<String>> getFullParams()
     {
         return params;
     }
 
-    public Map<String, String> getParamsSimple()
+    public Map<String, String> getParams()
     {
-        return Maps.transformValues(getParams(), new Function<Collection<String>, String>()
+        return Maps.transformValues(getFullParams(), new Function<Collection<String>, String>()
         {
             @Override
             public String apply(@Nullable Collection<String> input)
