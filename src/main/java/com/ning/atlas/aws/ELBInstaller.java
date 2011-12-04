@@ -3,11 +3,9 @@ package com.ning.atlas.aws;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.ConcurrentComponent;
 import com.ning.atlas.Host;
-import com.ning.atlas.spi.BaseComponent;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Uri;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +37,16 @@ public class ELBInstaller extends ConcurrentComponent
     @Override
     public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
+        String elb_name = uri.getFragment();
+        String to = uri.getParams().get("to");
+        String port = uri.getParams().get("port");
+
+
+
+        for (Identity identity : d.getSpace().findAllIdentities()) {
+
+        }
+
         throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 

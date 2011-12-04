@@ -4,17 +4,16 @@ import com.google.common.base.CaseFormat;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Primitives;
 import com.ning.atlas.logging.Logger;
-import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.Maybe;
+import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.space.SpaceKey;
-import com.ning.atlas.spi.space.Missing;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -169,6 +168,12 @@ public abstract class BaseSpace implements Space
     public <T> Maybe<T> get(Identity id, Class<T> type)
     {
         return get(id, type, Missing.RequireAll);
+    }
+
+    @Override
+    public Set<String> query(String expression)
+    {
+        return new QueryParser().parse(expression).query(this);
     }
 
     protected abstract String read(Identity id, String key) throws IOException;

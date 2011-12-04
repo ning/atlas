@@ -37,4 +37,6 @@ public interface Space
     <T> Maybe<T> get(Identity id, Class<T> type);
 
     void delete(Identity identity, String key);
+
+    Set<String> query(String expression);
 }
