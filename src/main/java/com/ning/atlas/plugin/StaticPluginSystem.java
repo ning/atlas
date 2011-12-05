@@ -10,6 +10,7 @@ import com.ning.atlas.WaitForScratchValueInstaller;
 import com.ning.atlas.aws.AWSConfigurator;
 import com.ning.atlas.aws.EC2Provisioner;
 import com.ning.atlas.aws.ELBInstaller;
+import com.ning.atlas.aws.ELBProvisioner;
 import com.ning.atlas.aws.RDSProvisioner;
 import com.ning.atlas.chef.UbuntuChefSoloInstaller;
 import com.ning.atlas.databases.OracleLoaderInstaller;
@@ -48,13 +49,15 @@ public class StaticPluginSystem implements PluginSystem
         registerProvisioner("ec2", EC2Provisioner.class, EMPTY_MAP);
         registerProvisioner("rds", RDSProvisioner.class, EMPTY_MAP);
         registerProvisioner("noop", NoOpProvisioner.class, EMPTY_MAP);
+        registerProvisioner("elb", ELBProvisioner.class, EMPTY_MAP);
 
+        registerInstaller("elb-add", ELBInstaller.class, EMPTY_MAP);
         registerInstaller("scratch", ScratchInstaller.class, EMPTY_MAP);
         registerInstaller("noop", NoOpInstaller.class, EMPTY_MAP);
         registerInstaller("atlas", AtlasInstaller.class, EMPTY_MAP);
         registerInstaller("galaxy", GalaxyInstaller.class, EMPTY_MAP);
         registerInstaller("ugx", MicroGalaxyInstaller.class, EMPTY_MAP);
-        registerInstaller("elb", ELBInstaller.class, EMPTY_MAP);
+        registerInstaller("elb", ELBProvisioner.class, EMPTY_MAP);
         registerInstaller("oracle", OracleLoaderInstaller.class, EMPTY_MAP);
         registerInstaller("apt", AptInstaller.class, EMPTY_MAP);
         registerInstaller("gem", GemInstaller.class, EMPTY_MAP);

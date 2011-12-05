@@ -6,6 +6,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -27,6 +28,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -117,6 +119,9 @@ public class Uri<T>
     @Override
     public String toString()
     {
+        if (1+1 == 2) {
+            return toStringUnEscaped();
+        }
         StringBuilder builder = new StringBuilder().append(scheme);
         if (fragment.length() > 0) {
             builder.append(":").append(fragment);
@@ -184,14 +189,12 @@ public class Uri<T>
     {
         checkNotNull(uri);
 
-        int q_index = uri.indexOf('?');
-        Multimap<String, String> p = ArrayListMultimap.create();
 
+        Multimap<String, String> p = TreeMultimap.create();
+
+        int q_index = uri.indexOf('?');
         if (q_index >= 0) {
-            List<NameValuePair> pairs = URLEncodedUtils.parse(URI.create(uri.substring(q_index)), "UTF8");
-            for (NameValuePair pair : pairs) {
-                p.put(pair.getName(), pair.getValue());
-            }
+            p.putAll(extractParams(uri.substring(q_index+1)));
         }
         for (Map.Entry<String, Collection<String>> entry : additionalParams.entrySet()) {
             p.putAll(entry.getKey(), entry.getValue());
@@ -209,6 +212,16 @@ public class Uri<T>
         }
     }
 
+    private static Multimap<String, String> extractParams(String query) {
+        Multimap<String, String> rs = TreeMultimap.create();
+        Iterable<String> bits = Splitter.on('&').split(query);
+        for (String bit : bits) {
+            Iterator<String> itty = Splitter.on("=").split(bit).iterator();
+            rs.put(itty.next(), itty.next());
+        }
+        return rs;
+    }
+
     @JsonCreator
     public static <T> Uri<T> valueOf(String uri)
     {
@@ -218,10 +231,7 @@ public class Uri<T>
             has_args = true;
 
             String query = uri.substring(uri.indexOf("?")+1);
-            Map<String, String> bits = Splitter.on('&').withKeyValueSeparator("=").split(query);
-            for (Map.Entry<String, String> entry : bits.entrySet()) {
-                params.put(entry.getKey(), entry.getValue());
-            }
+            params.putAll(extractParams(query));
         }
 
         return valueOf(has_args ? uri.substring(0, uri.indexOf("?")) : uri, params.asMap());
@@ -263,7 +273,7 @@ public class Uri<T>
             @Override
             public String apply(Uri<?> uri)
             {
-                return uri.toString();
+                return uri.toStringUnEscaped();
             }
         };
     }
@@ -274,7 +284,7 @@ public class Uri<T>
         @Override
         public void serialize(Uri value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException
         {
-            jgen.writeString(value.toString());
+            jgen.writeString(value.toStringUnEscaped());
         }
     }
 }

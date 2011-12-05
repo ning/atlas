@@ -8,8 +8,10 @@ import org.stringtemplate.v4.ST;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.hasItem;
@@ -75,8 +77,8 @@ public class TestUri
     @Test
     public void testAdditionalParams() throws Exception
     {
-        Uri uri = Uri.valueOf("hello:?a=1",
-                              ImmutableMap.<String, Collection<String>>of("b", Arrays.asList("2")));
+        Uri uri = Uri.valueOf("hello:?a=1", ImmutableMap.<String, Collection<String>>of("b", Arrays.asList("2")));
+
         Map<String, Collection<String>> params = uri.getFullParams();
         assertThat(params.get("a"), hasItem("1"));
         assertThat(params.get("b"), hasItem("2"));
@@ -152,6 +154,20 @@ public class TestUri
     {
         Uri uri = Uri.valueOf("{hello}:name?key=value");
         assertThat(uri.isTemplate(), equalTo(true));
+    }
+
+    @Test
+    public void testTemplateUri5() throws Exception
+    {
+        Uri uri = Uri.valueOf("hello:{name}?key={value}", Collections.<String, Collection<String>>emptyMap());
+        assertThat(uri.toStringUnEscaped(), equalTo("hello:{name}?key={value}"));
+        assertThat(uri.isTemplate(), equalTo(true));
+    }
+
+    @Test
+    public void testUgh() throws Exception
+    {
+        Uri uri = Uri.valueOf("{base.fragment}?port={my.port}", Collections.<String, Collection<String>>emptyMap());
     }
 
     @Test

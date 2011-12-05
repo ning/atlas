@@ -87,7 +87,7 @@ public class ServerTemplate extends Template
             if (input.isTemplate()) {
                 ST st = new ST(input.toStringUnEscaped(), '{', '}');
                 st.add("base", this.base);
-                st.add("my", this.my);
+                st.add("server", this.my.asMap());
                 return Uri.valueOf(st.render());
             }
             else {
