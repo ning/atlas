@@ -64,4 +64,14 @@ public class TestSpaceQuery
         assertThat(rs, equalTo(expected));
     }
 
+    @Test
+    public void testJohann() throws Exception
+    {
+        SpaceQuery sq = new QueryParser().parse("/*/<t\\w+>.*:name");
+        Set<String> rs = sq.query(space);
+
+        Set<String> expected = ImmutableSet.of("Brian", "Sam", "Kate");
+        assertThat(rs, equalTo(expected));
+    }
+
 }

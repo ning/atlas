@@ -9,6 +9,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class QueryParser
 {
@@ -41,6 +43,17 @@ public class QueryParser
                     // any type
                     type_test = Predicates.alwaysTrue();
                 }
+                else if (type.startsWith("<") && type.endsWith(">")) {
+                    final Pattern p = Pattern.compile(type.substring(1, type.length() - 1));
+                    type_test = new Predicate<String>()
+                    {
+                        @Override
+                        public boolean apply(String input)
+                        {
+                            return p.matcher(input).matches();
+                        }
+                    };
+                }
                 else {
                     type_test = Predicates.equalTo(type);
                 }
@@ -49,6 +62,17 @@ public class QueryParser
                 final Predicate<String> name_test;
                 if ("*".equals(name)) {
                     name_test = Predicates.alwaysTrue();
+                }
+                else if (name.startsWith("<") && name.endsWith(">")) {
+                    final Pattern p = Pattern.compile(name.substring(1, name.length() - 1));
+                    name_test = new Predicate<String>()
+                    {
+                        @Override
+                        public boolean apply(String input)
+                        {
+                            return p.matcher(input).matches();
+                        }
+                    };
                 }
                 else {
                     name_test = Predicates.equalTo(name);

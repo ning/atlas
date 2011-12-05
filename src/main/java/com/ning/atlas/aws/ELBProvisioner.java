@@ -52,19 +52,26 @@ public class ELBProvisioner extends ConcurrentComponent
     {
         String elb_name = uri.getFragment();
         String to = uri.getParams().get("to");
-        int port = Integer.parseInt(uri.getParams().get("port"));
+        int from_port = Integer.parseInt(uri.getParams().get("from_port"));
+        int to_port = Integer.parseInt(uri.getParams().get("to_port"));
+        String protocol = uri.getParams().get("protocol");
 
         AWS.Credentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class).getValue();
         AmazonElasticLoadBalancingClient elb = new AmazonElasticLoadBalancingClient(creds.toAWSCredentials());
         AmazonEC2Client ec2 = new AmazonEC2Client(creds.toAWSCredentials());
-        String dns_name = ensureLbExists(elb, ec2, elb_name, port);
+        String dns_name = ensureLbExists(elb, ec2, elb_name, from_port, to_port, protocol);
 
         d.getSpace().store(host.getId(), "external-address", dns_name);
 
         return "okay";
     }
 
-    private String ensureLbExists(AmazonElasticLoadBalancingClient aws, AmazonEC2Client ec2, String name, int port)
+    private String ensureLbExists(AmazonElasticLoadBalancingClient aws,
+                                  AmazonEC2Client ec2,
+                                  String name,
+                                  int from_port,
+                                  int to_port,
+                                  String protocol)
     {
         DescribeLoadBalancersRequest req = new DescribeLoadBalancersRequest(asList(name));
         try {
@@ -85,7 +92,7 @@ public class ELBProvisioner extends ConcurrentComponent
                                                              }
                                                          });
 
-            Listener listener = new Listener("http", 80, 80);
+            Listener listener = new Listener(protocol, from_port, to_port);
             CreateLoadBalancerRequest clbrq = new CreateLoadBalancerRequest(name, asList(listener), avail_zones_s);
 
             CreateLoadBalancerResult rs = aws.createLoadBalancer(clbrq);
