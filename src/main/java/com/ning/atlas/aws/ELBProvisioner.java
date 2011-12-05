@@ -8,6 +8,7 @@ import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingCli
 import com.amazonaws.services.elasticloadbalancing.model.CreateLoadBalancerListenersRequest;
 import com.amazonaws.services.elasticloadbalancing.model.CreateLoadBalancerRequest;
 import com.amazonaws.services.elasticloadbalancing.model.CreateLoadBalancerResult;
+import com.amazonaws.services.elasticloadbalancing.model.DeleteLoadBalancerRequest;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRequest;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
 import com.amazonaws.services.elasticloadbalancing.model.Instance;
@@ -51,7 +52,6 @@ public class ELBProvisioner extends ConcurrentComponent
     public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
         String elb_name = uri.getFragment();
-        String to = uri.getParams().get("to");
         int from_port = Integer.parseInt(uri.getParams().get("from_port"));
         int to_port = Integer.parseInt(uri.getParams().get("to_port"));
         String protocol = uri.getParams().get("protocol");
@@ -61,6 +61,7 @@ public class ELBProvisioner extends ConcurrentComponent
         AmazonEC2Client ec2 = new AmazonEC2Client(creds.toAWSCredentials());
         String dns_name = ensureLbExists(elb, ec2, elb_name, from_port, to_port, protocol);
 
+        d.getSpace().store(host.getId(), "external-address", dns_name);
         d.getSpace().store(host.getId(), "external-address", dns_name);
 
         return "okay";
@@ -103,11 +104,11 @@ public class ELBProvisioner extends ConcurrentComponent
     @Override
     public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
     {
-        throw new UnsupportedOperationException("Not Yet Implemented!");
-    }
+        AWS.Credentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class).getValue();
+        AmazonElasticLoadBalancingClient elb = new AmazonElasticLoadBalancingClient(creds.toAWSCredentials());
 
-    public static class ELB
-    {
+        elb.deleteLoadBalancer(new DeleteLoadBalancerRequest(uri.getFragment()));
 
+        return "okay";
     }
 }

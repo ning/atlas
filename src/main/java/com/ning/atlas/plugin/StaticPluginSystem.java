@@ -9,7 +9,7 @@ import com.ning.atlas.ScratchInstaller;
 import com.ning.atlas.WaitForScratchValueInstaller;
 import com.ning.atlas.aws.AWSConfigurator;
 import com.ning.atlas.aws.EC2Provisioner;
-import com.ning.atlas.aws.ELBInstaller;
+import com.ning.atlas.aws.ELBAddInstaller;
 import com.ning.atlas.aws.ELBProvisioner;
 import com.ning.atlas.aws.RDSProvisioner;
 import com.ning.atlas.chef.UbuntuChefSoloInstaller;
@@ -51,7 +51,7 @@ public class StaticPluginSystem implements PluginSystem
         registerProvisioner("noop", NoOpProvisioner.class, EMPTY_MAP);
         registerProvisioner("elb", ELBProvisioner.class, EMPTY_MAP);
 
-        registerInstaller("elb-add", ELBInstaller.class, EMPTY_MAP);
+        registerInstaller("elb-add", ELBAddInstaller.class, EMPTY_MAP);
         registerInstaller("scratch", ScratchInstaller.class, EMPTY_MAP);
         registerInstaller("noop", NoOpInstaller.class, EMPTY_MAP);
         registerInstaller("atlas", AtlasInstaller.class, EMPTY_MAP);

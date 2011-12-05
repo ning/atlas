@@ -14,9 +14,6 @@ import java.util.regex.Pattern;
 
 public class QueryParser
 {
-    /*
-     /#/foo.#:key
-     */
     public SpaceQuery parse(String expression)
     {
         Iterator<String> blah = Splitter.on(':').split(expression).iterator();
@@ -43,16 +40,8 @@ public class QueryParser
                     // any type
                     type_test = Predicates.alwaysTrue();
                 }
-                else if (type.startsWith("<") && type.endsWith(">")) {
-                    final Pattern p = Pattern.compile(type.substring(1, type.length() - 1));
-                    type_test = new Predicate<String>()
-                    {
-                        @Override
-                        public boolean apply(String input)
-                        {
-                            return p.matcher(input).matches();
-                        }
-                    };
+                else if (isRegexPattern(type)) {
+                    type_test = regex(type);
                 }
                 else {
                     type_test = Predicates.equalTo(type);
@@ -63,16 +52,8 @@ public class QueryParser
                 if ("*".equals(name)) {
                     name_test = Predicates.alwaysTrue();
                 }
-                else if (name.startsWith("<") && name.endsWith(">")) {
-                    final Pattern p = Pattern.compile(name.substring(1, name.length() - 1));
-                    name_test = new Predicate<String>()
-                    {
-                        @Override
-                        public boolean apply(String input)
-                        {
-                            return p.matcher(input).matches();
-                        }
-                    };
+                else if (isRegexPattern(name)) {
+                    name_test = regex(name);
                 }
                 else {
                     name_test = Predicates.equalTo(name);
@@ -85,10 +66,25 @@ public class QueryParser
                         return type_test.apply(input.getKey()) && name_test.apply(input.getValue());
                     }
                 });
-
             }
         }
 
         return new SpaceQuery(tests, key);
+    }
+
+    private boolean isRegexPattern(String s) {
+        return s.startsWith("<") && s.endsWith(">");
+    }
+
+    private Predicate<String> regex(String s) {
+        final Pattern p = Pattern.compile(s.substring(1, s.length() -1));
+        return new Predicate<String>()
+        {
+            @Override
+            public boolean apply(@Nullable String input)
+            {
+                return p.matcher(input).matches();
+            }
+        };
     }
 }

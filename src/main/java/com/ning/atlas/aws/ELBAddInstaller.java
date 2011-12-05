@@ -12,7 +12,6 @@ import com.amazonaws.services.elasticloadbalancing.model.Instance;
 import com.amazonaws.services.elasticloadbalancing.model.RegisterInstancesWithLoadBalancerRequest;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.ConcurrentComponent;
 import com.ning.atlas.Host;
@@ -28,7 +27,7 @@ import java.util.concurrent.Future;
 
 import static java.util.Arrays.asList;
 
-public class ELBInstaller extends ConcurrentComponent
+public class ELBAddInstaller extends ConcurrentComponent
 {
    @Override
     public Future<String> describe(Host server,
@@ -91,6 +90,7 @@ public class ELBInstaller extends ConcurrentComponent
     @Override
     public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
     {
-        throw new UnsupportedOperationException("Not Yet Implemented!");
+        // TODO figure out how to do this better
+        return "okay";
     }
 }

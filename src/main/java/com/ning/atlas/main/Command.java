@@ -61,6 +61,13 @@ public enum Command
                 return new SCPCommand(mo);
             }
         },
+    query
+        {
+            public Callable<?> create(MainOptions mo)
+            {
+                return new SpaceQueryCommand(mo);
+            }
+        },
     destroy
         {
             public Callable<?> create(MainOptions mo)
