@@ -103,7 +103,7 @@ public class TestUri
                           ImmutableMap.<String, Collection<String>>of("a", Arrays.asList("hello", "world"),
                                                                       "b", Arrays.asList("hello world")));
 
-        assertThat(uri.toString(), equalTo("hello:world?a=hello&a=world&b=hello+world"));
+        assertThat(uri.toString(), equalTo("hello:world?a=hello&a=world&b=hello world"));
     }
 
     @Test

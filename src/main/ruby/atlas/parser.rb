@@ -64,6 +64,7 @@ module Atlas
     def initialize block
       @block                                                      = block
       @properties, @provisioners, @installers, @bases, @listeners = {}, {}, {}, {}, {}
+      @children = []
     end
 
     def __parse
@@ -73,7 +74,8 @@ module Atlas
                                      @installers,
                                      @listeners,
                                      @bases,
-                                     @properties
+                                     @properties,
+                                     @children
     end
 
     def base name, args={}
@@ -107,9 +109,36 @@ module Atlas
       @installers[name] = Atlas.stringify(args)
     end
 
-    def system *args
-      #no-op
+    def system name="system", args={}, &block
+      st = if args[:external] then
+             Atlas.parse_system(args[:external], name)
+           else
+             SystemParser.new(name, args, block).__parse
+           end
+      @children << st
     end
+
+    def server name, args={}
+      installers  = Atlas.parse_install_list(args[:install])
+
+      # cardinality can be nil, a number, or an array
+      cardinality = case it = args[:cardinality]
+                      when Array
+                        it
+                      when Integer
+                        it.downto(1).map { |i| i - 1 }.reverse
+                      else
+                        ["0"]
+                    end
+
+      @children << com.ning.atlas.ServerTemplate.new(name,
+                                                     com.ning.atlas.spi.Uri.value_of(args[:base].to_s),
+                                                     cardinality,
+                                                     installers,
+                                                     args.inject({}) { |a, (k, v)| a[k.to_s] = v; a })
+    end
+
+    alias :service :server
 
     def listener name, args= {}
       @listeners[name] = Atlas.stringify(args)
@@ -235,6 +264,8 @@ module Atlas
                                                      installers,
                                                      args.inject({}) { |a, (k, v)| a[k.to_s] = v; a })
     end
+
+    alias :service :server
   end
 
 end

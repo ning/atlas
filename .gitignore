@@ -1,3 +1,4 @@
+src/test/java/com/ning/atlas/TestAWSLocal.java
 atlas.log
 .atlasrc
 .DS_Store

@@ -29,7 +29,7 @@ public class TestScratchInstaller
                              Collections.<Uri<Installer>>emptyList(),
                              new My());
         Environment environment = new Environment();
-        SystemMap map = new SystemMap(Arrays.<Element>asList(host), environment);
+        SystemMap map = new SystemMap(Arrays.<Element>asList(host));
 
         Space space = InMemorySpace.newInstance();
         Deployment d = new ActualDeployment(map, environment, space);
@@ -49,7 +49,7 @@ public class TestScratchInstaller
                              Collections.<Uri<Installer>>emptyList(),
                              Collections.<Uri<Installer>>emptyList(),
                              new My());
-        SystemMap map = new SystemMap(Arrays.<Element>asList(host), new Environment());
+        SystemMap map = new SystemMap(Arrays.<Element>asList(host));
         Environment environment = new Environment();
         Space space = InMemorySpace.newInstance();
         Deployment d = new ActualDeployment(map, environment, space);
@@ -68,7 +68,7 @@ public class TestScratchInstaller
                              Collections.<Uri<Installer>>emptyList(),
                              Collections.<Uri<Installer>>emptyList(),
                              new My());
-        SystemMap map = new SystemMap(Arrays.<Element>asList(host), new Environment());
+        SystemMap map = new SystemMap(Arrays.<Element>asList(host));
         Environment environment = new Environment();
         Space space = InMemorySpace.newInstance();
         Deployment d = new ActualDeployment(map, environment, space);

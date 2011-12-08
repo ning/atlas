@@ -1,24 +1,18 @@
 package com.ning.atlas.aws;
 
-import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.AvailabilityZone;
 import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesResult;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
-import com.amazonaws.services.elasticloadbalancing.model.CreateLoadBalancerListenersRequest;
 import com.amazonaws.services.elasticloadbalancing.model.CreateLoadBalancerRequest;
 import com.amazonaws.services.elasticloadbalancing.model.CreateLoadBalancerResult;
 import com.amazonaws.services.elasticloadbalancing.model.DeleteLoadBalancerRequest;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRequest;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
-import com.amazonaws.services.elasticloadbalancing.model.Instance;
 import com.amazonaws.services.elasticloadbalancing.model.Listener;
-import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription;
-import com.amazonaws.services.elasticloadbalancing.model.RegisterInstancesWithLoadBalancerRequest;
-import com.amazonaws.services.elasticloadbalancing.model.RegisterInstancesWithLoadBalancerResult;
+import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerNotFoundException;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.ConcurrentComponent;
 import com.ning.atlas.Host;
@@ -27,13 +21,8 @@ import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.protocols.AWS;
-import com.ning.atlas.spi.space.Missing;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Future;
 
 import static java.util.Arrays.asList;
@@ -79,8 +68,10 @@ public class ELBProvisioner extends ConcurrentComponent
             DescribeLoadBalancersResult rs = aws.describeLoadBalancers(req);
             return rs.getLoadBalancerDescriptions().get(0).getDNSName();
         }
-        catch (AmazonClientException e) {
+        catch (LoadBalancerNotFoundException e) {
             // not found!
+            // we don't know what zones our instances are in yet, so add lb to all of them
+            // we will rejigger this when we assign instances to the LB
             DescribeAvailabilityZonesResult avail_zones = ec2.describeAvailabilityZones();
 
             List<String> avail_zones_s = Lists.transform(avail_zones.getAvailabilityZones(),

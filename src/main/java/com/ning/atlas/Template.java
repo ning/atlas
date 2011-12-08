@@ -9,6 +9,7 @@ import com.ning.atlas.tree.Tree;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -16,8 +17,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 public abstract class Template implements Tree
 {
     private final List<String> cardinality;
-    private final String type;
-    private final My my;
+    private final String       type;
+    private final My           my;
 
     public Template(String type, My my, List<?> cardinality)
     {
@@ -61,8 +62,20 @@ public abstract class Template implements Tree
         return my;
     }
 
-    public final SystemMap normalize(Environment env) {
-        return new SystemMap(_normalize(Identity.root(), env), env);
+    public final SystemMap normalize(Environment env)
+    {
+        List<Element> roots = Lists.newArrayList();
+
+        List<Element> sys_roots = _normalize(Identity.root(), env);
+        roots.addAll(sys_roots);
+
+        Collection<Template> env_defined = env.getEnvironmentDefinedElements();
+        for (Template template : env_defined) {
+            List<Element> el = template._normalize(Identity.root(), env);
+            roots.addAll(el);
+        }
+
+        return new SystemMap(roots);
     }
 
     protected abstract List<Element> _normalize(Identity parent, Environment env);

@@ -96,13 +96,18 @@ public class EC2Provisioner extends ConcurrentComponent
             }
 
             req.setKeyName(keypairId.get());
+
+            final String security_group = Maybe.elideNull(uri.getParams().get("security_group")).otherwise("default");
+            req.setSecurityGroups(asList(security_group));
+
             RunInstancesResult rs = ec2.runInstances(req);
 
             final Instance i = rs.getReservation().getInstances().get(0);
 
-            logger.debug("obtained ec2 instance {}", i.getInstanceId());
+            logger.debug("obtained ec2 instance %s", i.getInstanceId());
 
             while (true) {
+
                 DescribeInstancesRequest dreq = new DescribeInstancesRequest();
                 dreq.setInstanceIds(Lists.newArrayList(i.getInstanceId()));
                 DescribeInstancesResult res = null;

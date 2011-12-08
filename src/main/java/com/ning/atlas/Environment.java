@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -12,17 +13,19 @@ import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.space.Space;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 public class Environment
 {
-    private final List<String> listeners = Lists.newArrayList();
+    private final List<String>        listeners  = Lists.newArrayList();
     private final Map<String, Base>   bases      = Maps.newConcurrentMap();
     private final Map<String, String> properties = Maps.newConcurrentMap();
 
-    private final PluginSystem plugins;
+    private final PluginSystem         plugins;
+    private final Collection<Template> environmentDefinedElements;
 
     public Environment()
     {
@@ -31,7 +34,8 @@ public class Environment
              Collections.<String, Map<String, String>>emptyMap(),
              Collections.<String, Map<String, String>>emptyMap(),
              Collections.<String, Base>emptyMap(),
-             Collections.<String, String>emptyMap());
+             Collections.<String, String>emptyMap(),
+             Collections.<Template>emptyList());
     }
 
     public Environment(PluginSystem plugins,
@@ -41,7 +45,20 @@ public class Environment
                        Map<String, Base> bases,
                        Map<String, String> properties)
     {
+        this(plugins, provisioners, installers, listeners, bases, properties, Collections.<Template>emptyList());
+    }
+
+    public Environment(PluginSystem plugins,
+                       Map<String, Map<String, String>> provisioners,
+                       Map<String, Map<String, String>> installers,
+                       Map<String, Map<String, String>> listeners,
+                       Map<String, Base> bases,
+                       Map<String, String> properties,
+                       Collection<Template> environmentDefinedElements)
+    {
         this.plugins = plugins;
+        this.environmentDefinedElements = ImmutableList.copyOf(environmentDefinedElements);
+
         for (Map.Entry<String, Map<String, String>> entry : provisioners.entrySet()) {
             plugins.registerProvisionerConfig(entry.getKey(), entry.getValue());
         }
@@ -120,5 +137,10 @@ public class Environment
     public PluginSystem getPluginSystem()
     {
         return this.plugins;
+    }
+
+    public Collection<Template> getEnvironmentDefinedElements()
+    {
+        return environmentDefinedElements;
     }
 }

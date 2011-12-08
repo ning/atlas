@@ -229,4 +229,15 @@ public class TestJRubyTemplateParser
 
     }
 
+    @Test
+    public void testEnvironmentDefinedElements() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Environment e = p.parseEnvironment(new File("src/test/ruby/test_jruby_template_parser_env_servers-env.rb"));
+        Template t = p.parseSystem(new File("src/test/ruby/test_jruby_template_parser_env_servers-sys.rb"));
+
+        SystemMap map = t.normalize(e);
+        assertThat(map.findLeaves().size(), equalTo(2));
+    }
+
 }
