@@ -6,6 +6,7 @@ import com.ning.atlas.spi.BaseLifecycleListener;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.bus.FinishedServerInstall;
 import com.ning.atlas.spi.bus.FinishedServerProvision;
@@ -44,7 +45,7 @@ public class PrettyTerminalListener extends BaseLifecycleListener
 
         int offset = 0;
         for (Host host : hosts) {
-            gauges.put(host.getId(), new Gauge(d, host, width, offset++));
+            gauges.put(host.getId(), new Gauge(host, width, offset++));
         }
 
         return super.startDeployment(d);
@@ -58,15 +59,9 @@ public class PrettyTerminalListener extends BaseLifecycleListener
     }
 
     @Subscribe
-    public void on(StartServerProvision evt)
-    {
-        gauges.get(evt.getServerId()).startProvision();
-    }
-
-    @Subscribe
     public void on(FinishedServerProvision evt)
     {
-        gauges.get(evt.getServerId()).finishProvision();
+        gauges.get(evt.getServerId()).installed(evt.getUri());
     }
 
     @Subscribe
@@ -79,46 +74,31 @@ public class PrettyTerminalListener extends BaseLifecycleListener
     private static class Gauge
     {
         private final ProgressBar progress;
-        private final Set<Uri<Installer>> installs = Collections.synchronizedSet(Sets.<Uri<Installer>>newHashSet());
+        private final Set<Uri<?>> things = Collections.synchronizedSet(Sets.<Uri<?>>newHashSet());
         private final double numberOfInstalls;
-        private volatile double pct = 0D;
-        private final Identity id;
 
-        Gauge(Deployment d, Host host, int width, int offset)
+        Gauge(Host host, int width, int offset)
         {
-            this.id = host.getId();
             this.progress = new ProgressBar(Label.create(host.getId().toExternalForm(), width),
                                             Height.fromBottom(offset),
                                             Percentage.show());
 
             for (Uri<Installer> uri : host.getInitializationUris()) {
-                installs.add(uri);
+                things.add(uri);
             }
 
             for (Uri<Installer> uri : host.getInstallationUris()) {
-                installs.add(uri);
+                things.add(uri);
             }
 
-            numberOfInstalls = installs.size();
+            numberOfInstalls = things.size();
         }
 
-        synchronized void startProvision()
+        synchronized void installed(Uri<?> install)
         {
-            pct += 0.01;
-            progress.progress(pct).render();
-        }
+            things.remove(install);
 
-        synchronized void finishProvision()
-        {
-            pct += 0.09;
-            progress.progress(pct).render();
-        }
-
-        synchronized void installed(Uri<Installer> install)
-        {
-            installs.remove(install);
-
-            pct += 0.9 * ( (numberOfInstalls - installs.size()) / numberOfInstalls);
+            double pct = ( (numberOfInstalls - things.size()) / numberOfInstalls);
 
             if (pct >= 0.97) {
                 pct = 1.0;

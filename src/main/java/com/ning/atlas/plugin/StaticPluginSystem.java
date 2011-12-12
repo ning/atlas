@@ -9,6 +9,7 @@ import com.ning.atlas.ScratchInstaller;
 import com.ning.atlas.WaitForScratchValueInstaller;
 import com.ning.atlas.aws.AWSConfigurator;
 import com.ning.atlas.aws.EC2Provisioner;
+import com.ning.atlas.aws.EC2SecurityGroupProvisioner;
 import com.ning.atlas.aws.ELBAddInstaller;
 import com.ning.atlas.aws.ELBProvisioner;
 import com.ning.atlas.aws.RDSProvisioner;
@@ -50,6 +51,7 @@ public class StaticPluginSystem implements PluginSystem
         registerProvisioner("rds", RDSProvisioner.class, EMPTY_MAP);
         registerProvisioner("noop", NoOpProvisioner.class, EMPTY_MAP);
         registerProvisioner("elb", ELBProvisioner.class, EMPTY_MAP);
+        registerProvisioner("ec2-security-group", EC2SecurityGroupProvisioner.class, EMPTY_MAP);
 
         registerInstaller("elb-add", ELBAddInstaller.class, EMPTY_MAP);
         registerInstaller("scratch", ScratchInstaller.class, EMPTY_MAP);
