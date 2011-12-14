@@ -1,15 +1,18 @@
 package com.ning.atlas.aws;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
+import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
 import com.amazonaws.services.ec2.model.IpPermission;
 import com.amazonaws.services.ec2.model.RevokeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.SecurityGroup;
-import com.amazonaws.services.ec2.model.UserIdGroupPair;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.ConcurrentComponent;
@@ -26,8 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static java.util.Arrays.asList;
 
@@ -36,7 +37,6 @@ public class EC2SecurityGroupProvisioner extends ConcurrentComponent
     @Override
     public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
-        final String group_name = uri.getFragment();
 
         AWSCredentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class, Missing.RequireAll)
                                 .otherwise(new IllegalStateException("No AWS Credentials available"))
@@ -44,6 +44,37 @@ public class EC2SecurityGroupProvisioner extends ConcurrentComponent
 
         AmazonEC2Client ec2 = new AmazonEC2Client(creds);
         AmazonIdentityManagementClient iam = new AmazonIdentityManagementClient(creds);
+
+        final String group_name = uri.getFragment();
+
+
+        DescribeSecurityGroupsRequest describe_request = new DescribeSecurityGroupsRequest();
+        describe_request.setGroupNames(asList(group_name));
+        SecurityGroup security_group;
+        try {
+            DescribeSecurityGroupsResult describe_result = ec2.describeSecurityGroups(describe_request);
+            security_group = describe_result.getSecurityGroups().get(0);
+        }
+        catch (AmazonServiceException e) {
+            if (e.getErrorCode().equals("InvalidGroup.NotFound")) {
+                security_group = createNewGroup(ec2, group_name);
+            }
+            else {
+                throw e;
+            }
+        }
+
+        updateGroup(uri, ec2, iam, security_group);
+
+
+        return "okay";
+    }
+
+    private void updateGroup(Uri<? extends Component> uri,
+                             AmazonEC2Client ec2,
+                             AmazonIdentityManagementClient iam,
+                             SecurityGroup group)
+    {
         String user_id = iam.getUser().getUser().getUserId();
 
         Set<String> raw_rules = Sets.newHashSet();
@@ -51,27 +82,46 @@ public class EC2SecurityGroupProvisioner extends ConcurrentComponent
             raw_rules.addAll(entry.getValue());
         }
 
-        List<Rule> rules = Lists.newArrayList();
+        Set<IpRule> rules = Sets.newHashSet();
         for (String raw_thing : raw_rules) {
-            rules.add(Rule.parse(user_id, raw_thing));
+            rules.add(IpRule.parse(user_id, raw_thing));
         }
 
-        DescribeSecurityGroupsRequest dsgreq = new DescribeSecurityGroupsRequest();
-        dsgreq.setGroupNames(asList(group_name));
-        DescribeSecurityGroupsResult dsgres = ec2.describeSecurityGroups(dsgreq);
-
-        SecurityGroup group = dsgres.getSecurityGroups().get(0);
-
-
-        // find permissions to remove
-
+        Map<IpRule, IpPermission> map = Maps.newHashMap();
+        Set<IpRule> existing_rules = Sets.newHashSet();
         for (IpPermission permission : group.getIpPermissions()) {
-            // ensure all the allowances are there
-
+            IpRule r = IpRule.fromPermission(permission);
+            existing_rules.add(r);
+            map.put(r, permission);
         }
 
+        Set<IpRule> to_remove = Sets.difference(existing_rules, rules);
+        Set<IpRule> to_add = Sets.difference(rules, existing_rules);
 
-        return "okay";
+        List<IpPermission> adds = Lists.newArrayListWithExpectedSize(to_add.size());
+        for (IpRule rule : to_add) {
+            adds.add(rule.toIpPermission());
+        }
+        if (!adds.isEmpty()) {
+            ec2.authorizeSecurityGroupIngress(new AuthorizeSecurityGroupIngressRequest(group.getGroupName(), adds));
+        }
+
+        List<IpPermission> removals = Lists.newArrayListWithExpectedSize(to_remove.size());
+        for (IpRule rule : to_remove) {
+            removals.add(map.get(rule));
+        }
+        if (!removals.isEmpty()) {
+            ec2.revokeSecurityGroupIngress(new RevokeSecurityGroupIngressRequest(group.getGroupName(), removals));
+        }
+
+    }
+
+    private SecurityGroup createNewGroup(AmazonEC2Client ec2, String group_name)
+    {
+        ec2.createSecurityGroup(new CreateSecurityGroupRequest(group_name, group_name));
+        DescribeSecurityGroupsRequest req = new DescribeSecurityGroupsRequest();
+        req.setGroupNames(asList(group_name));
+        return ec2.describeSecurityGroups(req).getSecurityGroups().get(0);
     }
 
     @Override
@@ -86,79 +136,4 @@ public class EC2SecurityGroupProvisioner extends ConcurrentComponent
         return Futures.immediateFuture("no!");
     }
 
-    abstract static class Rule
-    {
-        private static final Pattern CIDR_RULE  = Pattern.compile("\\s*(\\w+)\\s+(\\d+)\\s+(\\d+\\.\\d+\\.\\d+\\.\\d+/\\d+)\\s*");
-        private static final Pattern GROUP_RULE = Pattern.compile("\\s*(\\w+)\\s+(\\d+)\\s+(\\w+)\\s*");
-
-        static Rule parse(String userId, String descriptor)
-        {
-            Matcher cidr = CIDR_RULE.matcher(descriptor);
-            Matcher group = GROUP_RULE.matcher(descriptor);
-            if (cidr.matches()) {
-                return new CIDRRule(cidr.group(1), cidr.group(2), cidr.group(3));
-            }
-            else if (group.matches()) {
-                return new GroupRule(userId, group.group(1), group.group(2), group.group(3));
-            }
-            throw new IllegalStateException(descriptor + " does not appear to be a CIDR or group rule");
-        }
-
-        public abstract IpPermission toIpPermission();
-
-        private static class CIDRRule extends Rule
-        {
-
-            private final String ipRange;
-            private final int port;
-            private final String proto;
-
-            CIDRRule(String proto, String port, String ipRange) {
-                this.ipRange = ipRange;
-                this.port = Integer.parseInt(port);
-                this.proto = proto;
-            }
-
-            @Override
-            public IpPermission toIpPermission()
-            {
-                IpPermission perm = new IpPermission();
-                perm.setFromPort(port);
-                perm.setToPort(port);
-                perm.setIpProtocol(proto);
-                perm.setIpRanges(asList(ipRange));
-                return perm;
-            }
-        }
-
-        private static class GroupRule extends Rule
-        {
-            private final String userId;
-            private final int port;
-            private final String proto;
-            private final String group;
-
-            public GroupRule(String userId, String proto, String port, String group)
-            {
-                this.userId = userId;
-                this.proto = proto;
-                this.group = group;
-                this.port = Integer.parseInt(port);
-            }
-
-            @Override
-            public IpPermission toIpPermission()
-            {
-                IpPermission perm = new IpPermission();
-                perm.setIpProtocol(proto);
-                perm.setToPort(port);
-                perm.setFromPort(port);
-                UserIdGroupPair pair = new UserIdGroupPair();
-                pair.setGroupName(group);
-                pair.setUserId(userId);
-                perm.setUserIdGroupPairs(asList(pair));
-                return perm;
-            }
-        }
-    }
 }

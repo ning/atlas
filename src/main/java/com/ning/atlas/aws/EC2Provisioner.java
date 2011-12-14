@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Arrays.asList;
@@ -98,6 +99,7 @@ public class EC2Provisioner extends ConcurrentComponent
             req.setKeyName(keypairId.get());
 
             final String security_group = Maybe.elideNull(uri.getParams().get("security_group")).otherwise("default");
+            AWS.waitForEC2SecurityGroup(security_group, deployment.getSpace(), 1, TimeUnit.MINUTES);
             req.setSecurityGroups(asList(security_group));
 
             RunInstancesResult rs = ec2.runInstances(req);

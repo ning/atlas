@@ -25,7 +25,6 @@ import java.util.concurrent.Future;
 
 public class PrettyTerminalListener extends BaseLifecycleListener
 {
-
     private final Map<Identity, Gauge> gauges = Maps.newConcurrentMap();
 
     @Override
