@@ -39,7 +39,6 @@ public class PrettyTerminalListener extends BaseLifecycleListener
             if (host.getId().toExternalForm().length() > width) {
                 width = host.getId().toExternalForm().length();
             }
-            System.out.println();
         }
 
         int offset = 0;
@@ -82,6 +81,8 @@ public class PrettyTerminalListener extends BaseLifecycleListener
                                             Height.fromBottom(offset),
                                             Percentage.show());
 
+            things.add(host.getProvisionerUri());
+
             for (Uri<Installer> uri : host.getInitializationUris()) {
                 things.add(uri);
             }
@@ -91,6 +92,7 @@ public class PrettyTerminalListener extends BaseLifecycleListener
             }
 
             numberOfInstalls = things.size();
+            this.progress.render();
         }
 
         synchronized void installed(Uri<?> install)
@@ -105,6 +107,7 @@ public class PrettyTerminalListener extends BaseLifecycleListener
 
             try {
                 progress.progress(pct).render().get();
+                ProgressBar.moveCursorToBottomRight();
             }
             catch (Exception e) {
                 // NOOP
