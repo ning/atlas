@@ -13,6 +13,7 @@ import com.ning.atlas.aws.EC2SecurityGroupProvisioner;
 import com.ning.atlas.aws.ELBAddInstaller;
 import com.ning.atlas.aws.ELBProvisioner;
 import com.ning.atlas.aws.RDSProvisioner;
+import com.ning.atlas.aws.RDSSecurityGroupProvisioner;
 import com.ning.atlas.chef.UbuntuChefSoloInstaller;
 import com.ning.atlas.databases.OracleLoaderInstaller;
 import com.ning.atlas.files.ERBFileInstaller;
@@ -52,6 +53,7 @@ public class StaticPluginSystem implements PluginSystem
         registerProvisioner("noop", NoOpProvisioner.class, EMPTY_MAP);
         registerProvisioner("elb", ELBProvisioner.class, EMPTY_MAP);
         registerProvisioner("ec2-security-group", EC2SecurityGroupProvisioner.class, EMPTY_MAP);
+        registerProvisioner("rds-security-group", RDSSecurityGroupProvisioner.class, EMPTY_MAP);
 
         registerInstaller("elb-add", ELBAddInstaller.class, EMPTY_MAP);
         registerInstaller("scratch", ScratchInstaller.class, EMPTY_MAP);
