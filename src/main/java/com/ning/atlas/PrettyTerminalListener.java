@@ -44,6 +44,7 @@ public class PrettyTerminalListener extends BaseLifecycleListener
         int offset = 0;
         for (Host host : hosts) {
             gauges.put(host.getId(), new Gauge(host, width, offset++));
+            System.out.println();
         }
 
         return super.startDeployment(d);
@@ -80,6 +81,8 @@ public class PrettyTerminalListener extends BaseLifecycleListener
             this.progress = new ProgressBar(Label.create(host.getId().toExternalForm(), width),
                                             Height.fromBottom(offset),
                                             Percentage.show());
+
+            things.add(host.getProvisionerUri());
 
             for (Uri<Installer> uri : host.getInitializationUris()) {
                 things.add(uri);

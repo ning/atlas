@@ -51,6 +51,7 @@ public class ERBFileInstaller extends ConcurrentComponent
         String out;
         try {
             out = String.valueOf(container.runScriptlet(format("require 'erb'\n" +
+                                                               "require 'java'\n" +
                                                                "ERB.new(File.read('%s')).result(binding)", from)));
         }
         catch (Exception e) {
