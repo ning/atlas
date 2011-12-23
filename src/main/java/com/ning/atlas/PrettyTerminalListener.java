@@ -28,7 +28,7 @@ public class PrettyTerminalListener extends BaseLifecycleListener
     private final Map<Identity, Gauge> gauges = Maps.newConcurrentMap();
 
     @Override
-    public Future<?> startDeployment(Deployment d)
+    public Future<?> startProvision(Deployment d)
     {
         d.getEventBus().subscribe(NotificationBus.Scope.Deployment, this);
 
@@ -39,7 +39,6 @@ public class PrettyTerminalListener extends BaseLifecycleListener
             if (host.getId().toExternalForm().length() > width) {
                 width = host.getId().toExternalForm().length();
             }
-            System.out.println();
         }
 
         int offset = 0;

@@ -36,7 +36,7 @@ public class TestScratchInstaller
 
         ScratchInstaller scratch = new ScratchInstaller();
         Status json = scratch.install(host, Uri.<Installer>valueOf("scratch:hello=@"), d).get();
-        assertThat(space.get("hello").getValue(), equalTo(id.toExternalForm()));
+        assertThat(d.getScratch().get("hello").getValue(), equalTo(id.toExternalForm()));
     }
 
 
@@ -56,7 +56,7 @@ public class TestScratchInstaller
 
         ScratchInstaller scratch = new ScratchInstaller();
         Status json = scratch.install(host, Uri.<Installer>valueOf("scratch:@:hello=world"), d).get();
-        assertThat(space.get(id.toExternalForm() + ":" + "hello").getValue(), equalTo("world"));
+        assertThat(d.getScratch().get(id.toExternalForm() + ":" + "hello").getValue(), equalTo("world"));
     }
 
     @Test
@@ -75,8 +75,8 @@ public class TestScratchInstaller
 
         ScratchInstaller scratch = new ScratchInstaller();
         Status status = scratch.install(host, Uri.<Installer>valueOf("scratch:@:hello=world;waffle=@"), d).get();
-        assertThat(space.get(id.toExternalForm() + ":" + "hello").getValue(), equalTo("world"));
-        assertThat(space.get("waffle").getValue(), equalTo(id.toExternalForm()));
+        assertThat(d.getScratch().get(id.toExternalForm() + ":" + "hello").getValue(), equalTo("world"));
+        assertThat(d.getScratch().get("waffle").getValue(), equalTo(id.toExternalForm()));
     }
 }
 

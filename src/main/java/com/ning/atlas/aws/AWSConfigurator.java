@@ -59,10 +59,10 @@ public class AWSConfigurator extends BaseLifecycleListener
                 if (!s.get(AWS.ID, AWS.Credentials.class, Missing.RequireAll).isKnown()) {
                     // no creds in space, ask for em and save em
 
-                    System.console().printf("What is your AWS access key? ");
+                    System.console().printf("What is your AWS Access Key ID? ");
                     String access_key = System.console().readLine().trim();
 
-                    System.console().printf("What is your AWS secret key? ");
+                    System.console().printf("What is your AWS Secret Access Key? ");
                     String secret_key = System.console().readLine().trim();
 
                     creds = new AWS.Credentials();
