@@ -87,15 +87,16 @@ public class RDSSecurityGroupProvisioner extends ConcurrentComponent
             }
         }
 
-        if (!to_remove.isEmpty()) {
-            for (GroupUserPair pair : to_remove) {
-                RevokeDBSecurityGroupIngressRequest rm_req = new RevokeDBSecurityGroupIngressRequest();
-                rm_req.setEC2SecurityGroupName(name);
-                rm_req.setEC2SecurityGroupName(pair.groupName);
-                rm_req.setEC2SecurityGroupOwnerId(user_id);
-                rds.revokeDBSecurityGroupIngress(rm_req);
-            }
-        }
+        // removals are a pain, if you ad soemthing for debugging it gets wiped out.
+//        if (!to_remove.isEmpty()) {
+//            for (GroupUserPair pair : to_remove) {
+//                RevokeDBSecurityGroupIngressRequest rm_req = new RevokeDBSecurityGroupIngressRequest();
+//                rm_req.setEC2SecurityGroupName(name);
+//                rm_req.setEC2SecurityGroupName(pair.groupName);
+//                rm_req.setEC2SecurityGroupOwnerId(user_id);
+//                rds.revokeDBSecurityGroupIngress(rm_req);
+//            }
+//        }
     }
 
     private void createGroup(AmazonRDSClient rds, String name)
