@@ -93,11 +93,11 @@ public class RDSProvisioner extends ConcurrentComponent
 
         Maybe<String> db_name = Maybe.elideNull(uri.getParams().get("name"));
         if (db_name.isKnown()) {
-            AWS.waitForRDSSecurityGroup(db_name.getValue(), d.getSpace(), 1, TimeUnit.MINUTES);
             req.setDBName(db_name.getValue());
         }
         Maybe<String> sec_group = Maybe.elideNull(uri.getParams().get("security_group"));
         if (sec_group.isKnown()) {
+            AWS.waitForRDSSecurityGroup(sec_group.getValue(), d.getSpace(), 1, TimeUnit.MINUTES);
             req.setDBSecurityGroups(asList(sec_group.getValue()));
         }
 

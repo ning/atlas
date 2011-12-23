@@ -1,8 +1,12 @@
 package com.ning.atlas.aws;
 
+import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.AvailabilityZone;
+import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
 import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesResult;
+import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
 import com.amazonaws.services.elasticloadbalancing.model.CreateLoadBalancerRequest;
 import com.amazonaws.services.elasticloadbalancing.model.CreateLoadBalancerResult;
@@ -11,6 +15,7 @@ import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRe
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
 import com.amazonaws.services.elasticloadbalancing.model.Listener;
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerNotFoundException;
+import com.amazonaws.services.elasticloadbalancing.model.SourceSecurityGroup;
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
@@ -86,8 +91,8 @@ public class ELBProvisioner extends ConcurrentComponent
 
             Listener listener = new Listener(protocol, from_port, to_port);
             CreateLoadBalancerRequest clbrq = new CreateLoadBalancerRequest(name, asList(listener), avail_zones_s);
-
             CreateLoadBalancerResult rs = aws.createLoadBalancer(clbrq);
+
             return rs.getDNSName();
         }
     }

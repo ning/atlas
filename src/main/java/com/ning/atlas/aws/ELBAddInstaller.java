@@ -3,6 +3,7 @@ package com.ning.atlas.aws;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.GroupIdentifier;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
 import com.amazonaws.services.elasticloadbalancing.model.DeregisterInstancesFromLoadBalancerRequest;
@@ -14,11 +15,14 @@ import com.amazonaws.services.elasticloadbalancing.model.Instance;
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription;
 import com.amazonaws.services.elasticloadbalancing.model.RegisterInstancesWithLoadBalancerRequest;
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.ConcurrentComponent;
 import com.ning.atlas.Host;
+import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
@@ -36,6 +40,8 @@ import static java.util.Arrays.asList;
 
 public class ELBAddInstaller extends ConcurrentComponent
 {
+
+    private static final Logger log = Logger.get(ELBAddInstaller.class);
 
     private final Set<String> elbnames = new ConcurrentSkipListSet<String>();
 
@@ -55,11 +61,14 @@ public class ELBAddInstaller extends ConcurrentComponent
 
         AWS.Credentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class).getValue();
         AmazonElasticLoadBalancingClient elb = new AmazonElasticLoadBalancingClient(creds.toAWSCredentials());
-
+        AmazonEC2Client ec2 = new AmazonEC2Client(creds.toAWSCredentials());
 
         String instance_id = d.getSpace().get(host.getId(), "ec2-instance-id")
                               .otherwise(new IllegalStateException(host.getId() + " lacks an ec2-instance-id"));
+
+
         Instance instance = new Instance(instance_id);
+
         RegisterInstancesWithLoadBalancerRequest rq = new RegisterInstancesWithLoadBalancerRequest(elb_name,
                                                                                                    asList(instance));
         elb.registerInstancesWithLoadBalancer(rq);
@@ -136,9 +145,13 @@ public class ELBAddInstaller extends ConcurrentComponent
                 DisableAvailabilityZonesForLoadBalancerRequest disreq = new DisableAvailabilityZonesForLoadBalancerRequest();
                 disreq.setAvailabilityZones(to_remove);
                 disreq.setLoadBalancerName(description.getLoadBalancerName());
-                elb.disableAvailabilityZonesForLoadBalancer(disreq);
+                try {
+                    elb.disableAvailabilityZonesForLoadBalancer(disreq);
+                }
+                catch (Exception e) {
+                    log.warn(e, "unable to disable zones %s in elb %s", to_remove, elb);
+                }
             }
-
         }
     }
 }
