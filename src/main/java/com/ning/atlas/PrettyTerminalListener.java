@@ -46,7 +46,7 @@ public class PrettyTerminalListener extends BaseLifecycleListener
             gauges.put(host.getId(), new Gauge(host, width, offset++));
             System.out.println();
         }
-
+        ProgressBar.moveCursorToBottomRight();
         return super.startDeployment(d);
     }
 
@@ -93,6 +93,7 @@ public class PrettyTerminalListener extends BaseLifecycleListener
             }
 
             numberOfInstalls = things.size();
+            this.progress.render();
         }
 
         synchronized void installed(Uri<?> install)
@@ -107,6 +108,7 @@ public class PrettyTerminalListener extends BaseLifecycleListener
 
             try {
                 progress.progress(pct).render().get();
+                ProgressBar.moveCursorToBottomRight();
             }
             catch (Exception e) {
                 // NOOP

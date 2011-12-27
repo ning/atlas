@@ -26,6 +26,7 @@ import com.ning.atlas.noop.NoOpProvisioner;
 import com.ning.atlas.packages.AptInstaller;
 import com.ning.atlas.packages.GemInstaller;
 import com.ning.atlas.packages.TarballInstaller;
+import com.ning.atlas.packages.ZipInstaller;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Maybe;
@@ -71,6 +72,7 @@ public class StaticPluginSystem implements PluginSystem
         registerInstaller("exec", ExecInstaller.class, EMPTY_MAP);
         registerInstaller("ubuntu-chef-solo", UbuntuChefSoloInstaller.class, EMPTY_MAP);
         registerInstaller("tgz", TarballInstaller.class, EMPTY_MAP);
+        registerInstaller("zip", ZipInstaller.class, EMPTY_MAP);
         registerInstaller("wait-for", WaitForScratchValueInstaller.class, EMPTY_MAP);
 
         registerListener("aws-config", AWSConfigurator.class, EMPTY_MAP);

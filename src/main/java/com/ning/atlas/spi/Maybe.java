@@ -5,6 +5,7 @@ import com.google.common.base.Predicate;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.concurrent.Callable;
 
 /**
  * From https://github.com/npryce/
@@ -15,6 +16,8 @@ public abstract class Maybe<T> implements Iterable<T>
 
     public abstract Maybe<T> otherwise(Maybe<T> maybeDefaultValue);
 
+    public abstract T elsewise(Callable<T> c) throws Exception;
+
     public abstract <U> Maybe<U> to(Function<? super T, ? extends U> mapping);
 
     public abstract T getValue();
@@ -22,7 +25,6 @@ public abstract class Maybe<T> implements Iterable<T>
     public abstract boolean isKnown();
 
     public abstract <E extends Exception> T otherwise(E e) throws E;
-
 
     public static <T> Maybe<T> definitely(final T theValue)
     {
@@ -61,6 +63,12 @@ public abstract class Maybe<T> implements Iterable<T>
             public Maybe<T> otherwise(Maybe<T> maybeDefaultValue)
             {
                 return maybeDefaultValue;
+            }
+
+            @Override
+            public T elsewise(Callable<T> c) throws Exception
+            {
+                return c.call();
             }
 
             @Override
@@ -132,6 +140,12 @@ public abstract class Maybe<T> implements Iterable<T>
         public Maybe<T> otherwise(Maybe<T> maybeDefaultValue)
         {
             return this;
+        }
+
+        @Override
+        public T elsewise(Callable<T> c) throws Exception
+        {
+            return theValue;
         }
 
         @SuppressWarnings("unchecked")

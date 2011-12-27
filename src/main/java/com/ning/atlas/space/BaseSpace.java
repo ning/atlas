@@ -71,6 +71,12 @@ public abstract class BaseSpace implements Space
     }
 
     @Override
+    public Maybe<String> get(String idExternalForm, String key)
+    {
+        return get(Identity.valueOf(idExternalForm), key);
+    }
+
+    @Override
     public <T> Maybe<T> get(Identity id, Class<T> type, Missing behavior)
     {
         PropertyDescriptor[] pds = PropertyUtils.getPropertyDescriptors(type);

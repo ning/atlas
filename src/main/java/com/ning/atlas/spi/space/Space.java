@@ -15,6 +15,8 @@ public interface Space
     void store(Identity id, String key, String value);
 
     Maybe<String> get(Identity id, String key);
+    Maybe<String> get(String idExternalForm, String key);
+
     <T> Maybe<T> get(Identity id, Class<T> type, Missing behavior);
 
     Map<SpaceKey, String> getAllFor(Identity id);

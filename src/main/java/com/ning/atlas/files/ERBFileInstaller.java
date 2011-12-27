@@ -48,16 +48,9 @@ public class ERBFileInstaller extends ConcurrentComponent
         container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
         container.setCompatVersion(CompatVersion.RUBY1_9);
 
-        String out;
-        try {
-            out = String.valueOf(container.runScriptlet(format("require 'erb'\n" +
-                                                               "require 'java'\n" +
-                                                               "ERB.new(File.read('%s')).result(binding)", from)));
-        }
-        catch (Exception e) {
-            throw e;
-        }
-
+        String out = String.valueOf(container.runScriptlet(format("require 'erb'\n" +
+                                                                  "require 'java'\n" +
+                                                                  "ERB.new(File.read('%s')).result(binding)", from)));
         File tmp = File.createTempFile("atlas", ".tmp");
         Files.write(out.getBytes("UTF8"), tmp);
 

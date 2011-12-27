@@ -12,12 +12,12 @@ import com.ning.atlas.spi.Uri;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-public class TarballInstaller extends ConcurrentComponent
+public class ZipInstaller extends ConcurrentComponent
 {
 
     private final String credentialName;
 
-    public TarballInstaller(Map<String, String> props)
+    public ZipInstaller(Map<String, String> props)
     {
         this.credentialName = props.get("credentials");
     }
@@ -31,16 +31,16 @@ public class TarballInstaller extends ConcurrentComponent
 
         final SSH ssh = new SSH(host.getId(), credentialName, d.getSpace());
         try {
-            ssh.exec("mkdir /tmp/wafflehut");
-            ssh.exec("curl %s > /tmp/wafflehut/foo.tar.gz", url);
-            ssh.exec("mkdir /tmp/pancaketent");
-            ssh.exec("tar -C /tmp/pancaketent -zxvf /tmp/wafflehut/foo.tar.gz");
+            ssh.exec("mkdir /tmp/baconsandwich");
+            ssh.exec("curl %s > /tmp/baconsandwich/foo.zip", url);
+            ssh.exec("mkdir /tmp/ziphula");
+            ssh.exec("unzip -d /tmp/ziphula /tmp/baconsandwich/foo.zip");
 
             if (skiproot.isKnown()) {
-                ssh.exec("sudo mv /tmp/pancaketent/%s/* %s/", skiproot.getValue(), to);
+                ssh.exec("sudo mv /tmp/ziphula/%s/* %s/", skiproot.getValue(), to);
             }
             else {
-                ssh.exec("sudo mv /tmp/pancaketent/* %s/", to);
+                ssh.exec("sudo mv /tmp/ziphula/* %s/", to);
             }
         }
         finally {
