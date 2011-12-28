@@ -110,9 +110,11 @@ public class EC2SecurityGroupProvisioner extends ConcurrentComponent
         for (IpRule rule : to_remove) {
             removals.add(map.get(rule));
         }
-        if (!removals.isEmpty()) {
-            ec2.revokeSecurityGroupIngress(new RevokeSecurityGroupIngressRequest(group.getGroupName(), removals));
-        }
+
+        // removals are kind of a pain, if you add somethign for debugging it gets wiped out.
+//        if (!removals.isEmpty()) {
+//            ec2.revokeSecurityGroupIngress(new RevokeSecurityGroupIngressRequest(group.getGroupName(), removals));
+//        }
 
     }
 

@@ -55,7 +55,7 @@ public class GalaxyInstaller extends ConcurrentComponent
             .otherwise(new IllegalStateException("unable to locate any ssh credentials"));
 
 
-        Identity shell_id = Identity.valueOf(d.getSpace().require("galaxy-shell"));
+        Identity shell_id = Identity.valueOf(d.getScratch().get("galaxy-shell").otherwise(new IllegalStateException("no galaxy-shell available")));
         Server shell = d.getSpace().get(shell_id, Server.class, Missing.RequireAll).getValue();
         Server server = d.getSpace().get(host.getId(), Server.class, Missing.RequireAll).getValue();
         SSH ssh = new SSH(creds, shell.getExternalAddress());
@@ -135,7 +135,7 @@ public class GalaxyInstaller extends ConcurrentComponent
             .otherwise(new IllegalStateException("unable to locate any ssh credentials"));
 
 
-        Identity shell_id = Identity.valueOf(d.getSpace().require("galaxy-shell"));
+        Identity shell_id = Identity.valueOf(d.getScratch().get("galaxy-shell").otherwise(new IllegalStateException("no galaxy-shell available")));
         Server shell = d.getSpace().get(shell_id, Server.class, Missing.RequireAll).getValue();
         Server server = d.getSpace().get(hostId, Server.class, Missing.RequireAll).getValue();
         SSH ssh = new SSH(creds, shell.getExternalAddress());

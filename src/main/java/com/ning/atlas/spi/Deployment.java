@@ -9,6 +9,7 @@ public interface Deployment
 {
     public SystemMap getSystemMap();
     public Space getSpace();
+    public Scratch getScratch();
     public Environment getEnvironment();
     public NotificationBus getEventBus();
 }

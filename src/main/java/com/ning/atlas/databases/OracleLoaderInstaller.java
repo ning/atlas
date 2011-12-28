@@ -67,7 +67,7 @@ public class OracleLoaderInstaller extends ConcurrentComponent
             .otherwise(new IllegalStateException("unable to find ssh credentials"));
 
 
-        String oracle_shell_id = d.getSpace().require("oracle-shell");
+        String oracle_shell_id = d.getScratch().get("oracle-shell").otherwise(new IllegalStateException("no oracle-shell available"));
         String attrs = d.getSpace().get(host.getId(), "extra-atlas-attributes").getValue();
         Map<String, String> attr = new ObjectMapper().readValue(attrs, Map.class);
         Server shell = d.getSpace().get(Identity.valueOf(oracle_shell_id), Server.class, Missing.RequireAll).getValue();

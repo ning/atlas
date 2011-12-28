@@ -28,9 +28,13 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.skife.config.Config;
 import org.skife.config.ConfigurationObjectFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.Arrays.asList;
 
 public class RDSProvisioner extends ConcurrentComponent
 {
@@ -90,6 +94,11 @@ public class RDSProvisioner extends ConcurrentComponent
         Maybe<String> db_name = Maybe.elideNull(uri.getParams().get("name"));
         if (db_name.isKnown()) {
             req.setDBName(db_name.getValue());
+        }
+        Maybe<String> sec_group = Maybe.elideNull(uri.getParams().get("security_group"));
+        if (sec_group.isKnown()) {
+            AWS.waitForRDSSecurityGroup(sec_group.getValue(), d.getSpace(), 1, TimeUnit.MINUTES);
+            req.setDBSecurityGroups(asList(sec_group.getValue()));
         }
 
         DBInstance db = rds.createDBInstance(req);

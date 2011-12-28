@@ -1,7 +1,6 @@
 package com.ning.atlas.space;
 
 import com.google.common.base.CaseFormat;
-import com.google.common.collect.Maps;
 import com.google.common.primitives.Primitives;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Identity;
@@ -19,10 +18,7 @@ import java.util.Set;
 
 public abstract class BaseSpace implements Space
 {
-    private static final Logger log = Logger.get(BaseSpace.class);
     private static final ObjectMapper mapper = new ObjectMapper();
-
-    private final Map<String, String> scratchSpace = Maps.newConcurrentMap();
 
     @Override
     public void store(Identity id, Object it)
@@ -63,18 +59,6 @@ public abstract class BaseSpace implements Space
     }
 
     @Override
-    public void put(String key, String value)
-    {
-        this.scratchSpace.put(key, value);
-    }
-
-    @Override
-    public Maybe<String> get(String key)
-    {
-        return Maybe.elideNull(this.scratchSpace.get(key));
-    }
-
-    @Override
     public Maybe<String> get(Identity id, String key)
     {
         try {
@@ -84,6 +68,12 @@ public abstract class BaseSpace implements Space
         catch (IOException e) {
             throw new IllegalStateException("unable to read from persistent store", e);
         }
+    }
+
+    @Override
+    public Maybe<String> get(String idExternalForm, String key)
+    {
+        return get(Identity.valueOf(idExternalForm), key);
     }
 
     @Override
@@ -139,18 +129,6 @@ public abstract class BaseSpace implements Space
         }
 
         return Maybe.definitely(bean);
-    }
-
-    @Override
-    public String require(String s)
-    {
-        Maybe<String> m = get(s);
-        if (m.isKnown()) {
-            return m.getValue();
-        }
-        else {
-            throw new IllegalStateException("required value for " + s + " has not been defined");
-        }
     }
 
     @Override

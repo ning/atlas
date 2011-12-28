@@ -18,7 +18,7 @@ public class WaitForScratchValueInstaller extends ConcurrentComponent
         Maybe<String> result = Maybe.unknown();
         while (!result.isKnown()) {
             Thread.sleep(100);
-            result = d.getSpace().get(uri.getFragment());
+            result = d.getScratch().get(uri.getFragment());
         }
 
         return "okay";

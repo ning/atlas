@@ -13,6 +13,7 @@ import com.ning.atlas.aws.EC2SecurityGroupProvisioner;
 import com.ning.atlas.aws.ELBAddInstaller;
 import com.ning.atlas.aws.ELBProvisioner;
 import com.ning.atlas.aws.RDSProvisioner;
+import com.ning.atlas.aws.RDSSecurityGroupProvisioner;
 import com.ning.atlas.chef.UbuntuChefSoloInstaller;
 import com.ning.atlas.databases.OracleLoaderInstaller;
 import com.ning.atlas.files.ERBFileInstaller;
@@ -25,6 +26,7 @@ import com.ning.atlas.noop.NoOpProvisioner;
 import com.ning.atlas.packages.AptInstaller;
 import com.ning.atlas.packages.GemInstaller;
 import com.ning.atlas.packages.TarballInstaller;
+import com.ning.atlas.packages.ZipInstaller;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Maybe;
@@ -52,6 +54,7 @@ public class StaticPluginSystem implements PluginSystem
         registerProvisioner("noop", NoOpProvisioner.class, EMPTY_MAP);
         registerProvisioner("elb", ELBProvisioner.class, EMPTY_MAP);
         registerProvisioner("ec2-security-group", EC2SecurityGroupProvisioner.class, EMPTY_MAP);
+        registerProvisioner("rds-security-group", RDSSecurityGroupProvisioner.class, EMPTY_MAP);
 
         registerInstaller("elb-add", ELBAddInstaller.class, EMPTY_MAP);
         registerInstaller("scratch", ScratchInstaller.class, EMPTY_MAP);
@@ -69,6 +72,7 @@ public class StaticPluginSystem implements PluginSystem
         registerInstaller("exec", ExecInstaller.class, EMPTY_MAP);
         registerInstaller("ubuntu-chef-solo", UbuntuChefSoloInstaller.class, EMPTY_MAP);
         registerInstaller("tgz", TarballInstaller.class, EMPTY_MAP);
+        registerInstaller("zip", ZipInstaller.class, EMPTY_MAP);
         registerInstaller("wait-for", WaitForScratchValueInstaller.class, EMPTY_MAP);
 
         registerListener("aws-config", AWSConfigurator.class, EMPTY_MAP);

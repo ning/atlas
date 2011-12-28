@@ -31,7 +31,8 @@ public class ERBFileInstaller extends ConcurrentComponent
     private final static Logger log = Logger.get(ERBFileInstaller.class);
     private final String creds;
 
-    public ERBFileInstaller(Map<String, String> attrs) {
+    public ERBFileInstaller(Map<String, String> attrs)
+    {
         this.creds = attrs.get("credentials");
     }
 
@@ -48,8 +49,8 @@ public class ERBFileInstaller extends ConcurrentComponent
         container.setCompatVersion(CompatVersion.RUBY1_9);
 
         String out = String.valueOf(container.runScriptlet(format("require 'erb'\n" +
+                                                                  "require 'java'\n" +
                                                                   "ERB.new(File.read('%s')).result(binding)", from)));
-
         File tmp = File.createTempFile("atlas", ".tmp");
         Files.write(out.getBytes("UTF8"), tmp);
 

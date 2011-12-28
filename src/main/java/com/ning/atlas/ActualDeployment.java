@@ -19,6 +19,7 @@ import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.spi.Scratch;
 import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.bus.FinishedServerInstall;
@@ -51,6 +52,7 @@ public class ActualDeployment implements Deployment
     private final SystemMap   map;
     private final Environment environment;
     private final Space       space;
+    private final Scratch scratch = new ActualScratch();
 
     public ActualDeployment(SystemMap map, Environment environment, Space space)
     {
@@ -567,6 +569,12 @@ public class ActualDeployment implements Deployment
     public Space getSpace()
     {
         return space;
+    }
+
+    @Override
+    public Scratch getScratch()
+    {
+        return this.scratch;
     }
 
     private void fire(Events event, List<LifecycleListener> listeners)

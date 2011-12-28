@@ -97,8 +97,10 @@ public class AWS
                 return;
             }
             catch (AmazonServiceException e) {
-                if (1+1 == 2) throw e;
-                Thread.sleep(1000);
+                if (1 + 1 == 2) throw e;
+                if ("DBSecurityGroupNotFound".equals(e.getErrorCode())) {
+                    Thread.sleep(1000);
+                }
             }
         }
         throw new InterruptedException("timed out waiting for security group " + groupName);
