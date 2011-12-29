@@ -85,9 +85,9 @@ public class ELBProvisioner extends ConcurrentComponent
         DescribeLoadBalancersRequest des_lb = new DescribeLoadBalancersRequest();
         des_lb.setLoadBalancerNames(asList(elb_name));
         SourceSecurityGroup source = elb.describeLoadBalancers(des_lb)
-                                        .getLoadBalancerDescriptions()
-                                        .get(0)
-                                        .getSourceSecurityGroup();
+            .getLoadBalancerDescriptions()
+            .get(0)
+            .getSourceSecurityGroup();
 
         DescribeSecurityGroupsRequest req = new DescribeSecurityGroupsRequest();
         req.setGroupNames(groups_to_allow);
@@ -113,7 +113,18 @@ public class ELBProvisioner extends ConcurrentComponent
             in_req.setGroupName(group_name);
             in_req.setSourceSecurityGroupName(source.getGroupName());
             in_req.setSourceSecurityGroupOwnerId(source.getOwnerAlias());
-            ec2.authorizeSecurityGroupIngress(in_req);
+            try {
+                ec2.authorizeSecurityGroupIngress(in_req);
+            }
+            catch (AmazonServiceException e) {
+                if ("InvalidPermission.Duplicate".equals(e.getErrorCode())) {
+                    // it is okay, we are duping an existing. Our check for what to
+                    // allow missed something. EC2 perms are a pain.
+                }
+                else {
+                    throw e;
+                }
+            }
         }
     }
 

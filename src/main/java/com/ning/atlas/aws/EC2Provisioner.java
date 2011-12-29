@@ -4,12 +4,14 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2AsyncClient;
 import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
+import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -28,6 +30,7 @@ import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.protocols.AWS;
 import com.ning.atlas.spi.protocols.Server;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.Map;
@@ -135,6 +138,14 @@ public class EC2Provisioner extends ConcurrentComponent
                         info.setEc2InstanceId(i2.getInstanceId());
                         space.store(node.getId(), info);
                         space.store(node.getId(), server);
+
+
+                        String name = node.getId().toExternalForm().length() > 255
+                                      ? node.getId().toExternalForm().substring(0, 255)
+                                      : node.getId().toExternalForm();
+                        ec2.createTags(new CreateTagsRequest(asList(i2.getInstanceId()),
+                                                             asList(new Tag("Name", name))));
+
                         return "created new ec2 instance " + info.getEc2InstanceId();
                     }
                     else {
