@@ -6,6 +6,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -31,6 +32,8 @@ import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.space.Space;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.awt.geom.PathIterator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,67 +66,67 @@ public class ActualDeployment implements Deployment
 
     Description describe()
     {
-        final Set<Host> servers = map.findLeaves();
-        final Map<Host, HostDeploymentDescription> descriptors = Maps.newLinkedHashMap();
-        for (Host server : servers) {
-            descriptors.put(server, new HostDeploymentDescription(server.getId()));
-        }
+//        final Set<Host> servers = map.findLeaves();
+//        final Map<Host, HostDeploymentDescription> descriptors = Maps.newLinkedHashMap();
+//        for (Host server : servers) {
+//            descriptors.put(server, new HostDeploymentDescription(server.getId()));
+//        }
+//
+//        List<Pair<Host, Future<String>>> provision_futures = Lists.newArrayList();
+//        List<Pair<Host, Future<String>>> init_futures = Lists.newArrayList();
+//        List<Pair<Host, Future<String>>> install_futures = Lists.newArrayList();
+//        for (Host server : servers) {
+//
+//            Provisioner p = environment.resolveProvisioner(server.getProvisionerUri().getScheme());
+//            provision_futures.add(Pair.of(server, p.describe(server, server.getProvisionerUri(), this)));
+//
+//            for (Uri<Installer> uri : server.getInitializationUris()) {
+//                Installer i = environment.resolveInstaller(uri.getScheme());
+//                init_futures.add(Pair.of(server, i.describe(server, uri, this)));
+//            }
+//
+//            for (Uri<Installer> uri : server.getInstallationUris()) {
+//                Installer i = environment.resolveInstaller(uri.getScheme());
+//                install_futures.add(Pair.of(server, i.describe(server, uri, this)));
+//            }
+//        }
+//        for (Pair<Host, Future<String>> pair : provision_futures) {
+//            try {
+//                descriptors.get(pair.getLeft()).addStep(StepType.Provision, pair.getRight().get());
+//            }
+//            catch (InterruptedException e) {
+//                throw new UnsupportedOperationException("Not Yet Implemented!");
+//            }
+//            catch (ExecutionException e) {
+//                throw new UnsupportedOperationException("Not Yet Implemented!");
+//            }
+//        }
+//
+//        for (Pair<Host, Future<String>> pair : init_futures) {
+//            try {
+//                descriptors.get(pair.getLeft()).addStep(StepType.Initialize, pair.getRight().get());
+//            }
+//            catch (InterruptedException e) {
+//                throw new UnsupportedOperationException("Not Yet Implemented!");
+//            }
+//            catch (ExecutionException e) {
+//                throw new UnsupportedOperationException("Not Yet Implemented!");
+//            }
+//        }
+//
+//        for (Pair<Host, Future<String>> pair : install_futures) {
+//            try {
+//                descriptors.get(pair.getLeft()).addStep(StepType.Install, pair.getRight().get());
+//            }
+//            catch (InterruptedException e) {
+//                throw new UnsupportedOperationException("Not Yet Implemented!");
+//            }
+//            catch (ExecutionException e) {
+//                throw new UnsupportedOperationException("Not Yet Implemented!");
+//            }
+//        }
 
-        List<Pair<Host, Future<String>>> provision_futures = Lists.newArrayList();
-        List<Pair<Host, Future<String>>> init_futures = Lists.newArrayList();
-        List<Pair<Host, Future<String>>> install_futures = Lists.newArrayList();
-        for (Host server : servers) {
-
-            Provisioner p = environment.resolveProvisioner(server.getProvisionerUri().getScheme());
-            provision_futures.add(Pair.of(server, p.describe(server, server.getProvisionerUri(), this)));
-
-            for (Uri<Installer> uri : server.getInitializationUris()) {
-                Installer i = environment.resolveInstaller(uri.getScheme());
-                init_futures.add(Pair.of(server, i.describe(server, uri, this)));
-            }
-
-            for (Uri<Installer> uri : server.getInstallationUris()) {
-                Installer i = environment.resolveInstaller(uri.getScheme());
-                install_futures.add(Pair.of(server, i.describe(server, uri, this)));
-            }
-        }
-        for (Pair<Host, Future<String>> pair : provision_futures) {
-            try {
-                descriptors.get(pair.getLeft()).addStep(StepType.Provision, pair.getRight().get());
-            }
-            catch (InterruptedException e) {
-                throw new UnsupportedOperationException("Not Yet Implemented!");
-            }
-            catch (ExecutionException e) {
-                throw new UnsupportedOperationException("Not Yet Implemented!");
-            }
-        }
-
-        for (Pair<Host, Future<String>> pair : init_futures) {
-            try {
-                descriptors.get(pair.getLeft()).addStep(StepType.Initialize, pair.getRight().get());
-            }
-            catch (InterruptedException e) {
-                throw new UnsupportedOperationException("Not Yet Implemented!");
-            }
-            catch (ExecutionException e) {
-                throw new UnsupportedOperationException("Not Yet Implemented!");
-            }
-        }
-
-        for (Pair<Host, Future<String>> pair : install_futures) {
-            try {
-                descriptors.get(pair.getLeft()).addStep(StepType.Install, pair.getRight().get());
-            }
-            catch (InterruptedException e) {
-                throw new UnsupportedOperationException("Not Yet Implemented!");
-            }
-            catch (ExecutionException e) {
-                throw new UnsupportedOperationException("Not Yet Implemented!");
-            }
-        }
-
-        return new Description(descriptors.values());
+        return new Description(Collections.<HostDeploymentDescription>emptyList());
     }
 
     public void destroy()
@@ -225,29 +228,7 @@ public class ActualDeployment implements Deployment
 
     private void unwindAll(ListeningExecutorService es, Set<Identity> ids)
     {
-
-        final Cache<String, Installer> installer_cache = CacheBuilder.newBuilder()
-                                                                     .maximumSize(Integer.MAX_VALUE)
-                                                                     .concurrencyLevel(10)
-                                                                     .removalListener(new RemovalListener<String, Installer>()
-                                                                     {
-                                                                         @Override
-                                                                         public void onRemoval(RemovalNotification<String, Installer> event)
-                                                                         {
-                                                                             event.getValue()
-                                                                                  .finish(ActualDeployment.this);
-                                                                         }
-                                                                     })
-                                                                     .build(new CacheLoader<String, Installer>()
-                                                                     {
-                                                                         @Override
-                                                                         public Installer load(String key) throws Exception
-                                                                         {
-                                                                             Installer installer = environment.resolveInstaller(key);
-                                                                             installer.start(ActualDeployment.this);
-                                                                             return installer;
-                                                                         }
-                                                                     });
+        final InstallerCache installer_cache = new InstallerCache(this);
 
         final Cache<String, Provisioner> provisioner_cache = CacheBuilder.newBuilder()
                                                                          .maximumSize(Integer.MAX_VALUE)
@@ -284,7 +265,9 @@ public class ActualDeployment implements Deployment
 
                     for (Uri<Installer> in : transform(reverse(wwd.getInstallations()), Uri.<Installer>stringToUri())) {
                         try {
-                            installer_cache.get(in.getScheme()).uninstall(identity, in, ActualDeployment.this).get();
+                            for (Pair<Uri<Installer>, Installer> pair : installer_cache.lookup(in)) {
+                                pair.getRight().uninstall(identity, pair.getLeft(), ActualDeployment.this);
+                            }
                         }
                         catch (Exception e) {
                             log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
@@ -293,7 +276,9 @@ public class ActualDeployment implements Deployment
 
                     for (Uri<Installer> in : transform(reverse(wwd.getInitializations()), Uri.<Installer>stringToUri())) {
                         try {
-                            installer_cache.get(in.getScheme()).uninstall(identity, in, ActualDeployment.this).get();
+                            for (Pair<Uri<Installer>, Installer> pair : installer_cache.lookup(in)) {
+                                pair.getRight().uninstall(identity, pair.getLeft(), ActualDeployment.this);
+                            }
                         }
                         catch (Exception e) {
                             log.warn(e, "unable to unwind %s on %s", in.toString(), identity.toExternalForm());
@@ -327,7 +312,7 @@ public class ActualDeployment implements Deployment
         }
 
         // will cause the components to be finish()ed
-        installer_cache.invalidateAll();
+        installer_cache.finished();
         provisioner_cache.invalidateAll();
 
     }
@@ -337,27 +322,13 @@ public class ActualDeployment implements Deployment
         log.info("starting install");
         bus.startNewStage();
         fire(Events.startInstall, listeners);
-        performInstalls(es, new Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>>()
-        {
-            @Override
-            public List<Pair<Uri<Installer>, Installer>> apply(Pair<Host, Map<String, Installer>> input)
-            {
-                final List<Pair<Uri<Installer>, Installer>> rs = Lists.newArrayList();
-                for (Uri<Installer> uri : input.getLeft().getInstallationUris()) {
-                    Installer i;
-                    if (input.getRight().containsKey(uri.getScheme())) {
-                        i = input.getRight().get(uri.getScheme());
-                    }
-                    else {
-                        i = environment.resolveInstaller(uri.getScheme());
-                        input.getRight().put(uri.getScheme(), i);
-                    }
 
-                    rs.add(Pair.of(uri, i));
-                }
-                return rs;
-            }
-        });
+        List<Pair<Host, List<Uri<Installer>>>> floggles = Lists.newArrayList();
+        for (Host host : map.findLeaves()) {
+            floggles.add(Pair.of(host, host.getInstallationUris()));
+        }
+        performInstalls(es, floggles);
+
         fire(Events.finishInstall, listeners);
         log.info("finished install");
     }
@@ -367,26 +338,13 @@ public class ActualDeployment implements Deployment
         log.info("starting init");
         bus.startNewStage();
         fire(Events.startInit, listeners);
-        performInstalls(es, new Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>>()
-        {
-            @Override
-            public List<Pair<Uri<Installer>, Installer>> apply(Pair<Host, Map<String, Installer>> input)
-            {
-                final List<Pair<Uri<Installer>, Installer>> rs = Lists.newArrayList();
-                for (Uri<Installer> uri : input.getKey().getInitializationUris()) {
-                    Installer i;
-                    if (input.getRight().containsKey(uri.getScheme())) {
-                        i = input.getRight().get(uri.getScheme());
-                    }
-                    else {
-                        i = environment.resolveInstaller(uri.getScheme());
-                        input.getRight().put(uri.getScheme(), i);
-                    }
-                    rs.add(Pair.of(uri, i));
-                }
-                return rs;
-            }
-        });
+
+        List<Pair<Host, List<Uri<Installer>>>> floggles = Lists.newArrayList();
+        for (Host host : map.findLeaves()) {
+            floggles.add(Pair.of(host, host.getInitializationUris()));
+        }
+        performInstalls(es, floggles);
+
         fire(Events.finishInit, listeners);
         log.info("finished init");
     }
@@ -428,29 +386,21 @@ public class ActualDeployment implements Deployment
         }
     }
 
-    private void performInstalls(ListeningExecutorService es,
-                                 Function<Pair<Host, Map<String, Installer>>, List<Pair<Uri<Installer>, Installer>>> f)
+    private void performInstalls(ListeningExecutorService es, List<Pair<Host, List<Uri<Installer>>>> floggles)
     {
-        final Map<String, Installer> installers = Maps.newHashMap();
-        final Set<Host> servers = map.findLeaves();
-        final Map<Host, List<Pair<Uri<Installer>, Installer>>> t_to_i = Maps.newHashMap();
-        for (Host server : servers) {
-            final List<Pair<Uri<Installer>, Installer>> xs = f.apply(Pair.of(server, installers));
-            t_to_i.put(server, xs);
-        }
-
-        // start
-        for (Installer installer : installers.values()) {
-            installer.start(this);
-        }
+        InstallerCache installers = new InstallerCache(this);
 
         // install
         final List<Future<?>> futures = Lists.newArrayList();
-        for (Map.Entry<Host, List<Pair<Uri<Installer>, Installer>>> entry : t_to_i.entrySet()) {
-            final Host server = entry.getKey();
-            final List<Pair<Uri<Installer>, Installer>> installations = entry.getValue();
-            futures.add(installAllOnHost(es, server, installations));
+
+        for (Pair<Host, List<Uri<Installer>>> pair : floggles) {
+            List<Pair<Uri<Installer>, Installer>> real = Lists.newArrayList();
+            for (Uri<Installer> uri : pair.getRight()) {
+                real.addAll(installers.lookup(uri));
+            }
+            futures.add(installAllOnHost(es, pair.getLeft(), real));
         }
+
         for (Future<?> future : futures) {
             try {
                 future.get();
@@ -461,11 +411,7 @@ public class ActualDeployment implements Deployment
             }
         }
 
-        // finish
-        for (Installer installer : installers.values()) {
-            installer.finish(this);
-        }
-
+        installers.finished();
     }
 
     private Future<Status> installAllOnHost(ListeningExecutorService es,

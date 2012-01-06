@@ -13,6 +13,7 @@ import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -67,6 +68,7 @@ public class TestActualDeployment
     }
 
     @Test
+    @Ignore
     public void testDescribe() throws Exception
     {
         ActualDeployment dp = env.planDeploymentFor(map, space);

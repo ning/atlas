@@ -1,6 +1,7 @@
 package com.ning.atlas;
 
 import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
@@ -48,7 +49,7 @@ public class ServerTemplate extends Template
 
             List<Uri<Installer>> inits = Lists.transform(base.getInitUris(), new DeTemplaterizer<Installer>(this.base, getMy()));
             List<Uri<Installer>> installs = Lists.transform(getInstallUris(), new DeTemplaterizer<Installer>(this.base, getMy()));
-            Uri<Provisioner> prov_uri =  new DeTemplaterizer<Provisioner>(this.base, getMy()).apply(base.getProvisionUri());
+            Uri<Provisioner> prov_uri = new DeTemplaterizer<Provisioner>(this.base, getMy()).apply(base.getProvisionUri());
 
             rs.add(new Host(id, prov_uri, inits, installs, getMy()));
         }
@@ -73,7 +74,7 @@ public class ServerTemplate extends Template
     private static class DeTemplaterizer<T> implements Function<Uri<T>, Uri<T>>
     {
         private final Uri<Base> base;
-        private final My my;
+        private final My        my;
 
         public DeTemplaterizer(Uri<Base> base, My my)
         {
@@ -85,10 +86,8 @@ public class ServerTemplate extends Template
         public Uri<T> apply(Uri<T> input)
         {
             if (input.isTemplate()) {
-                ST st = new ST(input.toStringUnEscaped(), '{', '}');
-                st.add("base", this.base);
-                st.add("server", this.my.asMap());
-                return Uri.valueOf(st.render());
+                return new UriTemplate<T>(input).apply(ImmutableMap.of("base", this.base,
+                                                                       "server", this.my.asMap()));
             }
             else {
                 return input;

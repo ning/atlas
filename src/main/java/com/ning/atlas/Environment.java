@@ -1,17 +1,22 @@
 package com.ning.atlas;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
 import com.ning.atlas.plugin.PluginSystem;
 import com.ning.atlas.plugin.StaticPluginSystem;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Provisioner;
+import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.space.Space;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -23,6 +28,9 @@ public class Environment
     private final List<String>        listeners  = Lists.newArrayList();
     private final Map<String, Base>   bases      = Maps.newConcurrentMap();
     private final Map<String, String> properties = Maps.newConcurrentMap();
+
+    private final ListMultimap<String, Uri<Installer>> virtualInstallers =
+        Multimaps.synchronizedListMultimap(ArrayListMultimap.<String, Uri<Installer>>create());
 
     private final PluginSystem         plugins;
     private final Collection<Template> environmentDefinedElements;
@@ -107,21 +115,17 @@ public class Environment
         return plugins.findProvisioner(provisioner);
     }
 
-    public Maybe<Installer> findInstaller(String scheme)
+    public Installer findInstaller(Uri<Installer> uri)
     {
-        return plugins.findInstaller(scheme);
+        return plugins.findInstaller(uri.getScheme())
+                      .otherwise(new IllegalStateException("No installer matches " + uri));
+
     }
 
     public Provisioner resolveProvisioner(String scheme)
     {
-        return plugins.findProvisioner(scheme).otherwise(new IllegalStateException("unable to locate provisioner for " +
-                                                                                   scheme));
-    }
-
-    public Installer resolveInstaller(String scheme)
-    {
-        return plugins.findInstaller(scheme).otherwise(new IllegalStateException("unable to locate installer for " +
-                                                                                 scheme));
+        return plugins.findProvisioner(scheme)
+                      .otherwise(new IllegalStateException("unable to locate provisioner for " + scheme));
     }
 
     public List<LifecycleListener> getListeners()
@@ -134,7 +138,7 @@ public class Environment
         return rs;
     }
 
-    public PluginSystem getPluginSystem()
+    PluginSystem getPluginSystem()
     {
         return this.plugins;
     }
@@ -142,5 +146,20 @@ public class Environment
     public Collection<Template> getEnvironmentDefinedElements()
     {
         return environmentDefinedElements;
+    }
+
+    public List<Uri<Installer>> expand(Uri<Installer> uri)
+    {
+        if (virtualInstallers.containsKey(uri.getScheme())) {
+            return virtualInstallers.get(uri.getScheme());
+        }
+        else {
+            return Collections.singletonList(uri);
+        }
+    }
+
+    public boolean isVirtual(Uri<Installer> uri)
+    {
+        return virtualInstallers.containsKey(uri.getScheme());
     }
 }

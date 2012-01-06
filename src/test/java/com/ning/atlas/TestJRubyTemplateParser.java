@@ -240,4 +240,16 @@ public class TestJRubyTemplateParser
         assertThat(map.findLeaves().size(), equalTo(2));
     }
 
+    @Test
+    public void testVirtualInstaller() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Environment e = p.parseEnvironment(new File("src/test/ruby/test_jruby_template_parser_test_virtual_installer-env.rb"));
+        Template t = p.parseSystem(new File("src/test/ruby/test_jruby_template_parser_test_virtual_installer-sys.rb"));
+
+        SystemMap map = t.normalize(e);
+        assertThat(map.findLeaves().size(), equalTo(1));
+
+    }
+
 }
