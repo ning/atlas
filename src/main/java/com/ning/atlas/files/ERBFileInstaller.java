@@ -45,6 +45,7 @@ public class ERBFileInstaller extends ConcurrentComponent
 
         ScriptingContainer container = new ScriptingContainer();
         container.put("$deployment", d);
+        container.put("$uri", uri);
         container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
         container.setCompatVersion(CompatVersion.RUBY1_9);
 

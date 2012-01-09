@@ -15,6 +15,7 @@ import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.space.Space;
+import com.sun.tools.internal.xjc.reader.xmlschema.parser.LSInputSAXWrapper;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -40,6 +41,7 @@ public class Environment
         this(new StaticPluginSystem(),
              Collections.<String, Map<String, String>>emptyMap(),
              Collections.<String, Map<String, String>>emptyMap(),
+             Collections.<String, List<String>>emptyMap(),
              Collections.<String, Map<String, String>>emptyMap(),
              Collections.<String, Base>emptyMap(),
              Collections.<String, String>emptyMap(),
@@ -53,12 +55,20 @@ public class Environment
                        Map<String, Base> bases,
                        Map<String, String> properties)
     {
-        this(plugins, provisioners, installers, listeners, bases, properties, Collections.<Template>emptyList());
+        this(plugins,
+             provisioners,
+             installers,
+             Collections.<String, List<String>>emptyMap(),
+             listeners,
+             bases,
+             properties,
+             Collections.<Template>emptyList());
     }
 
     public Environment(PluginSystem plugins,
                        Map<String, Map<String, String>> provisioners,
                        Map<String, Map<String, String>> installers,
+                       Map<String, List<String>> virtualInstallers,
                        Map<String, Map<String, String>> listeners,
                        Map<String, Base> bases,
                        Map<String, String> properties,
@@ -78,6 +88,12 @@ public class Environment
         for (Map.Entry<String, Map<String, String>> entry : listeners.entrySet()) {
             plugins.registerListenerConfig(entry.getKey(), entry.getValue());
             this.listeners.add(entry.getKey());
+        }
+
+        for (Map.Entry<String, List<String>> entry : virtualInstallers.entrySet()) {
+            for (String uri : entry.getValue()) {
+                this.virtualInstallers.put(entry.getKey(), Uri.<Installer>valueOf(uri));
+            }
         }
 
         this.bases.putAll(bases);

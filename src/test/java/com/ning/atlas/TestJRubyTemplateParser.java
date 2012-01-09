@@ -1,7 +1,10 @@
 package com.ning.atlas;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.ning.atlas.noop.NoOpInstaller;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.base.MorePredicates;
 import com.ning.atlas.space.InMemorySpace;
@@ -12,10 +15,12 @@ import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.tree.Trees;
+import org.apache.commons.lang3.tuple.Pair;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
+import org.jruby.parser.LocalStaticScope;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -243,6 +248,7 @@ public class TestJRubyTemplateParser
     @Test
     public void testVirtualInstaller() throws Exception
     {
+        NoOpInstaller.reset();
         JRubyTemplateParser p = new JRubyTemplateParser();
         Environment e = p.parseEnvironment(new File("src/test/ruby/test_jruby_template_parser_test_virtual_installer-env.rb"));
         Template t = p.parseSystem(new File("src/test/ruby/test_jruby_template_parser_test_virtual_installer-sys.rb"));
@@ -250,6 +256,10 @@ public class TestJRubyTemplateParser
         SystemMap map = t.normalize(e);
         assertThat(map.findLeaves().size(), equalTo(1));
 
+        Host h = Iterables.getOnlyElement(map.findLeaves());
+        assertThat(ImmutableList.copyOf(h.getInstallationUris()),
+                   equalTo(ImmutableList.of(Uri.<Installer>valueOf("noop:3.0.2"),
+                                            Uri.<Installer>valueOf("noop:octopus"))));
     }
 
 }

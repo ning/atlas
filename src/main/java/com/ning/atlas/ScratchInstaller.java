@@ -23,12 +23,12 @@ public class ScratchInstaller extends BaseComponent implements Installer
     public Future<Status> install(Host server, Uri<Installer> uri, Deployment deployment)
     {
         final String id = server.getId().toExternalForm();
-        final Space space = deployment.getSpace();
         Map<String, String> pairs = Splitter.on(";").trimResults().withKeyValueSeparator("=").split(uri.getFragment());
         for (Map.Entry<String, String> entry : pairs.entrySet()) {
             final String key = entry.getKey();
             final String value = entry.getValue();
             deployment.getScratch().put(key.replaceAll("@", id), value.replaceAll("@", id));
+
         }
 
         return Futures.immediateFuture(Status.okay("wrote out value"));

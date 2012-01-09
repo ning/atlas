@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
+import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Scratch;
 
@@ -11,11 +12,14 @@ import java.util.List;
 
 public class ActualScratch implements Scratch
 {
+    private static final Logger log = Logger.get(ActualScratch.class);
+
     private final ListMultimap<String, String> values = Multimaps.synchronizedListMultimap(ArrayListMultimap.<String, String>create());
 
     public void put(String key, String value)
     {
         synchronized (values) {
+            log.info("%s = %s", key, value);
             values.put(key, value);
         }
     }

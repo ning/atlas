@@ -1,12 +1,10 @@
 package com.ning.atlas;
 
-import com.google.common.base.Function;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -32,7 +30,6 @@ import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.space.Space;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.awt.geom.PathIterator;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

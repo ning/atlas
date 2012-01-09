@@ -24,11 +24,11 @@ module Atlas
 
     Array(xs).map do |x|
       i, params = Array(x)
-      params    = if params then
-                    Atlas.stringify params
-                  else
-                    Hash.new
-                  end
+      params = if params then
+                 Atlas.stringify params
+               else
+                 Hash.new
+               end
       com.ning.atlas.spi.Uri.value_of2(i, params)
     end
   end
@@ -44,7 +44,7 @@ module Atlas
 
   class RootEnvParser
     def initialize path
-      @path     = path
+      @path = path
       @template = open(path).read
     end
 
@@ -62,8 +62,8 @@ module Atlas
   class EnvironmentParser
 
     def initialize block
-      @block                                                      = block
-      @properties, @provisioners, @installers, @bases, @listeners = {}, {}, {}, {}, {}
+      @block = block
+      @properties, @provisioners, @installers, @bases, @listeners, @virtual_installers = {}, {}, {}, {}, {}, {}
       @children = []
     end
 
@@ -72,6 +72,7 @@ module Atlas
       com.ning.atlas.Environment.new com.ning.atlas.plugin.StaticPluginSystem.new,
                                      @provisioners,
                                      @installers,
+                                     @virtual_installers,
                                      @listeners,
                                      @bases,
                                      @properties,
@@ -106,7 +107,11 @@ module Atlas
     end
 
     def installer name, args = {}
-      @installers[name] = Atlas.stringify(args)
+      if args[:virtual] then
+        @virtual_installers[name] = Array(args[:virtual])
+      else
+        @installers[name] = Atlas.stringify(args)
+      end
     end
 
     def system name="system", args={}, &block
@@ -119,7 +124,7 @@ module Atlas
     end
 
     def server name, args={}
-      installers  = Atlas.parse_install_list(args[:install])
+      installers = Atlas.parse_install_list(args[:install])
 
       # cardinality can be nil, a number, or an array
       cardinality = case it = args[:cardinality]
@@ -158,8 +163,8 @@ module Atlas
 
     def initialize name, path
       @name, @path = name, path
-      @children    = []
-      @template    = open(path).read
+      @children = []
+      @template = open(path).read
     end
 
     def __parse
@@ -177,7 +182,7 @@ module Atlas
     end
 
     def server name, args={}
-      installers  = Atlas.parse_install_list(args[:install])
+      installers = Atlas.parse_install_list(args[:install])
 
       # cardinality can be nil, a number, or an array
       cardinality = case it = args[:cardinality]
@@ -217,7 +222,7 @@ module Atlas
 
     def initialize name, args, block
       @name, @args, @block = name, args, block
-      @children            = []
+      @children = []
     end
 
     def __parse
@@ -246,7 +251,7 @@ module Atlas
     end
 
     def server name, args={}
-      installers  = Atlas.parse_install_list(args[:install])
+      installers = Atlas.parse_install_list(args[:install])
 
       # cardinality can be nil, a number, or an array
       cardinality = case it = args[:cardinality]
