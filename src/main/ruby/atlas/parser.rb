@@ -218,7 +218,6 @@ module Atlas
   end
 
   class SystemParser
-    java_import 'com.ning.atlas.spi.Uri'
 
     def initialize name, args, block
       @name, @args, @block = name, args, block
