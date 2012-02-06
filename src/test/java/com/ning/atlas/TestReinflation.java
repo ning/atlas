@@ -1,16 +1,5 @@
 package com.ning.atlas;
 
-import com.ning.atlas.errors.ErrorCollector;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.junit.Test;
-
-import java.io.File;
-
-import static com.google.common.util.concurrent.MoreExecutors.sameThreadExecutor;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 public class TestReinflation
 {
 //    @Test

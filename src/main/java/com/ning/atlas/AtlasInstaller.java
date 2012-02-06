@@ -2,6 +2,7 @@ package com.ning.atlas;
 
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.Futures;
+import com.ning.atlas.components.ConcurrentComponent;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.space.Missing;

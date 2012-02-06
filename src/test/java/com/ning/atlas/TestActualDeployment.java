@@ -1,19 +1,17 @@
 package com.ning.atlas;
 
 import com.google.common.collect.ImmutableMap;
-import com.ning.atlas.noop.NoOpInstaller;
-import com.ning.atlas.noop.NoOpProvisioner;
+import com.ning.atlas.components.noop.NoOpInstaller;
+import com.ning.atlas.components.noop.NoOpProvisioner;
 import com.ning.atlas.plugin.StaticPluginSystem;
 import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -21,7 +19,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.hasItem;
 
@@ -65,29 +62,6 @@ public class TestActualDeployment
 
         map = root.normalize(env);
         space = InMemorySpace.newInstance();
-    }
-
-    @Test
-    @Ignore
-    public void testDescribe() throws Exception
-    {
-        ActualDeployment dp = env.planDeploymentFor(map, space);
-        Description d = dp.describe();
-
-        assertThat(d.getDescriptors().size(), equalTo(2));
-        for (HostDeploymentDescription description : d.getDescriptors()) {
-            //provisioning
-            assertThat(description.getSteps().get(StepType.Provision),
-                       equalTo(Arrays.asList("do nothing with noop:happy")));
-
-            // initialization
-            assertThat(description.getSteps()
-                                  .get(StepType.Initialize), equalTo(Arrays.asList("do nothing with foo:init")));
-
-
-            assertThat(description.getSteps()
-                                  .get(StepType.Install), equalTo(Arrays.asList("do nothing with foo:install")));
-        }
     }
 
     @Test

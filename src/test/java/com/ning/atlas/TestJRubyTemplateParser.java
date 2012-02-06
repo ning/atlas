@@ -2,9 +2,8 @@ package com.ning.atlas;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.ning.atlas.noop.NoOpInstaller;
+import com.ning.atlas.components.noop.NoOpInstaller;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.base.MorePredicates;
 import com.ning.atlas.space.InMemorySpace;
@@ -15,13 +14,9 @@ import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.tree.Trees;
-import org.apache.commons.lang3.tuple.Pair;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.jruby.parser.LocalStaticScope;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -58,18 +53,6 @@ public class TestJRubyTemplateParser
         assertThat(rslv.getCardinality(), equalTo(asList("0", "1", "2", "3", "4", "5", "6", "7")));
         assertThat(rslv.getBaseUri().getScheme(), equalTo("ubuntu-small"));
         assertThat(rslv.getInstallUris(), hasItem(Uri.<Installer>valueOf("cast:load-balancer-9.3")));
-    }
-
-    @Test
-    @Ignore
-    public void testJson() throws Exception
-    {
-        JRubyTemplateParser p = new JRubyTemplateParser();
-        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
-        SystemMap map = t.normalize(new Environment());
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
-        mapper.writeValue(System.out, map.getSingleRoot());
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.ning.atlas;
 
+import com.ning.atlas.components.ScratchInstaller;
 import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
