@@ -40,6 +40,10 @@ public class TestJRubyTemplateParser
     public void testSimpleSystem() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
+
+
+
+
         Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
         assertThat(t, notNullValue());
         List<Template> leaves = Trees.leaves(t);
