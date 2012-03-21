@@ -53,7 +53,8 @@ public class TestActualDeployment
 
 
 
-        env = new Environment(plugins,
+        env = new Environment("hello",
+                              plugins,
                               Collections.<String, Map<String,String>>emptyMap(),
                               Collections.<String, Map<String,String>>emptyMap(),
                               Collections.<String, Map<String,String>>emptyMap(),

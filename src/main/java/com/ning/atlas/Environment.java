@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Environment
 {
@@ -35,10 +36,12 @@ public class Environment
 
     private final PluginSystem         plugins;
     private final Collection<Template> environmentDefinedElements;
+    private final String               name;
 
     public Environment()
     {
-        this(new StaticPluginSystem(),
+        this("lobby",
+             new StaticPluginSystem(),
              Collections.<String, Map<String, String>>emptyMap(),
              Collections.<String, Map<String, String>>emptyMap(),
              Collections.<String, List<String>>emptyMap(),
@@ -48,14 +51,16 @@ public class Environment
              Collections.<Template>emptyList());
     }
 
-    public Environment(PluginSystem plugins,
+    public Environment(String name,
+                       PluginSystem plugins,
                        Map<String, Map<String, String>> provisioners,
                        Map<String, Map<String, String>> installers,
                        Map<String, Map<String, String>> listeners,
                        Map<String, Base> bases,
                        Map<String, String> properties)
     {
-        this(plugins,
+        this(name,
+             plugins,
              provisioners,
              installers,
              Collections.<String, List<String>>emptyMap(),
@@ -65,7 +70,8 @@ public class Environment
              Collections.<Template>emptyList());
     }
 
-    public Environment(PluginSystem plugins,
+    public Environment(String name,
+                       PluginSystem plugins,
                        Map<String, Map<String, String>> provisioners,
                        Map<String, Map<String, String>> installers,
                        Map<String, List<String>> virtualInstallers,
@@ -74,6 +80,7 @@ public class Environment
                        Map<String, String> properties,
                        Collection<Template> environmentDefinedElements)
     {
+        this.name = name;
         this.plugins = plugins;
         this.environmentDefinedElements = ImmutableList.copyOf(environmentDefinedElements);
 
@@ -98,6 +105,11 @@ public class Environment
 
         this.bases.putAll(bases);
         this.properties.putAll(properties);
+    }
+
+    public String getName()
+    {
+        return name;
     }
 
     @Override

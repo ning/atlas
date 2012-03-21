@@ -37,6 +37,11 @@ module Atlas
     RootEnvParser.new(path).__parse
   end
 
+  def self.parse_descriptor path
+    sys = RootSystemParser.new(name, path).__parse
+    env = RootEnvParser.new(path).__parse
+    com.ning.atlas.Descriptor.new(Array(sys), Array(env))
+  end
 
   #
   # Environment Parsing Stuff
@@ -53,15 +58,16 @@ module Atlas
       @env
     end
 
-    def environment name="environment", &block
+    def environment name, &block
       # name is unused, is there for pretty readability
-      @env = EnvironmentParser.new(block).__parse
+      @env = EnvironmentParser.new(name, block).__parse
     end
   end
 
   class EnvironmentParser
 
-    def initialize block
+    def initialize name, block
+      @name = name
       @block = block
       @properties, @provisioners, @installers, @bases, @listeners, @virtual_installers = {}, {}, {}, {}, {}, {}
       @children = []
@@ -69,7 +75,8 @@ module Atlas
 
     def __parse
       instance_eval &@block
-      com.ning.atlas.Environment.new com.ning.atlas.plugin.StaticPluginSystem.new,
+      com.ning.atlas.Environment.new @name,
+                                     com.ning.atlas.plugin.StaticPluginSystem.new,
                                      @provisioners,
                                      @installers,
                                      @virtual_installers,

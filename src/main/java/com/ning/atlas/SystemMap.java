@@ -1,6 +1,7 @@
 package com.ning.atlas;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.ning.atlas.tree.Trees;
 
@@ -22,7 +23,7 @@ public class SystemMap
         this(asList(elements));
     }
 
-    public SystemMap(List<Element> roots)
+    public SystemMap(Iterable<Element> roots)
     {
         this.roots = ImmutableList.copyOf(roots);
     }
@@ -49,5 +50,10 @@ public class SystemMap
     public Element getSingleRoot()
     {
         return roots.get(0);
+    }
+
+    public SystemMap combine(SystemMap other)
+    {
+        return new SystemMap(Iterables.concat(this.getRoots(), other.getRoots()));
     }
 }

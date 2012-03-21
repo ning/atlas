@@ -17,6 +17,7 @@ import com.ning.atlas.tree.Trees;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.hamcrest.core.IsInstanceOf;
 import org.junit.Test;
 
 import java.io.File;
@@ -30,20 +31,63 @@ import static com.ning.atlas.base.MorePredicates.beanPropertyEquals;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
+import static org.junit.matchers.JUnitMatchers.containsString;
 import static org.junit.matchers.JUnitMatchers.hasItem;
 
 public class TestJRubyTemplateParser
 {
     public static final JsonFactory factory = new JsonFactory(new ObjectMapper());
 
+
+    @Test
+    public void testDescriptorParsingEnvironment() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Descriptor d = p.parseDescriptor(new File("src/test/ruby/ex1/simple-environment.rb"));
+        assertThat(d.getEnvironments().size(), equalTo(1));
+    }
+
+    @Test
+    public void testDescriptorParsingTemplate() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Descriptor d = p.parseDescriptor(new File("src/test/ruby/ex1/system-template.rb"));
+        assertThat(d.getTemplates().size(), equalTo(1));
+    }
+
+    @Test
+    public void testDescriptorMerging() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Descriptor env = p.parseDescriptor(new File("src/test/ruby/ex1/simple-environment.rb"));
+        Descriptor sys = p.parseDescriptor(new File("src/test/ruby/ex1/system-template.rb"));
+
+        Descriptor combined = env.combine(sys);
+        assertThat(combined.getEnvironments().size(), equalTo(2));
+        assertThat(combined.getTemplates().size(), equalTo(2));
+    }
+
+    @Test
+    public void testNormalizeDescriptor() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+
+        Descriptor env = p.parseDescriptor(new File("src/test/ruby/test_jruby_template_parser_test_virtual_installer-env.rb"));
+        Descriptor sys = p.parseDescriptor(new File("src/test/ruby/test_jruby_template_parser_test_virtual_installer-sys.rb"));
+
+        Descriptor combined = env.combine(sys);
+        SystemMap foo = combined.normalize("test");
+        Environment test = combined.getEnvironment("test");
+        ActualDeployment d = test.planDeploymentFor(foo, InMemorySpace.newInstance());
+        System.out.println(d);
+        d.update();
+
+    }
+
     @Test
     public void testSimpleSystem() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
-
-
-
-
         Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
         assertThat(t, notNullValue());
         List<Template> leaves = Trees.leaves(t);

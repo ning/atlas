@@ -9,6 +9,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
+import java.util.Collections;
+
+import static java.util.Arrays.asList;
 
 public class JRubyTemplateParser
 {
@@ -43,5 +46,21 @@ public class JRubyTemplateParser
         }
 
         return (Environment) container.runScriptlet("Atlas.parse_env('" + template.getAbsolutePath() + "')");
+    }
+
+    public Descriptor parseDescriptor(File descriptor)
+    {
+        ScriptingContainer container = new ScriptingContainer();
+        container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
+        container.setCompatVersion(CompatVersion.RUBY1_9);
+        try {
+            container.runScriptlet(new StringReader(Resources.toString(Resources.getResource("atlas/parser.rb"),
+                                                                       Charset.defaultCharset())), "atlas/parser.rb");
+        }
+        catch (IOException e) {
+            throw new IllegalStateException("cannot open atlas/parser.rb from classpath", e);
+        }
+
+        return (Descriptor) container.runScriptlet("Atlas.parse_descriptor('" + descriptor.getAbsolutePath() + "')");
     }
 }

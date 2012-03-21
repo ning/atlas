@@ -65,7 +65,6 @@ public abstract class Template implements Tree
     public final SystemMap normalize(Environment env)
     {
         List<Element> roots = Lists.newArrayList();
-
         List<Element> sys_roots = _normalize(Identity.root(), env);
         roots.addAll(sys_roots);
 
@@ -79,5 +78,4 @@ public abstract class Template implements Tree
     }
 
     protected abstract List<Element> _normalize(Identity parent, Environment env);
-
 }
