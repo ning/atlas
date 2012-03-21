@@ -32,7 +32,7 @@ public class AptInstaller extends ConcurrentComponent
         try {
             ssh.exec("sudo apt-get update");
             String out = ssh.exec("yes | sudo apt-get install " + uri.getFragment().replaceAll(",", " "));
-            log.info(out);
+            log.info("%s", out);
             return out;
         }
         finally {

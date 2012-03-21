@@ -11,7 +11,7 @@ public class Main
     public static void main(String... args) throws Exception
     {
         Cli.buildCli("atlas", Callable.class)
-           .withCommands(Converge.class, Destroy.class, Help.class)
+           .withCommands(Converge.class, Destroy.class, ListCommand.class, Help.class)
            .withDefaultCommand(Help.class)
            .build()
            .parse(args)

@@ -67,13 +67,6 @@ public abstract class Template implements Tree
         List<Element> roots = Lists.newArrayList();
         List<Element> sys_roots = _normalize(Identity.root(), env);
         roots.addAll(sys_roots);
-
-        Collection<Template> env_defined = env.getEnvironmentDefinedElements();
-        for (Template template : env_defined) {
-            List<Element> el = template._normalize(Identity.root(), env);
-            roots.addAll(el);
-        }
-
         return new SystemMap(roots);
     }
 

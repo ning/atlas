@@ -41,7 +41,7 @@ public class Destroy implements Callable<Void>
         Descriptor descriptor = Descriptor.empty();
         for (File file : modelDirectory.listFiles()) {
             if (file.isFile() && file.getName().endsWith(".rb")) {
-                descriptor.combine(p.parseDescriptor(file));
+                descriptor = descriptor.combine(p.parseDescriptor(file));
             }
         }
 

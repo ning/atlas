@@ -4,14 +4,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.ning.atlas.spi.Identity;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.collect.Iterables.concat;
 
 public class Descriptor
 {
@@ -61,6 +63,13 @@ public class Descriptor
         while (itty.hasNext()) {
             map = map.combine(itty.next().normalize(env));
         }
+
+        Collection<Template> env_defined = env.getEnvironmentDefinedElements();
+        for (Template template : env_defined) {
+            List<Element> el = template._normalize(Identity.root(), env);
+            map = new SystemMap(concat(map.getRoots(), el));
+        }
+
         return map;
     }
 
