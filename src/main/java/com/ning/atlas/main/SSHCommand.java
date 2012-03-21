@@ -1,127 +1,102 @@
 package com.ning.atlas.main;
 
-import com.kenai.constantine.platform.Errno;
-import com.ning.atlas.logging.Logger;
-import org.jruby.ext.posix.POSIX;
-import org.jruby.ext.posix.POSIXFactory;
-import org.jruby.ext.posix.POSIXHandler;
+import com.ning.atlas.Descriptor;
+import com.ning.atlas.Host;
+import com.ning.atlas.JRubyTemplateParser;
+import com.ning.atlas.SystemMap;
+import com.ning.atlas.space.SQLiteBackedSpace;
+import com.ning.atlas.spi.Maybe;
+import com.ning.atlas.spi.protocols.SSHCredentials;
+import com.ning.atlas.spi.protocols.Server;
+import com.ning.atlas.spi.space.Space;
+import com.ning.atlas.spi.space.SpaceKey;
+import jnr.ffi.Library;
+import jnr.ffi.Pointer;
+import jnr.ffi.annotations.In;
+import jnr.ffi.annotations.Out;
+import jnr.ffi.byref.IntByReference;
+import org.apache.commons.lang3.StringUtils;
+import org.skife.cli.org.iq80.cli.Arguments;
+import org.skife.cli.org.iq80.cli.Command;
+import org.skife.cli.org.iq80.cli.Option;
 
 import java.io.File;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
+@Command(name = "ssh")
 public class SSHCommand implements Callable<Void>
 {
-    private static final Logger logger = Logger.get(SSHCommand.class);
 
-    private static final POSIX posix = POSIXFactory.getPOSIX(new POSIXHandler()
+    private static final LibC posix = Library.loadLibrary("c", LibC.class);
+
+    @Option(name = "--models", configuration = "model")
+    public File modelDirectory = new File("model");
+
+    @Option(name = "--space", configuration = "space")
+    public File spaceFile = new File(".atlas", "space.db");
+
+    @Option(name = "-e")
+    public String environmentName = "dev";
+
+    @Arguments
+    public String query;
+
+    @Override
+    public Void call() throws IOException
     {
-
-        @Override
-        public void error(Errno errno, String s)
-        {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Descriptor descriptor = Descriptor.empty();
+        for (File file : modelDirectory.listFiles()) {
+            if (file.isFile() && file.getName().endsWith(".rb")) {
+                descriptor = descriptor.combine(p.parseDescriptor(file));
+            }
         }
+        Space space = SQLiteBackedSpace.create(spaceFile);
+        SystemMap map = descriptor.normalize(environmentName);
+        for (Host host : map.findLeaves()) {
+            Maybe<Server> server = space.get(host.getId(), Server.class);
+            if (host.getId().toExternalForm().contains(query) && server.isKnown()) {
+                IntByReference pid = new IntByReference();
 
-        @Override
-        public void unimplementedError(String s)
-        {
+
+                SSHCredentials creds = SSHCredentials.defaultCredentials(space)
+                                                     .otherwise(new IllegalStateException("need to use default creds for ssh right now"));
+
+                String[] argv = new String[]{
+                    // -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i %s %s@%s
+                    "ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", "-i", creds.getKeyFilePath(), String
+                    .format("%s@%s", creds.getUserName(), server.getValue().getExternalAddress())
+                };
+                posix.posix_spawnp(pid, "ssh", null, null, argv, getEnv());
+                posix.waitpid(pid.intValue(), 0, 0);
+                return null;
+            }
         }
+        return null;
+    }
 
-        @Override
-        public void warn(WARNING_ID warning_id, String s, Object... objects)
-        {
-        }
-
-        @Override
-        public boolean isVerbose()
-        {
-            return false;
-        }
-
-        @Override
-        public File getCurrentWorkingDirectory()
-        {
-            return new File(".");
-        }
-
-        @Override
-        public String[] getEnv()
-        {
-            return new String[0];
-        }
-
-        @Override
-        public InputStream getInputStream()
-        {
-            return System.in;
-        }
-
-        @Override
-        public PrintStream getOutputStream()
-        {
-            return System.out;
-        }
-
-        @Override
-        public int getPID()
-        {
-            return 0;
-        }
-
-        @Override
-        public PrintStream getErrorStream()
-        {
-            return System.err;
-        }
-
-    }, true);
-
-
-    public SSHCommand()
+    public static interface LibC
     {
+        int posix_spawnp(@Out IntByReference pid,
+                         @In CharSequence path,
+                         @In Pointer fileActions,
+                         @In Pointer attr,
+                         @In CharSequence[] argv,
+                         @In CharSequence[] envp);
+
+        int waitpid(int a, int b, int c);
 
     }
 
-    @Override
-    public Void call() throws Exception
+    public static String[] getEnv()
     {
-//        Space space = SQLiteBackedSpace.create(new File(".atlas", "space.db"));
-//
-//        String looksee = mainOptions.getCommandArguments()[0];
-//        Maybe<String[]> remote_commands;
-//        if (mainOptions.getCommandArguments().length > 1) {
-//            execute a remote command rather than shell in
-//            remote_commands = Maybe.definitely(Arrays.copyOfRange(mainOptions.getCommandArguments(),
-//                                                                  1, mainOptions.getCommandArguments().length));
-//        }
-//        else {
-//            remote_commands = Maybe.unknown();
-//        }
-//
-//        SSHCredentials creds = SSHCredentials.defaultCredentials(space)
-//                                             .otherwise(new IllegalStateException("need to use default creds for ssh right now"));
-//
-//        for (Identity identity : space.findAllIdentities()) {
-//            Maybe<Server> server = space.get(identity, Server.class);
-//            if (server.isKnown() && identity.toExternalForm().contains(looksee)) {
-//                String[] args = new String[]{
-//                    -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i %s %s@%s
-//                    "/usr/bin/ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", "-i", creds.getKeyFilePath(), String
-//                    .format("%s@%s", creds.getUserName(), server.getValue().getExternalAddress())
-//                };
-//                if (remote_commands.isKnown()) {
-//                    String[] new_args = new String[args.length + remote_commands.getValue().length];
-//                    System.arraycopy(args, 0, new_args, 0, args.length);
-//                    System.arraycopy(remote_commands.getValue(), 0,
-//                                     new_args, args.length, remote_commands.getValue().length);
-//                    args = new_args;
-//                }
-//                posix.execv("/usr/bin/ssh", args);
-//            }
-//        }
-//        System.err.println("Nothing matched '" + looksee + "'");
-//        return null;
-        throw new UnsupportedOperationException("Not Yet Implemented!");
+        String[] envp = new String[System.getenv().size()];
+        int i = 0;
+        for (Map.Entry<String, String> pair : System.getenv().entrySet()) {
+            envp[i++] = new StringBuilder(pair.getKey()).append("=").append(pair.getValue()).toString();
+        }
+        return envp;
     }
 }
