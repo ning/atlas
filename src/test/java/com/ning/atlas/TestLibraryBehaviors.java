@@ -93,7 +93,7 @@ public class TestLibraryBehaviors
         final Executor e = Executors.newFixedThreadPool(2);
 
         final CountDownLatch latch = new CountDownLatch(1);
-        ListenableFutureTask<String> t = new ListenableFutureTask<String>(new Callable<String>() {
+        ListenableFutureTask<String> t = ListenableFutureTask.create(new Callable<String>() {
             public String call() throws Exception
             {
                 latch.countDown();
