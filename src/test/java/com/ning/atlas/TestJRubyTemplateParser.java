@@ -271,7 +271,7 @@ public class TestJRubyTemplateParser
         Template t = p.parseSystem(new File("src/test/ruby/test_jruby_template_parser_env_servers-sys.rb"));
 
         SystemMap map = t.normalize(e);
-        assertThat(map.findLeaves().size(), equalTo(2));
+        assertThat(map.findLeaves().size(), equalTo(1));
     }
 
     @Test
