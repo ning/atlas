@@ -15,7 +15,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 public class Descriptor
 {
-    private final List<Template> templates = Lists.newArrayList();
+    private final List<Template>           templates    = Lists.newArrayList();
     private final Map<String, Environment> environments = Maps.newLinkedHashMap();
 
     public Descriptor(Iterable<Template> templates, Iterable<Environment> environments)
@@ -48,7 +48,8 @@ public class Descriptor
                               Iterables.concat(this.getEnvironments(), other.getEnvironments()));
     }
 
-    public SystemMap normalize(String environmentName) {
+    public SystemMap normalize(String environmentName)
+    {
         Environment env = environments.get(environmentName);
         checkNotNull(env, "No environment named '%s' available", environmentName);
         Iterator<Template> itty = this.templates.iterator();
@@ -66,5 +67,10 @@ public class Descriptor
     public Environment getEnvironment(String test)
     {
         return environments.get(test);
+    }
+
+    public static Descriptor empty()
+    {
+        return new Descriptor(Collections.<Template>emptyList(), Collections.<Environment>emptyList());
     }
 }

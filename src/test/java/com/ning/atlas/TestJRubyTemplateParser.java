@@ -17,7 +17,6 @@ import com.ning.atlas.tree.Trees;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.hamcrest.core.IsInstanceOf;
 import org.junit.Test;
 
 import java.io.File;
@@ -31,7 +30,6 @@ import static com.ning.atlas.base.MorePredicates.beanPropertyEquals;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
-import static org.junit.matchers.JUnitMatchers.containsString;
 import static org.junit.matchers.JUnitMatchers.hasItem;
 
 public class TestJRubyTemplateParser
@@ -80,7 +78,7 @@ public class TestJRubyTemplateParser
         Environment test = combined.getEnvironment("test");
         ActualDeployment d = test.planDeploymentFor(foo, InMemorySpace.newInstance());
         System.out.println(d);
-        d.update();
+        d.converge();
 
     }
 
@@ -207,7 +205,7 @@ public class TestJRubyTemplateParser
         Space space = InMemorySpace.newInstance();
         ActualDeployment d = new ActualDeployment(map, env, space);
 
-        d.update();
+        d.converge();
         assertThat(ListenerThing.calls, equalTo(asList("startDeployment",
                                                        "startProvision",
                                                        "finishProvision",

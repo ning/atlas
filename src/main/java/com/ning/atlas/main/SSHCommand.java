@@ -1,18 +1,7 @@
 package com.ning.atlas.main;
 
 import com.kenai.constantine.platform.Errno;
-import com.ning.atlas.Environment;
-import com.ning.atlas.Host;
-import com.ning.atlas.JRubyTemplateParser;
-import com.ning.atlas.SystemMap;
 import com.ning.atlas.logging.Logger;
-import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.Maybe;
-import com.ning.atlas.spi.space.Missing;
-import com.ning.atlas.space.SQLiteBackedSpace;
-import com.ning.atlas.spi.space.Space;
-import com.ning.atlas.spi.protocols.SSHCredentials;
-import com.ning.atlas.spi.protocols.Server;
 import org.jruby.ext.posix.POSIX;
 import org.jruby.ext.posix.POSIXFactory;
 import org.jruby.ext.posix.POSIXHandler;
@@ -20,7 +9,6 @@ import org.jruby.ext.posix.POSIXHandler;
 import java.io.File;
 import java.io.InputStream;
 import java.io.PrintStream;
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 public class SSHCommand implements Callable<Void>
@@ -89,51 +77,51 @@ public class SSHCommand implements Callable<Void>
 
     }, true);
 
-    private final MainOptions mainOptions;
 
-    public SSHCommand(MainOptions mo)
+    public SSHCommand()
     {
-        this.mainOptions = mo;
+
     }
 
     @Override
     public Void call() throws Exception
     {
-        Space space = SQLiteBackedSpace.create(new File(".atlas", "space.db"));
-
-        String looksee = mainOptions.getCommandArguments()[0];
-        Maybe<String[]> remote_commands;
-        if (mainOptions.getCommandArguments().length > 1) {
-            // execute a remote command rather than shell in
-            remote_commands = Maybe.definitely(Arrays.copyOfRange(mainOptions.getCommandArguments(),
-                                                                  1, mainOptions.getCommandArguments().length));
-        }
-        else {
-            remote_commands = Maybe.unknown();
-        }
-
-        SSHCredentials creds = SSHCredentials.defaultCredentials(space)
-                                             .otherwise(new IllegalStateException("need to use default creds for ssh right now"));
-
-        for (Identity identity : space.findAllIdentities()) {
-            Maybe<Server> server = space.get(identity, Server.class);
-            if (server.isKnown() && identity.toExternalForm().contains(looksee)) {
-                String[] args = new String[]{
-                    // -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i %s %s@%s
-                    "/usr/bin/ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", "-i", creds.getKeyFilePath(), String
-                    .format("%s@%s", creds.getUserName(), server.getValue().getExternalAddress())
-                };
-                if (remote_commands.isKnown()) {
-                    String[] new_args = new String[args.length + remote_commands.getValue().length];
-                    System.arraycopy(args, 0, new_args, 0, args.length);
-                    System.arraycopy(remote_commands.getValue(), 0,
-                                     new_args, args.length, remote_commands.getValue().length);
-                    args = new_args;
-                }
-                posix.execv("/usr/bin/ssh", args);
-            }
-        }
-        System.err.println("Nothing matched '" + looksee + "'");
-        return null;
+//        Space space = SQLiteBackedSpace.create(new File(".atlas", "space.db"));
+//
+//        String looksee = mainOptions.getCommandArguments()[0];
+//        Maybe<String[]> remote_commands;
+//        if (mainOptions.getCommandArguments().length > 1) {
+//            execute a remote command rather than shell in
+//            remote_commands = Maybe.definitely(Arrays.copyOfRange(mainOptions.getCommandArguments(),
+//                                                                  1, mainOptions.getCommandArguments().length));
+//        }
+//        else {
+//            remote_commands = Maybe.unknown();
+//        }
+//
+//        SSHCredentials creds = SSHCredentials.defaultCredentials(space)
+//                                             .otherwise(new IllegalStateException("need to use default creds for ssh right now"));
+//
+//        for (Identity identity : space.findAllIdentities()) {
+//            Maybe<Server> server = space.get(identity, Server.class);
+//            if (server.isKnown() && identity.toExternalForm().contains(looksee)) {
+//                String[] args = new String[]{
+//                    -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i %s %s@%s
+//                    "/usr/bin/ssh", "-o", "UserKnownHostsFile=/dev/null", "-o", "StrictHostKeyChecking=no", "-i", creds.getKeyFilePath(), String
+//                    .format("%s@%s", creds.getUserName(), server.getValue().getExternalAddress())
+//                };
+//                if (remote_commands.isKnown()) {
+//                    String[] new_args = new String[args.length + remote_commands.getValue().length];
+//                    System.arraycopy(args, 0, new_args, 0, args.length);
+//                    System.arraycopy(remote_commands.getValue(), 0,
+//                                     new_args, args.length, remote_commands.getValue().length);
+//                    args = new_args;
+//                }
+//                posix.execv("/usr/bin/ssh", args);
+//            }
+//        }
+//        System.err.println("Nothing matched '" + looksee + "'");
+//        return null;
+        throw new UnsupportedOperationException("Not Yet Implemented!");
     }
 }

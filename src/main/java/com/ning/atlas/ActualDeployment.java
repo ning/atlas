@@ -158,7 +158,7 @@ public class ActualDeployment implements Deployment
         es.shutdown();
     }
 
-    public void update()
+    public void converge()
     {
         ListeningExecutorService es = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
         List<LifecycleListener> listeners = environment.getListeners();

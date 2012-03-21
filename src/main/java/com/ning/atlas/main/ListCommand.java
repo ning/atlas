@@ -18,24 +18,24 @@ public class ListCommand implements Callable<Void>
     @Override
     public Void call() throws Exception
     {
-        Space space = SQLiteBackedSpace.create(new File(".atlas", "space.db"));
-        String sys_path = space.get(InitCommand.ID, "system-path")
-                               .otherwise(new IllegalStateException("System not initialized"));
-        String env_path = space.get(InitCommand.ID, "environment-path")
-                               .otherwise(new IllegalStateException("System not initialized"));
-
-        JRubyTemplateParser p = new JRubyTemplateParser();
-        Environment e = p.parseEnvironment(new File(env_path));
-        SystemMap map = p.parseSystem(new File(sys_path)).normalize(e);
-
-        for (Host host : map.findLeaves()) {
-            System.out.println(host.getId() + " :");
-            for (Map.Entry<SpaceKey, String> entry : space.getAllFor(host.getId()).entrySet()) {
-                System.out.printf("    %s : %s\n",
-                                  entry.getKey().getKey(),
-                                  StringUtils.abbreviate(entry.getValue(), 80).replaceAll("\n", "\\n"));
-            }
-        }
+//        Space space = SQLiteBackedSpace.create(new File(".atlas", "space.db"));
+//        String sys_path = space.get(InitCommand.ID, "system-path")
+//                               .otherwise(new IllegalStateException("System not initialized"));
+//        String env_path = space.get(InitCommand.ID, "environment-path")
+//                               .otherwise(new IllegalStateException("System not initialized"));
+//
+//        JRubyTemplateParser p = new JRubyTemplateParser();
+//        Environment e = p.parseEnvironment(new File(env_path));
+//        SystemMap map = p.parseSystem(new File(sys_path)).normalize(e);
+//
+//        for (Host host : map.findLeaves()) {
+//            System.out.println(host.getId() + " :");
+//            for (Map.Entry<SpaceKey, String> entry : space.getAllFor(host.getId()).entrySet()) {
+//                System.out.printf("    %s : %s\n",
+//                                  entry.getKey().getKey(),
+//                                  StringUtils.abbreviate(entry.getValue(), 80).replaceAll("\n", "\\n"));
+//            }
+//        }
 
         return null;
     }
