@@ -14,6 +14,7 @@ import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.components.ConcurrentComponent;
 import com.ning.atlas.Host;
 import com.ning.atlas.base.MapConfigSource;
+import com.ning.atlas.config.AtlasConfiguration;
 import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.protocols.Database;
@@ -43,10 +44,11 @@ public class RDSProvisioner extends ConcurrentComponent
     @Override
     public String perform(Host node, Uri<? extends Component> uri, Deployment d) throws Exception
     {
-        AWS.Credentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class, Missing.RequireAll)
-                                 .otherwise(new IllegalStateException("AWS credentials are not available"));
+        AtlasConfiguration config = AtlasConfiguration.global();
+        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
+                                                            config.lookup("aws.secret").get());
 
-        AmazonRDSClient rds = new AmazonRDSClient(new BasicAWSCredentials(creds.getAccessKey(), creds.getSecretKey()));
+        AmazonRDSClient rds = new AmazonRDSClient(creds);
 
         Maybe<String> existing_id = d.getSpace().get(node.getId(), "instance-id");
         if (existing_id.isKnown()) {

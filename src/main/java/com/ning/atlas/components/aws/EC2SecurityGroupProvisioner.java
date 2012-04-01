@@ -2,6 +2,7 @@ package com.ning.atlas.components.aws;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
 import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
@@ -16,6 +17,7 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.components.ConcurrentComponent;
 import com.ning.atlas.Host;
+import com.ning.atlas.config.AtlasConfiguration;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
@@ -36,10 +38,9 @@ public class EC2SecurityGroupProvisioner extends ConcurrentComponent
     @Override
     public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
-
-        AWSCredentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class, Missing.RequireAll)
-                                .otherwise(new IllegalStateException("No AWS Credentials available"))
-                                .toAWSCredentials();
+        AtlasConfiguration config = AtlasConfiguration.global();
+        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
+                                                                  config.lookup("aws.secret").get());
 
         AmazonEC2Client ec2 = new AmazonEC2Client(creds);
         AmazonIdentityManagementClient iam = new AmazonIdentityManagementClient(creds);

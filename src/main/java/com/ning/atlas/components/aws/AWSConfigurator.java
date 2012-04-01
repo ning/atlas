@@ -6,6 +6,7 @@ import com.amazonaws.services.ec2.model.CreateKeyPairRequest;
 import com.amazonaws.services.ec2.model.CreateKeyPairResult;
 import com.google.common.base.Splitter;
 import com.google.common.io.Files;
+import com.ning.atlas.config.AtlasConfiguration;
 import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.BaseLifecycleListener;
 import com.ning.atlas.spi.Deployment;
@@ -54,42 +55,39 @@ public class AWSConfigurator extends BaseLifecycleListener
             @Override
             public void run()
             {
-                final Space s = d.getSpace();
-                final AWS.Credentials creds;
-                if (!s.get(AWS.ID, AWS.Credentials.class, Missing.RequireAll).isKnown()) {
-                    // no creds in space, ask for em and save em
+                AtlasConfiguration config = AtlasConfiguration.global();
 
+                final AWS.Credentials creds;
+                if (config.lookup("aws.key").isPresent() && config.lookup("aws.secret").isPresent()) {
+                    creds = new AWS.Credentials();
+                    creds.setAccessKey(config.lookup("aws.key").get());
+                    creds.setSecretKey(config.lookup("aws.secret").get());
+
+                }
+                else {
                     System.console().printf("What is your AWS Access Key ID? ");
                     String access_key = System.console().readLine().trim();
 
                     System.console().printf("What is your AWS Secret Access Key? ");
                     String secret_key = System.console().readLine().trim();
 
+                    config.record("aws.key", access_key);
+                    config.record("aws.secret", secret_key);
                     creds = new AWS.Credentials();
                     creds.setAccessKey(access_key);
                     creds.setSecretKey(secret_key);
-
-                    s.store(AWS.ID, creds);
                 }
-                else {
-                    creds = s.get(AWS.ID, AWS.Credentials.class, Missing.RequireAll).getValue();
-                }
+                File pemfile = new File(new File(".atlas"), "ec2.pem");
+                final Space s = d.getSpace();
 
                 final AWS.SSHKeyPairInfo info;
-                if (!s.get(AWS.ID, AWS.SSHKeyPairInfo.class, Missing.RequireAll).isKnown()) {
-                    // no ssh keypair stuff, make one!
+                if (!pemfile.exists() || !s.get(AWS.ID, AWS.SSHKeyPairInfo.class, Missing.RequireAll).isKnown()) {
+                    // no pemfile OR no ssh keypair stuff, make one!
                     AmazonEC2Client client = new AmazonEC2Client(new BasicAWSCredentials(creds.getAccessKey(),
                                                                                          creds.getSecretKey()));
                     final String name = UUID.randomUUID().toString();
                     CreateKeyPairRequest req = new CreateKeyPairRequest(name);
-
                     CreateKeyPairResult res = client.createKeyPair(req);
-
-                    File config_dir = new File(".atlas");
-                    if (!config_dir.exists()) {
-                        config_dir.mkdir();
-                    }
-                    File pemfile = new File(config_dir, "ec2.pem");
                     try {
                         Files.write(res.getKeyPair().getKeyMaterial(),
                                     pemfile,
@@ -122,7 +120,6 @@ public class AWSConfigurator extends BaseLifecycleListener
             }
         });
     }
-
 
     @Override
     public Future<?> finishDeployment(Deployment d)

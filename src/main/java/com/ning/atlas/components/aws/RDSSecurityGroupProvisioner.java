@@ -2,6 +2,7 @@ package com.ning.atlas.components.aws;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
 import com.amazonaws.services.rds.AmazonRDSClient;
 import com.amazonaws.services.rds.model.AuthorizeDBSecurityGroupIngressRequest;
@@ -14,6 +15,7 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.components.ConcurrentComponent;
 import com.ning.atlas.Host;
+import com.ning.atlas.config.AtlasConfiguration;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
@@ -31,9 +33,9 @@ public class RDSSecurityGroupProvisioner extends ConcurrentComponent
     public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
         final String group_name = uri.getFragment();
-        AWSCredentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class, Missing.RequireAll)
-                                .otherwise(new IllegalStateException("No AWS Credentials available"))
-                                .toAWSCredentials();
+        AtlasConfiguration config = AtlasConfiguration.global();
+        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
+                                                            config.lookup("aws.secret").get());
 
         AmazonRDSClient rds = new AmazonRDSClient(creds);
         AmazonIdentityManagementClient iam = new AmazonIdentityManagementClient(creds);

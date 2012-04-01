@@ -16,20 +16,21 @@ import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Futures;
-import com.ning.atlas.components.ConcurrentComponent;
 import com.ning.atlas.Host;
 import com.ning.atlas.SSH;
-import com.ning.atlas.spi.Maybe;
+import com.ning.atlas.components.ConcurrentComponent;
+import com.ning.atlas.config.AtlasConfiguration;
 import com.ning.atlas.logging.Logger;
-import com.ning.atlas.spi.protocols.SSHCredentials;
-import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.space.Space;
+import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.protocols.AWS;
+import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
+import com.ning.atlas.spi.space.Missing;
+import com.ning.atlas.spi.space.Space;
 
 import java.io.IOException;
 import java.util.Map;
@@ -195,13 +196,11 @@ public class EC2Provisioner extends ConcurrentComponent
     @Override
     protected void startLocal(Deployment deployment)
     {
+        AtlasConfiguration config = AtlasConfiguration.global();
+        BasicAWSCredentials credentials = new BasicAWSCredentials(config.lookup("aws.key").get(),
+                                                                  config.lookup("aws.secret").get());
+
         Space s = deployment.getSpace();
-
-        AWS.Credentials creds = s.get(AWS.ID, AWS.Credentials.class, Missing.RequireAll).getValue();
-
-        BasicAWSCredentials credentials = new BasicAWSCredentials(creds.getAccessKey(),
-                                                                  creds.getSecretKey());
-
         AWS.SSHKeyPairInfo info = s.get(AWS.ID, AWS.SSHKeyPairInfo.class, Missing.RequireAll)
                                    .otherwise(new IllegalStateException("unable to find aws ssh keypair info"));
 
