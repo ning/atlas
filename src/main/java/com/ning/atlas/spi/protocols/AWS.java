@@ -9,6 +9,7 @@ import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.rds.AmazonRDSClient;
 import com.amazonaws.services.rds.model.DBSecurityGroup;
 import com.amazonaws.services.rds.model.DescribeDBSecurityGroupsRequest;
+import com.ning.atlas.config.AtlasConfiguration;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.space.Core;
 import com.ning.atlas.spi.space.Missing;
@@ -26,9 +27,6 @@ public class AWS
 {
     public static final Identity ID = Core.ID.createChild("aws", "config");
 
-
-    private final AtomicBoolean initialized = new AtomicBoolean(false);
-
     /**
      * Safe to cache forever as we don't delete and create in same process
      */
@@ -40,9 +38,10 @@ public class AWS
                                                long time,
                                                TimeUnit unit) throws InterruptedException
     {
-        AWSCredentials creds = space.get(AWS.ID, AWS.Credentials.class, Missing.RequireAll)
-                                    .otherwise(new IllegalStateException("No AWS Credentials available"))
-                                    .toAWSCredentials();
+        AtlasConfiguration config = AtlasConfiguration.global();
+        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
+                                                            config.lookup("aws.secret").get());
+
         initEC2GroupCache(creds);
         if (existingEc2Groups.contains(groupName)) {
             return;
@@ -77,9 +76,9 @@ public class AWS
                                                long time,
                                                TimeUnit unit) throws InterruptedException
     {
-        AWSCredentials creds = space.get(AWS.ID, AWS.Credentials.class, Missing.RequireAll)
-                                    .otherwise(new IllegalStateException("No AWS Credentials available"))
-                                    .toAWSCredentials();
+        AtlasConfiguration config = AtlasConfiguration.global();
+        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
+                                                            config.lookup("aws.secret").get());
         initRDSGroupCache(creds);
         if (existingRdsGroups.contains(groupName)) {
             return;

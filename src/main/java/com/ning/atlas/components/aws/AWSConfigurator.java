@@ -73,6 +73,7 @@ public class AWSConfigurator extends BaseLifecycleListener
 
                     config.record("aws.key", access_key);
                     config.record("aws.secret", secret_key);
+
                     creds = new AWS.Credentials();
                     creds.setAccessKey(access_key);
                     creds.setSecretKey(secret_key);
