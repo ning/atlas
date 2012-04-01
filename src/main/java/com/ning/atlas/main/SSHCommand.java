@@ -31,10 +31,10 @@ public class SSHCommand implements Callable<Void>
 
     private static final LibC posix = Library.loadLibrary("c", LibC.class);
 
-    @Option(name = "--models", configuration = "model")
+    @Option(name = "--model", title = "model-directory", configuration = "model")
     public File modelDirectory = new File("model");
 
-    @Option(name = "--space", configuration = "space")
+    @Option(name = "--space", title = "space-database", configuration = "space")
     public File spaceFile = new File(".atlas", "space.db");
 
     @Option(name = "-e")

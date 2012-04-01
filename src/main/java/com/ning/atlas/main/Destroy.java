@@ -24,13 +24,13 @@ import java.util.concurrent.Callable;
 public class Destroy implements Callable<Void>
 {
 
-    @Option(name = "--models", configuration = "model")
+    @Option(name = "--model", title = "model-directory", configuration = "model")
     public File modelDirectory = new File("model");
 
-    @Option(name = "--space", configuration = "space")
+    @Option(name = "--space", title = "space-database", configuration = "space")
     public File spaceFile = new File(".atlas", "space.db");
 
-    @Arguments
+    @Option(name = "-e")
     public String environmentName = "dev";
 
     @Override

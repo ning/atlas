@@ -1,5 +1,6 @@
 package com.ning.atlas.main;
 
+import com.ning.atlas.config.AtlasConfiguration;
 import org.skife.cli.org.iq80.cli.Cli;
 import org.skife.cli.org.iq80.cli.Help;
 
@@ -11,6 +12,7 @@ public class Main
     public static void main(String... args) throws Exception
     {
         Cli.buildCli("atlas", Callable.class)
+           .withConfiguration(AtlasConfiguration.global())
            .withCommands(Converge.class,
                          Destroy.class,
                          ListCommand.class,
