@@ -3,16 +3,16 @@ package com.ning.atlas;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import com.ning.atlas.components.noop.NoOpInstaller;
-import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.base.MorePredicates;
+import com.ning.atlas.components.noop.NoOpInstaller;
 import com.ning.atlas.space.InMemorySpace;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
+import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Provisioner;
-import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Uri;
+import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.tree.Trees;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
@@ -250,13 +250,54 @@ public class TestJRubyTemplateParser
     }
 
     @Test
+    public void testSystemTemplateWithImport() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Descriptor t = p.parseDescriptor(new File("src/test/ruby/ex1/system-template-with-import.rb"));
+        Descriptor env = p.parseDescriptor(new File("src/test/ruby/ex1/env-with-listener.rb"));
+
+        SystemMap map = t.combine(env).normalize("test");
+
+        SortedSet<Host> hosts = Sets.newTreeSet(new Comparator<Host>()
+        {
+            @Override
+            public int compare(Host host, Host host1)
+            {
+                return host.getId().toExternalForm().compareTo(host1.getId().toExternalForm());
+            }
+        });
+
+        hosts.addAll(map.findLeaves());
+
+        assertThat(hosts.size(), equalTo(3));
+        Iterator<Host> itty = hosts.iterator();
+        Host one = itty.next();
+        System.out.println(one.getId());
+        Host two = itty.next();
+        System.out.println(two.getId());
+        Host three = itty.next();
+        System.out.println(three.getId());
+    }
+
+    @Test
+    public void testEnvironmentWithImport() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Descriptor e = p.parseDescriptor(new File("src/test/ruby/test_jruby_template_parser-environment-with-import.rb"));
+        Descriptor t = p.parseDescriptor(new File("src/test/ruby/test_jruby_template_parser_env_servers-sys.rb"));
+
+        SystemMap map = t.combine(e).normalize("unit-test");
+        assertThat(map.findLeaves().size(), equalTo(2));
+    }
+
+    @Test
     public void testTemplatization() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
-        Environment e = p.parseEnvironment(new File("src/test/ruby/test_jruby_template_parser_templatization-env.rb"));
-        Template t = p.parseSystem(new File("src/test/ruby/test_jruby_template_parser_templatization-sys.rb"));
+        Descriptor e = p.parseDescriptor(new File("src/test/ruby/test_jruby_template_parser_templatization-env.rb"));
+        Descriptor t = p.parseDescriptor(new File("src/test/ruby/test_jruby_template_parser_templatization-sys.rb"));
 
-        SystemMap map = t.normalize(e);
+        SystemMap map = t.combine(e).normalize("breakfast");
         assertThat(map.findLeaves().size(), equalTo(1));
         Host h = Iterables.getOnlyElement(map.findLeaves());
         assertThat(h.getProvisionerUri().getParams().get("name"), equalTo("blog"));
@@ -267,11 +308,11 @@ public class TestJRubyTemplateParser
     public void testEnvironmentDefinedElements() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
-        Environment e = p.parseEnvironment(new File("src/test/ruby/test_jruby_template_parser_env_servers-env.rb"));
-        Template t = p.parseSystem(new File("src/test/ruby/test_jruby_template_parser_env_servers-sys.rb"));
+        Descriptor e = p.parseDescriptor(new File("src/test/ruby/test_jruby_template_parser_env_servers-env.rb"));
+        Descriptor t = p.parseDescriptor(new File("src/test/ruby/test_jruby_template_parser_env_servers-sys.rb"));
 
-        SystemMap map = t.normalize(e);
-        assertThat(map.findLeaves().size(), equalTo(1));
+        SystemMap map = e.combine(t).normalize("unit-test");
+        assertThat(map.findLeaves().size(), equalTo(2));  // 1 from each
     }
 
     @Test
@@ -279,10 +320,11 @@ public class TestJRubyTemplateParser
     {
         NoOpInstaller.reset();
         JRubyTemplateParser p = new JRubyTemplateParser();
-        Environment e = p.parseEnvironment(new File("src/test/ruby/test_jruby_template_parser_test_virtual_installer-env.rb"));
-        Template t = p.parseSystem(new File("src/test/ruby/test_jruby_template_parser_test_virtual_installer-sys.rb"));
+        Descriptor e = p.parseDescriptor(new File("src/test/ruby/test_jruby_template_parser_test_virtual_installer-env.rb"));
+        Descriptor t = p.parseDescriptor(new File("src/test/ruby/test_jruby_template_parser_test_virtual_installer-sys.rb"));
 
-        SystemMap map = t.normalize(e);
+
+        SystemMap map = e.combine(t).normalize("test");
         assertThat(map.findLeaves().size(), equalTo(1));
 
         Host h = Iterables.getOnlyElement(map.findLeaves());

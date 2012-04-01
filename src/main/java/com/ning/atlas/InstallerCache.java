@@ -29,7 +29,7 @@ public class InstallerCache
             return Collections.singletonList(Pair.of(uri, concreteInstallers.get(uri.getScheme())));
         }
         if (!env.isVirtual(uri)) {
-            Installer i = env.findInstaller(uri);
+            Installer i = env.resolveInstaller(uri);
             i.start(d);
             concreteInstallers.put(uri.getScheme(), i);
             return Collections.singletonList(Pair.of(uri, i));

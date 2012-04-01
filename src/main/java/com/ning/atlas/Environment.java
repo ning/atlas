@@ -15,9 +15,7 @@ import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.space.Space;
-import com.sun.tools.internal.xjc.reader.xmlschema.parser.LSInputSAXWrapper;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -25,11 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class Environment
+public final class Environment
 {
-    private final List<String>        listeners  = Lists.newArrayList();
-    private final Map<String, Base>   bases      = Maps.newConcurrentMap();
-    private final Map<String, String> properties = Maps.newConcurrentMap();
+    private final List<Environment>   childEnvironments = new CopyOnWriteArrayList<Environment>();
+    private final List<String>        listeners         = new CopyOnWriteArrayList<String>();
+    private final Map<String, Base>   bases             = Maps.newConcurrentMap();
+    private final Map<String, String> properties        = Maps.newConcurrentMap();
 
     private final ListMultimap<String, Uri<Installer>> virtualInstallers =
         Multimaps.synchronizedListMultimap(ArrayListMultimap.<String, Uri<Installer>>create());
@@ -37,6 +36,7 @@ public class Environment
     private final PluginSystem         plugins;
     private final Collection<Template> environmentDefinedElements;
     private final String               name;
+
 
     public Environment()
     {
@@ -48,7 +48,8 @@ public class Environment
              Collections.<String, Map<String, String>>emptyMap(),
              Collections.<String, Base>emptyMap(),
              Collections.<String, String>emptyMap(),
-             Collections.<Template>emptyList());
+             Collections.<Template>emptyList(),
+             Collections.<Environment>emptyList());
     }
 
     public Environment(String name,
@@ -67,7 +68,8 @@ public class Environment
              listeners,
              bases,
              properties,
-             Collections.<Template>emptyList());
+             Collections.<Template>emptyList(),
+             Collections.<Environment>emptyList());
     }
 
     public Environment(String name,
@@ -78,11 +80,13 @@ public class Environment
                        Map<String, Map<String, String>> listeners,
                        Map<String, Base> bases,
                        Map<String, String> properties,
-                       Collection<Template> environmentDefinedElements)
+                       Collection<Template> environmentDefinedElements,
+                       Collection<Environment> childEnvironments)
     {
         this.name = name;
         this.plugins = plugins;
         this.environmentDefinedElements = ImmutableList.copyOf(environmentDefinedElements);
+        this.childEnvironments.addAll(childEnvironments);
 
         for (Map.Entry<String, Map<String, String>> entry : provisioners.entrySet()) {
             plugins.registerProvisionerConfig(entry.getKey(), entry.getValue());
@@ -124,13 +128,24 @@ public class Environment
             return Maybe.definitely(bases.get(base));
         }
         else {
+            for (Environment childEnvironment : childEnvironments) {
+                Maybe<Base> mb = childEnvironment.findBase(base);
+                if (mb.isKnown()) {
+                    return mb;
+                }
+            }
             return Maybe.unknown();
         }
     }
 
     public Map<String, String> getProperties()
     {
-        return ImmutableMap.copyOf(this.properties);
+        Map<String, String> rs = Maps.newLinkedHashMap();
+        for (Environment child : childEnvironments) {
+            rs.putAll(child.getProperties());
+        }
+        rs.putAll(this.properties);
+        return rs;
     }
 
     public ActualDeployment planDeploymentFor(SystemMap map, Space state)
@@ -138,22 +153,42 @@ public class Environment
         return new ActualDeployment(map, this, state);
     }
 
-    public Maybe<Provisioner> findProvisioner(String provisioner)
+    private Maybe<Provisioner> findProvisionerOnLocalEnv(String scheme)
     {
-        return plugins.findProvisioner(provisioner);
+        return plugins.findProvisioner(scheme);
     }
 
-    public Installer findInstaller(Uri<Installer> uri)
+    private Maybe<Installer> findInstallerOnLocalEnv(String scheme) {
+        return plugins.findInstaller(scheme);
+    }
+
+    public Installer resolveInstaller(Uri<Installer> uri)
     {
-        return plugins.findInstaller(uri.getScheme())
-                      .otherwise(new IllegalStateException("No installer matches " + uri));
+        List<Environment> envs = Lists.newArrayList(this);
+        envs.addAll(childEnvironments);
+        for (Environment env : envs) {
+            Maybe<Installer> mi = env.findInstallerOnLocalEnv(uri.getScheme()) ;
+            if (mi.isKnown()) {
+                return mi.getValue();
+            }
+        }
+        throw new IllegalStateException(String.format("No installer for %s available", uri.getScheme()));
 
     }
 
     public Provisioner resolveProvisioner(String scheme)
     {
-        return plugins.findProvisioner(scheme)
-                      .otherwise(new IllegalStateException("unable to locate provisioner for " + scheme));
+        Maybe<Provisioner> mp = findProvisionerOnLocalEnv(scheme);
+        if (mp.isKnown()) {
+            return mp.getValue();
+        }
+        for (Environment childEnvironment : childEnvironments) {
+            mp = childEnvironment.findProvisionerOnLocalEnv(scheme);
+            if (mp.isKnown()) {
+                return mp.getValue();
+            }
+        }
+        throw new IllegalStateException("No provisioner matching " + scheme);
     }
 
     public List<LifecycleListener> getListeners()
@@ -163,9 +198,13 @@ public class Environment
             Maybe<LifecycleListener> ml = plugins.findListener(prefix);
             rs.add(ml.otherwise(new IllegalStateException("No listener available named " + prefix)));
         }
+        for (Environment childEnvironment : childEnvironments) {
+            rs.addAll(childEnvironment.getListeners());
+        }
         return rs;
     }
 
+    // exposed for testing
     PluginSystem getPluginSystem()
     {
         return this.plugins;
@@ -173,7 +212,11 @@ public class Environment
 
     public Collection<Template> getEnvironmentDefinedElements()
     {
-        return environmentDefinedElements;
+        List<Template> templates = Lists.newArrayList(environmentDefinedElements);
+        for (Environment childEnvironment : childEnvironments) {
+            templates.addAll(childEnvironment.getEnvironmentDefinedElements());
+        }
+        return templates;
     }
 
     public List<Uri<Installer>> expand(Uri<Installer> uri)
@@ -182,12 +225,30 @@ public class Environment
             return virtualInstallers.get(uri.getScheme());
         }
         else {
+
+            for (Environment childEnvironment : childEnvironments) {
+                List<Uri<Installer>> child_did_it = childEnvironment.expand(uri);
+                if (!Collections.singletonList(child_did_it).equals(child_did_it)) {
+                    return child_did_it;
+                }
+            }
+
             return Collections.singletonList(uri);
         }
     }
 
     public boolean isVirtual(Uri<Installer> uri)
     {
-        return virtualInstallers.containsKey(uri.getScheme());
+        if (virtualInstallers.containsKey(uri.getScheme())) {
+            return true;
+        }
+        else {
+            for (Environment childEnvironment : childEnvironments) {
+                if (childEnvironment.isVirtual(uri)) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

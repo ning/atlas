@@ -62,6 +62,14 @@ module Atlas
       # name is unused, is there for pretty readability
       @env = EnvironmentParser.new(name, block).__parse
     end
+
+    def system *args
+      # ignored
+    end
+
+    def server *args
+      # ignored
+    end
   end
 
   class EnvironmentParser
@@ -71,11 +79,12 @@ module Atlas
       @block = block
       @properties, @provisioners, @installers, @bases, @listeners, @virtual_installers = {}, {}, {}, {}, {}, {}
       @children = []
+      @imported_envs = []
     end
 
     def __parse
       instance_eval &@block
-      com.ning.atlas.Environment.new @name,
+      com.ning.atlas.Environment.new(@name,
                                      com.ning.atlas.plugin.StaticPluginSystem.new,
                                      @provisioners,
                                      @installers,
@@ -83,7 +92,13 @@ module Atlas
                                      @listeners,
                                      @bases,
                                      @properties,
-                                     @children
+                                     @children,
+                                     @imported_envs)
+    end
+
+    def import name, args
+      # name unused, but left for api similarity with system parsing
+      @imported_envs << Atlas.parse_env((args[:url] || args[:source] || args[:src]))
     end
 
     def base name, args={}
@@ -254,6 +269,10 @@ module Atlas
       else
         @children << SystemParser.new(name, args, block).__parse
       end
+    end
+
+    def import name, args
+      @children << Atlas.parse_system((args[:url] || args[:source] || args[:src]), name)
     end
 
     def server name, args={}
