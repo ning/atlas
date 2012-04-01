@@ -186,6 +186,7 @@ module Atlas
     def initialize name, path
       @name, @path = name, path
       @children = []
+      puts path
       @template = open(path).read
     end
 
