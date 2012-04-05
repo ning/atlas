@@ -5,6 +5,7 @@ import com.ning.atlas.AtlasInstaller;
 import com.ning.atlas.components.ExecInstaller;
 import com.ning.atlas.Instantiator;
 import com.ning.atlas.components.PrettyTerminalListener;
+import com.ning.atlas.components.SSHKeyPairGenerator;
 import com.ning.atlas.components.ScratchInstaller;
 import com.ning.atlas.components.WaitForScratchValueInstaller;
 import com.ning.atlas.components.aws.AWSConfigurator;
@@ -27,6 +28,7 @@ import com.ning.atlas.components.packages.AptInstaller;
 import com.ning.atlas.components.packages.GemInstaller;
 import com.ning.atlas.components.packages.TarballInstaller;
 import com.ning.atlas.components.packages.ZipInstaller;
+import com.ning.atlas.components.vmware.VMRunLocalProvisioner;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Maybe;
@@ -50,6 +52,7 @@ public class StaticPluginSystem implements PluginSystem
     public StaticPluginSystem()
     {
         registerProvisioner("ec2", EC2Provisioner.class, EMPTY_MAP);
+        registerProvisioner("vmware", VMRunLocalProvisioner.class, EMPTY_MAP);
         registerProvisioner("rds", RDSProvisioner.class, EMPTY_MAP);
         registerProvisioner("noop", NoOpProvisioner.class, EMPTY_MAP);
         registerProvisioner("elb", ELBProvisioner.class, EMPTY_MAP);
@@ -76,6 +79,7 @@ public class StaticPluginSystem implements PluginSystem
         registerInstaller("wait-for", WaitForScratchValueInstaller.class, EMPTY_MAP);
 
         registerListener("aws-config", AWSConfigurator.class, EMPTY_MAP);
+        registerListener("ssh-keypairs", SSHKeyPairGenerator.class, EMPTY_MAP);
         registerListener("progress-bars", PrettyTerminalListener.class, EMPTY_MAP);
     }
 

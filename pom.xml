@@ -116,7 +116,14 @@
             <groupId>org.skife.config</groupId>
             <artifactId>config-magic</artifactId>
             <version>0.7</version>
-            <!-- ASL -->
+            <!-- AL2 -->
+        </dependency>
+
+        <dependency>
+            <groupId>org.skife.vmware</groupId>
+            <artifactId>vmrun-java-wrapper</artifactId>
+            <version>0.0.2</version>
+            <!-- AL2 -->
         </dependency>
 
         <dependency>
