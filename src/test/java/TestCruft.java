@@ -1,4 +1,5 @@
 import com.google.common.io.CharStreams;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.InputStreamReader;
@@ -10,6 +11,7 @@ import static org.junit.Assert.assertThat;
 public class TestCruft
 {
     @Test
+    @Ignore
     public void testFoo() throws Exception
     {
         URI uri = URI.create("file:///Users/brianm/src/atlas/test.txt?user=atlas&pass=atlas");
