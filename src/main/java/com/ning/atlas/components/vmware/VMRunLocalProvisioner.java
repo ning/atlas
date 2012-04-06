@@ -1,13 +1,10 @@
 package com.ning.atlas.components.vmware;
 
-import com.google.common.base.Charsets;
-import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
 import com.google.common.io.PatternFilenameFilter;
@@ -38,7 +35,6 @@ import java.util.regex.Pattern;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.io.CharStreams.readFirstLine;
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 public class VMRunLocalProvisioner extends ConcurrentComponent
@@ -153,7 +149,7 @@ public class VMRunLocalProvisioner extends ConcurrentComponent
                                                                                       credentialName + "' available"));
 
             Guest guest = vmrun.createGuest(vmx, user, pass);
-            guest.start();
+            guest.startWithGUI();
             guest.sh("mkdir $HOME/.ssh");
             guest.copyFileToGuest(new File(creds.getKeyFilePath() + ".pub"), "/tmp/authorized_keys2");
             guest.sh("cat /tmp/authorized_keys2 >> $HOME/.ssh/authorized_keys2");
@@ -162,7 +158,7 @@ public class VMRunLocalProvisioner extends ConcurrentComponent
 
         // update space with correct IP address information
         Guest guest = vmrun.createGuest(vm_info.getVmxPath(), vm_info.getUser(), vm_info.getPass());
-        guest.start();
+        guest.startWithGUI();
 
         String line = readFirstLine(guest.sh("ifconfig | grep 'inet addr' | egrep -v '127.0.0.1'").getStdoutSupplier());
         Matcher m = Pattern.compile("\\s+inet addr:([\\d\\.]+)\\s.+").matcher(line);
