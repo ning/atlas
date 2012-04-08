@@ -11,7 +11,7 @@ module Atlas
   end
 
   def self.parse_system path, name="__ROOT__"
-    RootSystemParser.new(name, path).__parse
+    Array(RootSystemParser.new(name, path).__parse)
   end
 
   def self.parse_install_list xs
@@ -38,7 +38,8 @@ module Atlas
   end
 
   def self.parse_descriptor path
-    sys = RootSystemParser.new(name, path).__parse
+    
+    sys = RootSystemParser.new("__ROOT__", path).__parse
     env = RootEnvParser.new(path).__parse
     com.ning.atlas.Descriptor.new(Array(sys), Array(env))
   end
@@ -140,9 +141,9 @@ module Atlas
       st = if args[:external] then
              Atlas.parse_system(args[:external], name)
            else
-             SystemParser.new(name, args, block).__parse
+             Array(SystemParser.new(name, args, block).__parse)
            end
-      @children << st
+      @children.concat(st)
     end
 
     def server name, args={}
@@ -196,8 +197,8 @@ module Atlas
                                                [0],
                                                @children
 
-      if root.type == "__ROOT__" and root.children.size == 1
-        root.children[0]
+      if root.type == "__ROOT__"
+        root.children
       else
         root
       end
@@ -227,9 +228,9 @@ module Atlas
       st = if args[:external] then
              Atlas.parse_system(args[:external], name)
            else
-             SystemParser.new(name, args, block).__parse
+             Array(SystemParser.new(name, args, block).__parse)
            end
-      @children << st
+      @children.concat(st)
     end
 
 
@@ -265,14 +266,14 @@ module Atlas
 
     def system name="system", args={}, &block
       if args[:external]
-        @children << Atlas.parse_system(args[:external], name)
+        @children.concat(Atlas.parse_system(args[:external], name))
       else
         @children << SystemParser.new(name, args, block).__parse
       end
     end
 
     def import name, args
-      @children << Atlas.parse_system((args[:url] || args[:source] || args[:src]), name)
+      @children.concat(Atlas.parse_system((args[:url] || args[:source] || args[:src]), name))
     end
 
     def server name, args={}

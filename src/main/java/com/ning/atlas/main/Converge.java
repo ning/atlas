@@ -35,7 +35,8 @@ public class Converge implements Callable<Void>
         Descriptor descriptor = Descriptor.empty();
         for (File file : modelDirectory.listFiles()) {
             if (file.isFile() && file.getName().endsWith(".rb")) {
-                descriptor = descriptor.combine(p.parseDescriptor(file));
+                Descriptor d =p.parseDescriptor(file);
+                descriptor = descriptor.combine(d);
             }
         }
 

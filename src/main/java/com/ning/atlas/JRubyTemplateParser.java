@@ -9,14 +9,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.List;
-
-import static java.util.Arrays.asList;
 
 public class JRubyTemplateParser
 {
-    public Template parseSystem(File template)
+    public List<Template> parseSystem(File template)
     {
         ScriptingContainer container = new ScriptingContainer();
         container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
@@ -29,7 +26,7 @@ public class JRubyTemplateParser
             throw new IllegalStateException("cannot open atlas/parser.rb from classpath", e);
         }
 
-        return (Template) container.runScriptlet("Atlas.parse_system('" + template.getAbsolutePath() + "')");
+        return (List<Template>) container.runScriptlet("Atlas.parse_system('" + template.getAbsolutePath() + "')");
     }
 
     public Environment parseEnvironment(File template)

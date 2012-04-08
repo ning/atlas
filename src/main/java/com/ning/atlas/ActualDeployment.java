@@ -164,10 +164,10 @@ public class ActualDeployment implements Deployment
         List<LifecycleListener> listeners = environment.getListeners();
 
         startDeployment(listeners);
+        unwind(listeners, es);
         provision(listeners);
         initialize(listeners, es);
         install(listeners, es);
-        unwind(listeners, es);
         finishDeployment(listeners);
 
         es.shutdown();

@@ -25,7 +25,6 @@ public class SSHKeyPairGenerator extends BaseLifecycleListener
     public SSHKeyPairGenerator(Map<String, String> config)
     {
         this.userToCredentialName.putAll(config);
-        System.err.println(userToCredentialName);
     }
 
     @Override

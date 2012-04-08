@@ -213,4 +213,13 @@ public class TestUri
         st.add("base", base_uri);
         assertThat(st.render(), equalTo("rds?engine=MySQL&name=blog"));
     }
+
+    @Test
+    public void testSpaces() throws Exception
+    {
+        Uri<String> u = Uri.valueOf("script:sculptor/install.sh {virtual.fragment}?unwind=sculptor/uninstall.sh {virtual.fragment}");
+        String unwind = u.getParams().get("unwind");
+        assertThat(unwind, equalTo("sculptor/uninstall.sh {virtual.fragment}"));
+
+    }
 }

@@ -62,7 +62,7 @@ public class TestJRubyTemplateParser
 
         Descriptor combined = env.combine(sys);
         assertThat(combined.getEnvironments().size(), equalTo(2));
-        assertThat(combined.getTemplates().size(), equalTo(2));
+        assertThat(combined.getTemplates().size(), equalTo(1));
     }
 
     @Test
@@ -86,7 +86,7 @@ public class TestJRubyTemplateParser
     public void testSimpleSystem() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
-        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb")).get(0);
         assertThat(t, notNullValue());
         List<Template> leaves = Trees.leaves(t);
         assertThat(leaves.size(), equalTo(7));
@@ -105,7 +105,7 @@ public class TestJRubyTemplateParser
     public void testCardinalityAsArray() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
-        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb")).get(0);
         assertThat(t, notNullValue());
 
         List<Template> rs = Trees.find(t, MorePredicates.<Template>beanPropertyEquals("type", "aclu"));
@@ -119,7 +119,7 @@ public class TestJRubyTemplateParser
     public void testMyAttributesPopulated() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
-        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb")).get(0);
 
         List<Template> leaves = Trees.leaves(t);
 
@@ -151,11 +151,10 @@ public class TestJRubyTemplateParser
     public void testParameterizedInstallersPopulated() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
-        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb")).get(0);
 
         ServerTemplate st = Iterables.find(Trees.findInstancesOf(t, ServerTemplate.class),
-                                           MorePredicates.<ServerTemplate>beanPropertyEquals("type",
-                                                                                             "single-param-install"));
+                                           MorePredicates.<ServerTemplate>beanPropertyEquals("type", "single-param-install"));
         List<Uri<Installer>> xs = st.getInstallUris();
         assertThat(xs, equalTo(asList(Uri.<Installer>valueOf("foo:bar?size=7"))));
 
@@ -165,11 +164,10 @@ public class TestJRubyTemplateParser
     public void testInstallers2() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
-        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb")).get(0);
 
         ServerTemplate st = Iterables.find(Trees.findInstancesOf(t, ServerTemplate.class),
-                                           MorePredicates.<ServerTemplate>beanPropertyEquals("type",
-                                                                                             "single-param-install2"));
+                                           MorePredicates.<ServerTemplate>beanPropertyEquals("type", "single-param-install2"));
         List<Uri<Installer>> xs = st.getInstallUris();
         assertThat(xs, equalTo(asList(Uri.<Installer>valueOf("foo:bar?size=7"))));
 
@@ -179,11 +177,10 @@ public class TestJRubyTemplateParser
     public void testInstallers3() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
-        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb"));
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template.rb")).get(0);
 
         ServerTemplate st = Iterables.find(Trees.findInstancesOf(t, ServerTemplate.class),
-                                           MorePredicates.<ServerTemplate>beanPropertyEquals("type",
-                                                                                             "single-param-install4"));
+                                           MorePredicates.<ServerTemplate>beanPropertyEquals("type", "single-param-install4"));
         List<Uri<Installer>> xs = st.getInstallUris();
         assertThat(xs, equalTo(asList(Uri.<Installer>valueOf("hello:world"))));
     }
@@ -207,14 +204,14 @@ public class TestJRubyTemplateParser
 
         d.converge();
         assertThat(ListenerThing.calls, equalTo(asList("startDeployment",
+                                                       "startUnwind",
+                                                       "finishUnwind",
                                                        "startProvision",
                                                        "finishProvision",
                                                        "startInit",
                                                        "finishInit",
                                                        "startInstall",
                                                        "finishInstall",
-                                                       "startUnwind",
-                                                       "finishUnwind",
                                                        "finishDeployment")));
         ListenerThing.calls.clear();
     }
@@ -223,7 +220,7 @@ public class TestJRubyTemplateParser
     public void testExternalSystem() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
-        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template-with-external.rb"));
+        Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template-with-external.rb")).get(0);
         Environment env = p.parseEnvironment(new File("src/test/ruby/ex1/env-with-listener.rb"));
 
         SystemMap map = t.normalize(env);
