@@ -29,7 +29,7 @@ public class JRubyTemplateParser
         return (List<Template>) container.runScriptlet("Atlas.parse_system('" + template.getAbsolutePath() + "')");
     }
 
-    public Environment parseEnvironment(File template)
+    public List<Environment> parseEnvironment(File template)
     {
         ScriptingContainer container = new ScriptingContainer();
         container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
@@ -43,7 +43,7 @@ public class JRubyTemplateParser
             throw new IllegalStateException("cannot open atlas/parser.rb from classpath", e);
         }
 
-        return (Environment) container.runScriptlet("Atlas.parse_env('" + template.getAbsolutePath() + "')");
+        return (List<Environment>) container.runScriptlet("Atlas.parse_env('" + template.getAbsolutePath() + "')");
     }
 
     public Descriptor parseDescriptor(File descriptor)

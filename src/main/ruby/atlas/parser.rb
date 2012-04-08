@@ -113,7 +113,7 @@ module Atlas
 
     def import name, args
       # name unused, but left for api similarity with system parsing
-      @imported_envs << Atlas.parse_env((args[:url] || args[:source] || args[:src]))
+      @imported_envs.concat(Atlas.parse_env((args[:url] || args[:source] || args[:src])))
     end
 
     def base name, args={}

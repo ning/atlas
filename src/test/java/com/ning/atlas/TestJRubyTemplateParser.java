@@ -138,7 +138,7 @@ public class TestJRubyTemplateParser
     public void testSimpleEnvironment() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
-        Environment e = p.parseEnvironment(new File("src/test/ruby/ex1/simple-environment.rb"));
+        Environment e = p.parseEnvironment(new File("src/test/ruby/ex1/simple-environment.rb")).get(0);
 
         Maybe<Base> cs = e.findBase("concrete");
         assertThat(cs.getValue(), notNullValue());
@@ -190,7 +190,7 @@ public class TestJRubyTemplateParser
     {
         ListenerThing.calls.clear();
         JRubyTemplateParser p = new JRubyTemplateParser();
-        Environment env = p.parseEnvironment(new File("src/test/ruby/ex1/env-with-listener.rb"));
+        Environment env = p.parseEnvironment(new File("src/test/ruby/ex1/env-with-listener.rb")).get(0);
         env.getPluginSystem().registerListener("testy", ListenerThing.class, Collections.<String, String>emptyMap());
 
         Host h = new Host(Identity.root().createChild("some", "thing"),
@@ -221,7 +221,7 @@ public class TestJRubyTemplateParser
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
         Template t = p.parseSystem(new File("src/test/ruby/ex1/system-template-with-external.rb")).get(0);
-        Environment env = p.parseEnvironment(new File("src/test/ruby/ex1/env-with-listener.rb"));
+        Environment env = p.parseEnvironment(new File("src/test/ruby/ex1/env-with-listener.rb")).get(0);
 
         SystemMap map = t.normalize(env);
 
