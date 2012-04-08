@@ -78,7 +78,7 @@ public class AWSConfigurator extends BaseLifecycleListener
                     creds.setAccessKey(access_key);
                     creds.setSecretKey(secret_key);
                 }
-                File pemfile = new File(new File(".atlas"), "ec2.pem");
+                File pemfile = new File( d.getScratch().get("atlas.environment-directory").getValue() , "ec2.pem");
                 final Space s = d.getSpace();
 
                 final AWS.SSHKeyPairInfo info;

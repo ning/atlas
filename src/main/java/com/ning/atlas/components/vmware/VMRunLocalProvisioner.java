@@ -8,6 +8,7 @@ import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
 import com.google.common.io.PatternFilenameFilter;
+import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.Host;
 import com.ning.atlas.components.ConcurrentComponent;
 import com.ning.atlas.spi.Component;
@@ -48,25 +49,18 @@ public class VMRunLocalProvisioner extends ConcurrentComponent
 
     private final VMRun            vmrun;
     private final Map<String, URI> machineUrls;
-    private final File             workDir;
     private final String           tar;
     private final String           credentialName;
 
+    private final Map<String, String> config;
+
     public VMRunLocalProvisioner(Map<String, String> config)
     {
+        this.config = ImmutableMap.copyOf(config);
         checkArgument(config.containsKey("vmrun"), "vmrun argument required");
-        if (config.containsKey("work_dir")) {
-            this.workDir = new File(config.get("work_dir"));
-        }
-        else {
-            this.workDir = new File(".atlas/vmware");
-            if (!this.workDir.exists()) {
-                checkState(workDir.mkdirs(), "unable to create vm storage directory %s", workDir);
-            }
-        }
-
         File vmrun_path = new File(config.get("vmrun"));
         checkArgument(vmrun_path.exists(), "Bad path for vmrun executable given: " + vmrun_path.getPath());
+
         if (config.containsKey("tar")) {
             this.tar = new File(config.get("tar")).getAbsolutePath();
         }
@@ -93,6 +87,22 @@ public class VMRunLocalProvisioner extends ConcurrentComponent
     @Override
     public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
+        File workDir;
+        if (config.containsKey("work_dir")) {
+            workDir = new File(config.get("work_dir"));
+        }
+        else {
+            workDir = new File(d.getScratch().get("atlas.environment-directory").getValue(), "vmware");
+            if (!workDir.exists()) {
+                if (!workDir.mkdirs()) {
+                    // was it created by another thread or did we fail to make it?
+                    if (!workDir.exists()) {
+                        throw new IllegalStateException("Unable to create VM drectory" + workDir.getAbsolutePath());
+                    }
+                }
+            }
+        }
+
         Maybe<VMInfo> m_vmx = d.getSpace().get(host.getId(), VMInfo.class);
         final VMInfo vm_info;
         if (m_vmx.isKnown() && new File(m_vmx.getValue().getVmxPath()).exists()) {
@@ -106,7 +116,7 @@ public class VMRunLocalProvisioner extends ConcurrentComponent
             String user = query_params.get("user");
             String pass = query_params.get("pass");
 
-            File tmp_tarball = new File("/tmp/hello.tgz");  // File.createTempFile("tmp", ".tgz");
+            File tmp_tarball = File.createTempFile("tmp", ".tgz");
             Files.copy(new InputSupplier<InputStream>()
             {
                 @Override
@@ -140,6 +150,7 @@ public class VMRunLocalProvisioner extends ConcurrentComponent
             vm_info.setVmxPath(vmx.getAbsolutePath());
             vm_info.setPass(pass);
             vm_info.setUser(user);
+            vm_info.setVmDir(vmdir.getAbsolutePath());
 
             d.getSpace().store(host.getId(), vm_info);
 
@@ -177,18 +188,29 @@ public class VMRunLocalProvisioner extends ConcurrentComponent
     @Override
     public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
     {
+
+        Maybe<VMInfo> m_mvi = d.getSpace().get(hostId, VMInfo.class);
+        if (m_mvi.isKnown()) {
+            Guest g = vmrun.createGuest(m_mvi.getValue().getVmxPath(),
+                                        m_mvi.getValue().getUser(),
+                                        m_mvi.getValue().getPass());
+            g.stop();
+            new ProcessBuilder("rm", "-rf", m_mvi.getValue().getVmDir()).start().waitFor();
+        }
+
         return null;
     }
 
     @Override
     public Future<String> describe(Host server, Uri<? extends Component> uri, Deployment deployment)
     {
-        return null;
+        return Futures.immediateFuture("noop");
     }
 
     public static class VMInfo
     {
         private String vmxPath;
+        private String vmDir;
         private String user;
         private String pass;
 
@@ -220,6 +242,16 @@ public class VMRunLocalProvisioner extends ConcurrentComponent
         public void setVmxPath(String vmxPath)
         {
             this.vmxPath = vmxPath;
+        }
+
+        public String getVmDir()
+        {
+            return vmDir;
+        }
+
+        public void setVmDir(String vmRoot)
+        {
+            this.vmDir = vmRoot;
         }
     }
 

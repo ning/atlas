@@ -30,7 +30,8 @@ public class SSHKeyPairGenerator extends BaseLifecycleListener
     @Override
     public Future<?> startDeployment(Deployment d)
     {
-        File storage_root = new File(".atlas/ssh");
+        String env_dir = d.getScratch().get("atlas.environment-directory").getValue();
+        File storage_root = new File(env_dir, "ssh");
         if (!storage_root.exists()) {
             checkState(storage_root.mkdirs(), "unable to create ssh key storage directory!");
         }

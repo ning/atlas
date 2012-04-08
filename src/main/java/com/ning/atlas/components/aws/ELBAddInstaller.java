@@ -79,9 +79,10 @@ public class ELBAddInstaller extends ConcurrentComponent
     {
         String elb_name = uri.getFragment();
         elbnames.add(elb_name);
-
-        AWS.Credentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class).getValue();
-        AmazonElasticLoadBalancingClient elb = new AmazonElasticLoadBalancingClient(creds.toAWSCredentials());
+        AtlasConfiguration config = AtlasConfiguration.global();
+        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
+                                                            config.lookup("aws.secret").get());
+        AmazonElasticLoadBalancingClient elb = new AmazonElasticLoadBalancingClient(creds);
 
         String instance_id = d.getSpace().get(hostId, "ec2-instance-id")
                               .otherwise(new IllegalStateException(hostId + " lacks an ec2-instance-id"));
@@ -102,9 +103,11 @@ public class ELBAddInstaller extends ConcurrentComponent
          * Clean up avail zones the b works against based on where instances are placed.
          */
 
-        AWS.Credentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class).getValue();
-        AmazonElasticLoadBalancingClient elb = new AmazonElasticLoadBalancingClient(creds.toAWSCredentials());
-        AmazonEC2Client ec2 = new AmazonEC2Client(creds.toAWSCredentials());
+        AtlasConfiguration config = AtlasConfiguration.global();
+        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
+                                                            config.lookup("aws.secret").get());
+        AmazonElasticLoadBalancingClient elb = new AmazonElasticLoadBalancingClient(creds);
+        AmazonEC2Client ec2 = new AmazonEC2Client(creds);
 
         DescribeLoadBalancersResult rs = elb.describeLoadBalancers(new DescribeLoadBalancersRequest(Lists.newArrayList(elbnames)));
 

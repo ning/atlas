@@ -17,7 +17,7 @@ import java.util.Properties;
 
 public class AtlasConfiguration implements Configuration
 {
-    public static final File ATLAS_CONF = new File(".atlas/atlas.conf");
+    public static final File ATLAS_CONF    = new File("atlas.conf");
     public static final File RECORDED_CONF = new File(".atlas/.recorded.conf");
 
     private static final AtlasConfiguration GLOBAL = new AtlasConfiguration(ATLAS_CONF, RECORDED_CONF);
@@ -69,7 +69,7 @@ public class AtlasConfiguration implements Configuration
         p.putAll(recorded);
         OutputStream out = null;
         try {
-             out = new FileOutputStream(record);
+            out = new FileOutputStream(record);
             p.store(out, "saving for key " + key);
         }
         catch (IOException e) {

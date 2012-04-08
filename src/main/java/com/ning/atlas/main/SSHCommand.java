@@ -19,11 +19,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.skife.cli.org.iq80.cli.Arguments;
 import org.skife.cli.org.iq80.cli.Command;
 import org.skife.cli.org.iq80.cli.Option;
+import org.skife.cli.org.iq80.cli.OptionType;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Callable;
+
+import static com.google.common.base.Preconditions.checkState;
 
 @Command(name = "ssh")
 public class SSHCommand implements Callable<Void>
@@ -34,10 +37,7 @@ public class SSHCommand implements Callable<Void>
     @Option(name = "--model", title = "model-directory", configuration = "model")
     public File modelDirectory = new File("model");
 
-    @Option(name = "--space", title = "space-database", configuration = "space")
-    public File spaceFile = new File(".atlas", "space.db");
-
-    @Option(name = "-e")
+    @Option(name = "-e", type = OptionType.GLOBAL)
     public String environmentName = "dev";
 
     @Arguments
@@ -53,7 +53,13 @@ public class SSHCommand implements Callable<Void>
                 descriptor = descriptor.combine(p.parseDescriptor(file));
             }
         }
-        Space space = SQLiteBackedSpace.create(spaceFile);
+        File atlas_dir = new File(".atlas");
+        File env_dir = new File(atlas_dir, environmentName);
+        if (!env_dir.exists()) {
+            checkState(env_dir.mkdirs(), "unable to create environment data directory");
+        }
+
+        Space space = SQLiteBackedSpace.create(new File(env_dir, "space.db"));
         SystemMap map = descriptor.normalize(environmentName);
         for (Host host : map.findLeaves()) {
             Maybe<Server> server = space.get(host.getId(), Server.class);

@@ -44,7 +44,8 @@ public class ScriptInstaller extends ConcurrentComponent
         try {
             ssh.scpUpload(script, "/tmp/script_installer_script");
             ssh.exec("chmod +x /tmp/script_installer_script");
-            String out = ssh.exec("/tmp/script_installer_script " + Joiner.on(" ").join(Lists.newArrayList(argv)));
+            String cmd = "/tmp/script_installer_script " + Joiner.on(" ").join(Lists.newArrayList(argv));
+            String out = ssh.exec(cmd);
             log.info(out);
             return out;
         }
