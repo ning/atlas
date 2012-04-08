@@ -204,14 +204,14 @@ public class TestJRubyTemplateParser
 
         d.converge();
         assertThat(ListenerThing.calls, equalTo(asList("startDeployment",
-                                                       "startUnwind",
-                                                       "finishUnwind",
                                                        "startProvision",
                                                        "finishProvision",
                                                        "startInit",
                                                        "finishInit",
                                                        "startInstall",
                                                        "finishInstall",
+                                                       "startUnwind",
+                                                       "finishUnwind",
                                                        "finishDeployment")));
         ListenerThing.calls.clear();
     }
@@ -328,6 +328,15 @@ public class TestJRubyTemplateParser
         assertThat(ImmutableList.copyOf(h.getInstallationUris()),
                    equalTo(ImmutableList.of(Uri.<Installer>valueOf("noop:3.0.2"),
                                             Uri.<Installer>valueOf("noop:octopus"))));
+    }
+
+    @Test
+    public void testOverrides() throws Exception
+    {
+        JRubyTemplateParser p = new JRubyTemplateParser();
+        Descriptor d = p.parseDescriptor(new File("src/test/ruby/test_jruby_template_parser-test-overrides.rb"));
+        assertThat(d.normalize("test").findLeaves().size(), equalTo(1));
+        assertThat(d.normalize("prod").findLeaves().size(), equalTo(2));
     }
 
 }

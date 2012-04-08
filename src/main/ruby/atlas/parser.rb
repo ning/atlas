@@ -52,6 +52,7 @@ module Atlas
     def initialize path
       @path = path
       @template = open(path).read
+      @env = []
     end
 
     def __parse
@@ -61,7 +62,7 @@ module Atlas
 
     def environment name, &block
       # name is unused, is there for pretty readability
-      @env = EnvironmentParser.new(name, block).__parse
+      @env << EnvironmentParser.new(name, block).__parse
     end
 
     def system *args
@@ -81,6 +82,7 @@ module Atlas
       @properties, @provisioners, @installers, @bases, @listeners, @virtual_installers = {}, {}, {}, {}, {}, {}
       @children = []
       @imported_envs = []
+      @cardinalities = {}
     end
 
     def __parse
@@ -94,7 +96,19 @@ module Atlas
                                      @bases,
                                      @properties,
                                      @children,
-                                     @imported_envs)
+                                     @imported_envs,
+                                     @cardinalities)
+    end
+
+    def cardinality args
+      args.each do |k, v|
+        if v.respond_to? :to_i
+          @cardinalities[k] = v.downto(1).map { |i| (i - 1).to_s }.reverse
+        else
+          @cardinalities[k] = Array(v)
+        end
+      end
+      @cardinalities.merge(args)
     end
 
     def import name, args

@@ -39,7 +39,7 @@ public class ServerTemplate extends Template
     protected List<Element> _normalize(Identity parent, Environment env)
     {
         final List<Element> rs = new ArrayList<Element>();
-        List<String> node_names = getCardinality();
+        List<String> node_names =  env.overrideCardinality(parent, this.getType(), getCardinality());
         for (String node_name : node_names) {
 
             Identity id = parent.createChild(getType(), node_name);

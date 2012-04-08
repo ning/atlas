@@ -45,7 +45,6 @@ public class SSHKeyPairGenerator extends BaseLifecycleListener
                     // we're good to go!
                 }
                 else {
-                    System.err.printf("generating creds %s with user %s\n", cred_name, user_name);
                     File private_key = new File(storage_root, cred_name);
 
                     if (!private_key.exists()) {

@@ -31,7 +31,7 @@ public class SystemTemplate extends Template
     public List<Element> _normalize(Identity parent, Environment env)
     {
         List<Element> rs = Lists.newArrayList();
-        List<String> node_names = getCardinality();
+        List<String> node_names =  env.overrideCardinality(parent, getType(), getCardinality());
         for (String node_name : node_names) {
 
             Identity id = parent.createChild(getType(), node_name);

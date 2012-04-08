@@ -36,6 +36,12 @@ public final class Identity
         }
     }
 
+    public boolean isRoot()
+    {
+        return this.externalForm.equals("/");
+    }
+
+
     public String getType()
     {
         return type;

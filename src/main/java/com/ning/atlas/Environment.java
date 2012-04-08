@@ -9,6 +9,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.ning.atlas.plugin.PluginSystem;
 import com.ning.atlas.plugin.StaticPluginSystem;
+import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Maybe;
@@ -36,6 +37,7 @@ public final class Environment
     private final PluginSystem         plugins;
     private final Collection<Template> environmentDefinedElements;
     private final String               name;
+    private       Map<String, List<String>> cardinalityOverrides;
 
 
     public Environment()
@@ -49,7 +51,8 @@ public final class Environment
              Collections.<String, Base>emptyMap(),
              Collections.<String, String>emptyMap(),
              Collections.<Template>emptyList(),
-             Collections.<Environment>emptyList());
+             Collections.<Environment>emptyList(),
+             Collections.<String, List<String>>emptyMap());
     }
 
     public Environment(String name,
@@ -69,7 +72,8 @@ public final class Environment
              bases,
              properties,
              Collections.<Template>emptyList(),
-             Collections.<Environment>emptyList());
+             Collections.<Environment>emptyList(),
+             Collections.<String, List<String>>emptyMap());
     }
 
     public Environment(String name,
@@ -81,12 +85,14 @@ public final class Environment
                        Map<String, Base> bases,
                        Map<String, String> properties,
                        Collection<Template> environmentDefinedElements,
-                       Collection<Environment> childEnvironments)
+                       Collection<Environment> childEnvironments,
+                       Map<String, List<String>> cardinalityOverrides)
     {
         this.name = name;
         this.plugins = plugins;
         this.environmentDefinedElements = ImmutableList.copyOf(environmentDefinedElements);
         this.childEnvironments.addAll(childEnvironments);
+        this.cardinalityOverrides = ImmutableMap.copyOf(cardinalityOverrides);
 
         for (Map.Entry<String, Map<String, String>> entry : provisioners.entrySet()) {
             plugins.registerProvisionerConfig(entry.getKey(), entry.getValue());
@@ -158,7 +164,8 @@ public final class Environment
         return plugins.findProvisioner(scheme);
     }
 
-    private Maybe<Installer> findInstallerOnLocalEnv(String scheme) {
+    private Maybe<Installer> findInstallerOnLocalEnv(String scheme)
+    {
         return plugins.findInstaller(scheme);
     }
 
@@ -167,7 +174,7 @@ public final class Environment
         List<Environment> envs = Lists.newArrayList(this);
         envs.addAll(childEnvironments);
         for (Environment env : envs) {
-            Maybe<Installer> mi = env.findInstallerOnLocalEnv(uri.getScheme()) ;
+            Maybe<Installer> mi = env.findInstallerOnLocalEnv(uri.getScheme());
             if (mi.isKnown()) {
                 return mi.getValue();
             }
@@ -249,6 +256,24 @@ public final class Environment
                 }
             }
             return false;
+        }
+    }
+
+    List<String> overrideCardinality(Identity parent, String type, List<String> fromSystem)
+    {
+        String key;
+        if (parent.isRoot()) {
+            key = "/" + type;
+        }
+        else {
+            key = parent.toExternalForm() + "/" + type;
+        }
+
+        if (this.cardinalityOverrides.containsKey(key)) {
+            return this.cardinalityOverrides.get(key);
+        }
+        else {
+            return fromSystem;
         }
     }
 }

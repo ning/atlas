@@ -63,6 +63,7 @@ public class ScriptInstaller extends ConcurrentComponent
     public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
     {
         if (uri.getParams().containsKey("unwind")) {
+            log.info("unwinding " + uri + " with " + uri.getParams().get("unwind"));
             Iterator<String> argv = Splitter.on(Pattern.compile("\\s+")).split(uri.getParams().get("unwind")).iterator();
             String script_path = argv.next();
 

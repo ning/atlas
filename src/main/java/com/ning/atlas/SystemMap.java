@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.ning.atlas.tree.Trees;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.Collections;
 import java.util.List;
@@ -55,5 +56,11 @@ public class SystemMap
     public SystemMap combine(SystemMap other)
     {
         return new SystemMap(Iterables.concat(this.getRoots(), other.getRoots()));
+    }
+
+    @Override
+    public String toString()
+    {
+        return ToStringBuilder.reflectionToString(this);
     }
 }
