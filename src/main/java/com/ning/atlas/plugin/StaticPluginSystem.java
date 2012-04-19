@@ -147,7 +147,7 @@ public class StaticPluginSystem implements PluginSystem
             Class<? extends LifecycleListener> type = listeners.get(prefix);
             Map<String, String> args = listenerConfigs.get(prefix);
             try {
-                return Maybe.<LifecycleListener>definitely(Instantiator.create(type, args));
+            	return Maybe.<LifecycleListener>definitely(Instantiator.create(type, args));
             }
             catch (Exception e) {
                 throw new IllegalStateException("Unable to instantiate listener " + prefix, e);
