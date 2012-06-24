@@ -1,28 +1,25 @@
 package com.ning.atlas.components.aws;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
-import com.amazonaws.services.rds.AmazonRDSClient;
-import com.amazonaws.services.rds.model.AuthorizeDBSecurityGroupIngressRequest;
-import com.amazonaws.services.rds.model.CreateDBSecurityGroupRequest;
-import com.amazonaws.services.rds.model.DBSecurityGroup;
-import com.amazonaws.services.rds.model.DescribeDBSecurityGroupsRequest;
-import com.amazonaws.services.rds.model.DescribeDBSecurityGroupsResult;
-import com.amazonaws.services.rds.model.EC2SecurityGroup;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Future;
+
+import org.jclouds.iam.IAMApi;
+import org.jclouds.rds.RDSApi;
+import org.jclouds.rds.domain.EC2SecurityGroup;
+import org.jclouds.rds.domain.SecurityGroup;
+
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
-import com.ning.atlas.components.ConcurrentComponent;
 import com.ning.atlas.Host;
+import com.ning.atlas.components.ConcurrentComponent;
 import com.ning.atlas.config.AtlasConfiguration;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Uri;
-
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Future;
+import com.ning.atlas.spi.protocols.AWS;
+import com.ning.atlas.spi.protocols.AWS.Credentials;
 
 public class RDSSecurityGroupProvisioner extends ConcurrentComponent
 {
@@ -31,40 +28,26 @@ public class RDSSecurityGroupProvisioner extends ConcurrentComponent
     {
         final String group_name = uri.getFragment();
         AtlasConfiguration config = AtlasConfiguration.global();
-        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
-                                                            config.lookup("aws.secret").get());
-
-        AmazonRDSClient rds = new AmazonRDSClient(creds);
-        AmazonIdentityManagementClient iam = new AmazonIdentityManagementClient(creds);
-
-        DescribeDBSecurityGroupsRequest req = new DescribeDBSecurityGroupsRequest();
-        req.setDBSecurityGroupName(group_name);
-        try {
-            DescribeDBSecurityGroupsResult res = rds.describeDBSecurityGroups(req);
-            res.getDBSecurityGroups().get(0);
-        }
-        catch (AmazonServiceException e) {
-            // doesn't exist!
-            if ("DBSecurityGroupNotFound".equals(e.getErrorCode())) {
-                createGroup(rds, group_name);
-            }
-            else {
-                throw e;
-            }
-        }
-        updateGroup(uri, rds, iam);
+        Credentials creds = new AWS.Credentials();
+        creds.setAccessKey(config.lookup("aws.key").get());
+        creds.setSecretKey(config.lookup("aws.secret").get());
+        
+        final RDSApi rdsApi = AWS.rdsApi(creds);
+        IAMApi iam = AWS.iamApi(creds);
+        
+        if (rdsApi.getSecurityGroupApi().get(group_name) == null)
+            createGroup(rdsApi, group_name);
+        
+        updateGroup(uri, rdsApi, iam);
 
         return "okay";
     }
 
-    private void updateGroup(Uri<? extends Component> uri, AmazonRDSClient rds, AmazonIdentityManagementClient iam)
+    private void updateGroup(Uri<? extends Component> uri, RDSApi rdsApi, IAMApi iam)
     {
-        String user_id = iam.getUser().getUser().getUserId();
+        String user_id = iam.getCurrentUser().getId();
         String name = uri.getFragment();
-        DescribeDBSecurityGroupsRequest req = new DescribeDBSecurityGroupsRequest();
-        req.setDBSecurityGroupName(name);
-        DescribeDBSecurityGroupsResult res = rds.describeDBSecurityGroups(req);
-        DBSecurityGroup group = res.getDBSecurityGroups().get(0);
+        SecurityGroup group = rdsApi.getSecurityGroupApi().get(name);
 
         Set<GroupUserPair> groups_wanted = GroupUserPair.extractAll(user_id, uri.getParams());
         Set<GroupUserPair> existing  = GroupUserPair.convertAll(group.getEC2SecurityGroups());
@@ -74,11 +57,7 @@ public class RDSSecurityGroupProvisioner extends ConcurrentComponent
 
         if (!to_add.isEmpty()) {
             for (GroupUserPair pair : to_add) {
-                AuthorizeDBSecurityGroupIngressRequest add_req = new AuthorizeDBSecurityGroupIngressRequest();
-                add_req.setDBSecurityGroupName(name);
-                add_req.setEC2SecurityGroupName(pair.groupName);
-                add_req.setEC2SecurityGroupOwnerId(pair.userId);
-                rds.authorizeDBSecurityGroupIngress(add_req);
+                rdsApi.getSecurityGroupApi().authorizeIngressToEC2SecurityGroupOfOwner(name, pair.groupName, pair.userId);
             }
         }
 
@@ -94,12 +73,9 @@ public class RDSSecurityGroupProvisioner extends ConcurrentComponent
 //        }
     }
 
-    private void createGroup(AmazonRDSClient rds, String name)
+    private void createGroup(RDSApi rdsApi, String name)
     {
-        CreateDBSecurityGroupRequest req = new CreateDBSecurityGroupRequest();
-        req.setDBSecurityGroupName(name);
-        req.setDBSecurityGroupDescription(name);
-        rds.createDBSecurityGroup(req);
+        rdsApi.getSecurityGroupApi().createWithNameAndDescription(name, name);
     }
 
     @Override
@@ -146,7 +122,7 @@ public class RDSSecurityGroupProvisioner extends ConcurrentComponent
         public static Set<GroupUserPair> convertAll(Iterable<EC2SecurityGroup> groups) {
             Set<GroupUserPair> rs = Sets.newHashSet();
             for (EC2SecurityGroup group : groups) {
-                rs.add(new GroupUserPair(group.getEC2SecurityGroupOwnerId(), group.getEC2SecurityGroupName()));
+                rs.add(new GroupUserPair(group.getOwnerId(), group.getName()));
             }
             return rs;
         }

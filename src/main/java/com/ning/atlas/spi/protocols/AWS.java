@@ -1,25 +1,37 @@
 package com.ning.atlas.spi.protocols;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
-import com.amazonaws.services.ec2.model.SecurityGroup;
-import com.amazonaws.services.rds.AmazonRDSClient;
-import com.amazonaws.services.rds.model.DBSecurityGroup;
-import com.amazonaws.services.rds.model.DescribeDBSecurityGroupsRequest;
-import com.ning.atlas.config.AtlasConfiguration;
-import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.space.Core;
-import com.ning.atlas.spi.space.Space;
+import static org.jclouds.concurrent.MoreExecutors.sameThreadExecutor;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static java.util.Arrays.asList;
+import org.jclouds.ContextBuilder;
+import org.jclouds.aws.ec2.AWSEC2ApiMetadata;
+import org.jclouds.aws.ec2.AWSEC2Client;
+import org.jclouds.aws.ec2.AWSEC2ProviderMetadata;
+import org.jclouds.aws.elb.AWSELBProviderMetadata;
+import org.jclouds.aws.iam.AWSIAMProviderMetadata;
+import org.jclouds.aws.rds.AWSRDSProviderMetadata;
+import org.jclouds.compute.ComputeServiceContext;
+import org.jclouds.concurrent.config.ExecutorServiceModule;
+import org.jclouds.ec2.domain.SecurityGroup;
+import org.jclouds.elb.ELBApi;
+import org.jclouds.elb.ELBApiMetadata;
+import org.jclouds.iam.IAMApi;
+import org.jclouds.iam.IAMApiMetadata;
+import org.jclouds.predicates.RetryablePredicate;
+import org.jclouds.rds.RDSApi;
+import org.jclouds.rds.RDSApiMetadata;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
+import com.google.inject.Module;
+import com.ning.atlas.config.AtlasConfiguration;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.space.Core;
+import com.ning.atlas.spi.space.Space;
 
 public class AWS
 {
@@ -37,34 +49,32 @@ public class AWS
                                                TimeUnit unit) throws InterruptedException
     {
         AtlasConfiguration config = AtlasConfiguration.global();
-        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
-                                                            config.lookup("aws.secret").get());
+        
+        Credentials creds = new AWS.Credentials();
+        creds.setAccessKey(config.lookup("aws.key").get());
+        creds.setSecretKey(config.lookup("aws.secret").get());
+        
+        final AWSEC2Client ec2Api = AWS.ec2Api(creds);
 
-        initEC2GroupCache(creds);
+        initEC2GroupCache(ec2Api);
         if (existingEc2Groups.contains(groupName)) {
             return;
         }
 
-        AmazonEC2Client ec2 = new AmazonEC2Client(creds);
+        Predicate<String> retryer = new RetryablePredicate<String>(new Predicate<String>(){
 
-        long stop_at = unit.toMillis(time) + System.currentTimeMillis();
-        while (System.currentTimeMillis() < stop_at) {
-            DescribeSecurityGroupsRequest req = new DescribeSecurityGroupsRequest();
-            req.setGroupNames(asList(groupName));
-            try {
-                ec2.describeSecurityGroups(req);
-                existingEc2Groups.add(groupName);
-                return;
+            @Override
+            public boolean apply(String input) {
+                return ec2Api.getSecurityGroupServices().describeSecurityGroupsInRegion(
+                        null, input).size() == 1;
             }
-            catch (AmazonServiceException e) {
-                if (e.getErrorCode().equals("InvalidGroup.NotFound")) {
-                    // okay, doesn't exist yet, keep waiting
-                    Thread.sleep(1000);
-                }
-                else {
-                    throw e;
-                }
-            }
+            
+        }, unit.toMillis(time));
+
+        if (retryer.apply(groupName)) 
+        {
+            existingEc2Groups.add(groupName);
+            return;
         }
         throw new InterruptedException("timed out waiting for security group " + groupName);
     }
@@ -75,50 +85,48 @@ public class AWS
                                                TimeUnit unit) throws InterruptedException
     {
         AtlasConfiguration config = AtlasConfiguration.global();
-        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
-                                                            config.lookup("aws.secret").get());
-        initRDSGroupCache(creds);
+        
+        Credentials creds = new AWS.Credentials();
+        creds.setAccessKey(config.lookup("aws.key").get());
+        creds.setSecretKey(config.lookup("aws.secret").get());
+        
+        final RDSApi rdsApi = AWS.rdsApi(creds);
+
+        initRDSGroupCache(rdsApi);
         if (existingRdsGroups.contains(groupName)) {
             return;
         }
+        
+        Predicate<String> retryer = new RetryablePredicate<String>(new Predicate<String>(){
 
-        AmazonRDSClient rds = new AmazonRDSClient(creds);
+            @Override
+            public boolean apply(String input) {
+                return rdsApi.getSubnetGroupApi().get(input) != null;
+            }
+            
+        }, unit.toMillis(time));
 
-        long stop_at = unit.toMillis(time) + System.currentTimeMillis();
-        while (System.currentTimeMillis() < stop_at) {
-            DescribeDBSecurityGroupsRequest req = new DescribeDBSecurityGroupsRequest();
-            req.setDBSecurityGroupName(groupName);
-            try {
-                rds.describeDBSecurityGroups(req);
-                existingRdsGroups.add(groupName);
-                return;
-            }
-            catch (AmazonServiceException e) {
-                if ("DBSecurityGroupNotFound".equals(e.getErrorCode())) {
-                    Thread.sleep(1000);
-                } else {
-                	throw e;
-                }
-            }
+        if (retryer.apply(groupName)) 
+        {
+            existingRdsGroups.add(groupName);
+            return;
         }
         throw new InterruptedException("timed out waiting for security group " + groupName);
     }
 
-    private static synchronized void initEC2GroupCache(AWSCredentials creds)
+    private static synchronized void initEC2GroupCache(AWSEC2Client ec2)
     {
-        AmazonEC2Client ec2 = new AmazonEC2Client(creds);
 
-        for (SecurityGroup securityGroup : ec2.describeSecurityGroups().getSecurityGroups()) {
-            existingEc2Groups.add(securityGroup.getGroupName());
+        for (SecurityGroup securityGroup : ec2.getSecurityGroupServices().describeSecurityGroupsInRegion(null)) {
+            existingEc2Groups.add(securityGroup.getName());
         }
     }
 
-    private static synchronized void initRDSGroupCache(AWSCredentials creds)
+    private static synchronized void initRDSGroupCache(RDSApi rds)
     {
-        AmazonRDSClient rds = new AmazonRDSClient(creds);
 
-        for (DBSecurityGroup group : rds.describeDBSecurityGroups().getDBSecurityGroups()) {
-            existingRdsGroups.add(group.getDBSecurityGroupName());
+        for (org.jclouds.rds.domain.SecurityGroup group : rds.getSecurityGroupApi().list().concat().toImmutableSet()) {
+            existingRdsGroups.add(group.getName());
         }
     }
 
@@ -146,11 +154,6 @@ public class AWS
         {
             this.secretKey.set(secretKey);
         }
-
-        public AWSCredentials toAWSCredentials()
-        {
-            return new BasicAWSCredentials(this.getAccessKey(), this.getSecretKey());
-        }
     }
 
     public static class SSHKeyPairInfo
@@ -177,5 +180,43 @@ public class AWS
         {
             this.keyPairFile.set(keyPairFile);
         }
+    }
+    
+    private final static Iterable<Module> JCLOUDS_MODULES = ImmutableSet.<Module> of(new ExecutorServiceModule(
+            sameThreadExecutor(), sameThreadExecutor()));
+
+    public static IAMApi iamApi(Credentials creds) {
+        return ContextBuilder.newBuilder(new AWSIAMProviderMetadata())
+                             .credentials(creds.getAccessKey(), creds.getSecretKey())
+                             .modules(AWS.JCLOUDS_MODULES)
+                             .build(IAMApiMetadata.CONTEXT_TOKEN).getApi();
+    }
+    
+    public static ComputeServiceContext computeCtx(Credentials creds) {
+        return ContextBuilder.newBuilder(new AWSEC2ProviderMetadata())
+                             .credentials(creds.getAccessKey(), creds.getSecretKey())
+                             .modules(AWS.JCLOUDS_MODULES)
+                             .build(ComputeServiceContext.class);
+    }
+    
+    public static AWSEC2Client ec2Api(Credentials creds) {
+        return ContextBuilder.newBuilder(new AWSEC2ProviderMetadata())
+                             .credentials(creds.getAccessKey(), creds.getSecretKey())
+                             .modules(AWS.JCLOUDS_MODULES)
+                             .build(AWSEC2ApiMetadata.CONTEXT_TOKEN).getApi();
+    }
+    
+    public static ELBApi elbApi(Credentials creds) {
+        return ContextBuilder.newBuilder(new AWSELBProviderMetadata())
+                             .credentials(creds.getAccessKey(), creds.getSecretKey())
+                             .modules(AWS.JCLOUDS_MODULES)
+                             .build(ELBApiMetadata.CONTEXT_TOKEN).getApi();
+    }
+    
+    public static RDSApi rdsApi(Credentials creds) {
+        return ContextBuilder.newBuilder(new AWSRDSProviderMetadata())
+                             .credentials(creds.getAccessKey(), creds.getSecretKey())
+                             .modules(AWS.JCLOUDS_MODULES)
+                             .build(RDSApiMetadata.CONTEXT_TOKEN).getApi();
     }
 }

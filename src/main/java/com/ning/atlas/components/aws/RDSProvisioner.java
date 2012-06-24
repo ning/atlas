@@ -1,40 +1,38 @@
 package com.ning.atlas.components.aws;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.rds.AmazonRDSClient;
-import com.amazonaws.services.rds.model.CreateDBInstanceRequest;
-import com.amazonaws.services.rds.model.DBInstance;
-import com.amazonaws.services.rds.model.DeleteDBInstanceRequest;
-import com.amazonaws.services.rds.model.DescribeDBInstancesRequest;
-import com.amazonaws.services.rds.model.DescribeDBInstancesResult;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.Futures;
-import com.ning.atlas.components.ConcurrentComponent;
-import com.ning.atlas.Host;
-import com.ning.atlas.base.MapConfigSource;
-import com.ning.atlas.config.AtlasConfiguration;
-import com.ning.atlas.logging.Logger;
-import com.ning.atlas.spi.Maybe;
-import com.ning.atlas.spi.protocols.Database;
-import com.ning.atlas.spi.space.Missing;
-import com.ning.atlas.spi.Component;
-import com.ning.atlas.spi.Deployment;
-import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.protocols.AWS;
-import com.ning.atlas.spi.protocols.Server;
-import com.ning.atlas.spi.Uri;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.skife.config.Config;
-import org.skife.config.ConfigurationObjectFactory;
-
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.Arrays.asList;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.jclouds.predicates.RetryablePredicate;
+import org.jclouds.rds.RDSApi;
+import org.jclouds.rds.domain.Instance;
+import org.jclouds.rds.domain.InstanceRequest;
+import org.skife.config.Config;
+import org.skife.config.ConfigurationObjectFactory;
+
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.Futures;
+import com.ning.atlas.Host;
+import com.ning.atlas.base.MapConfigSource;
+import com.ning.atlas.components.ConcurrentComponent;
+import com.ning.atlas.config.AtlasConfiguration;
+import com.ning.atlas.logging.Logger;
+import com.ning.atlas.spi.Component;
+import com.ning.atlas.spi.Deployment;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.Maybe;
+import com.ning.atlas.spi.Uri;
+import com.ning.atlas.spi.protocols.AWS;
+import com.ning.atlas.spi.protocols.AWS.Credentials;
+import com.ning.atlas.spi.protocols.Database;
+import com.ning.atlas.spi.protocols.Server;
+import com.ning.atlas.spi.space.Missing;
 
 public class RDSProvisioner extends ConcurrentComponent
 {
@@ -45,123 +43,92 @@ public class RDSProvisioner extends ConcurrentComponent
     public String perform(Host node, Uri<? extends Component> uri, Deployment d) throws Exception
     {
         AtlasConfiguration config = AtlasConfiguration.global();
-        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
-                                                            config.lookup("aws.secret").get());
-
-        AmazonRDSClient rds = new AmazonRDSClient(creds);
+        Credentials creds = new AWS.Credentials();
+        creds.setAccessKey(config.lookup("aws.key").get());
+        creds.setSecretKey(config.lookup("aws.secret").get());
+        
+        final RDSApi rdsApi = AWS.rdsApi(creds);
 
         Maybe<String> existing_id = d.getSpace().get(node.getId(), "instance-id");
         if (existing_id.isKnown()) {
-
-            DescribeDBInstancesRequest req = new DescribeDBInstancesRequest();
-            req.setDBInstanceIdentifier(existing_id.getValue());
-            try {
-                DescribeDBInstancesResult rs = rds.describeDBInstances(req);
-                for (DBInstance instance : rs.getDBInstances()) {
-                    if (existing_id.getValue().equals(instance.getDBInstanceIdentifier())
-                        && "available".equals(instance.getDBInstanceStatus()))
-                    {
-                        return "already exists";
-                    }
-                }
-            }
-            catch (AmazonServiceException e) {
-                // amazon throws an exception if the thing isn't found *sigh*
-                if (e.getStatusCode() == 404) {
-                    // instance no longer exists, this is excpected
-                }
-                else {
-                    throw new IllegalStateException("unexpected error talking to RDS Api", e);
-                }
-            }
+           Instance instance = rdsApi.getInstanceApi().get(existing_id.getValue());
+            if (instance != null
+                    && !Predicates.in(ImmutableSet.of(Instance.Status.DELETING, Instance.Status.FAILED)).apply(
+                            instance.getStatus()))
+                return "already exists";
         }
 
         log.info("Started provisioning %s, this could take a while", node.getId().toExternalForm());
         RDSConfig cfg = new ConfigurationObjectFactory(new MapConfigSource(uri.getParams())).build(RDSConfig.class);
 
         String name = "db-" + UUID.randomUUID().toString();
-        CreateDBInstanceRequest req = new CreateDBInstanceRequest(name,
-                                                                  cfg.getStorageSize(),
-                                                                  cfg.getInstanceClass(),
-                                                                  cfg.getEngine(),
-                                                                  cfg.getUsername(),
-                                                                  cfg.getPassword());
+        
+        InstanceRequest.Builder<?> requestBuilder = InstanceRequest.builder()
+                                                                   .instanceClass(cfg.getInstanceClass())
+                                                                   .allocatedStorageGB(cfg.getStorageSize())
+                                                                   .engine(cfg.getEngine())
+                                                                   .masterUsername(cfg.getUsername())
+                                                                   .masterPassword(cfg.getPassword());
         String license_model = uri.getParams().containsKey("license_model")
-                               ? uri.getParams().get("license_model")
-                               : "general-public-license";
-
-        req.setLicenseModel(license_model);
+                ? uri.getParams().get("license_model")
+                : "general-public-license";
+        requestBuilder.licenseModel(license_model);
 
         Maybe<String> db_name = Maybe.elideNull(uri.getParams().get("name"));
         if (db_name.isKnown()) {
-            req.setDBName(db_name.getValue());
+            requestBuilder.name(db_name.getValue());
         }
+        
         Maybe<String> sec_group = Maybe.elideNull(uri.getParams().get("security_group"));
         if (sec_group.isKnown()) {
             AWS.waitForRDSSecurityGroup(sec_group.getValue(), d.getSpace(), 1, TimeUnit.MINUTES);
-            req.setDBSecurityGroups(asList(sec_group.getValue()));
+            requestBuilder.securityGroup(sec_group.getValue());
         }
+        
+        Instance newInstance = rdsApi.getInstanceApi().create(name, requestBuilder.build());
 
-        DBInstance db = rds.createDBInstance(req);
+        RetryablePredicate<Instance> instanceAvailable = new RetryablePredicate<Instance>(new Predicate<Instance>() {
 
-        DBInstance instance = null;
-        String last_state = "";
-        do {
-            try {
-                Thread.sleep(10000);
+            @Override
+            public boolean apply(Instance input) {
+                Instance refreshed = rdsApi.getInstanceApi().get(input.getId());
+                return refreshed.getStatus() == Instance.Status.AVAILABLE && refreshed.getEndpoint().isPresent();
             }
-            catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw Throwables.propagate(e);
-            }
-            DescribeDBInstancesRequest rdy = new DescribeDBInstancesRequest();
-            rdy.setDBInstanceIdentifier(db.getDBInstanceIdentifier());
-            DescribeDBInstancesResult rs;
-            try {
-                rs = rds.describeDBInstances(rdy);
-            }
-            catch (AmazonServiceException e) {
-                continue;
-            }
-            instance = rs.getDBInstances().get(0);
-            String state = instance.getDBInstanceStatus();
-            if (!last_state.equals(state)) {
-                log.debug("database instance %s achieved state %s", instance.getDBInstanceIdentifier(), state);
-                last_state = state;
-            }
-        }
-        while (!(instance != null
-                 && instance.getDBInstanceStatus().equals("available")
-                 && instance.getEndpoint() != null));
 
+         }, 600, 1, 1, TimeUnit.SECONDS);
+
+        if (!instanceAvailable.apply(newInstance))
+            throw new IllegalStateException("instance never hit state AVAILABLE!: "+ newInstance);
+
+        Instance instance = rdsApi.getInstanceApi().get(newInstance.getId());
 
         Database database = new Database();
-        database.setHost(instance.getEndpoint().getAddress());
-        database.setPort(instance.getEndpoint().getPort());
+        database.setHost(instance.getEndpoint().get().getHostText());
+        database.setPort(instance.getEndpoint().get().getPort());
         database.setPassword(cfg.getPassword());
         database.setUsername(cfg.getUsername());
-        database.setName(instance.getDBName() == null ? "" : instance.getDBName());
+        database.setName(instance.getName().or(""));
         d.getSpace().store(node.getId(), database);
 
         Map<String, String> attrs = Maps.newHashMap();
-        attrs.put("port", instance.getEndpoint().getPort().toString());
-        attrs.put("instanceId", instance.getDBInstanceIdentifier());
-        attrs.put("instanceClass", instance.getDBInstanceClass());
-        attrs.put("name", instance.getDBName() == null ? "" : instance.getDBName());
+        attrs.put("port", instance.getEndpoint().get().getPort() + "");
+        attrs.put("instanceId", instance.getId());
+        attrs.put("instanceClass", instance.getInstanceClass());
+        attrs.put("name", instance.getName().or(""));
         attrs.put("engine", instance.getEngine());
         attrs.put("engineVersion", instance.getEngineVersion());
         attrs.put("password", cfg.getPassword());
         attrs.put("username", cfg.getUsername());
         attrs.put("storageSize", String.valueOf(cfg.getStorageSize()));
-        attrs.put("host", instance.getEndpoint().getAddress());
+        attrs.put("host", instance.getEndpoint().get().getHostText());
 
         log.info("Finished provisioning %s", node.getId().toExternalForm());
 
         // TODO save to space somehow
 
-        d.getSpace().store(node.getId(), new Server(instance.getEndpoint().getAddress()));
+        d.getSpace().store(node.getId(), new Server(instance.getEndpoint().get().getHostText()));
 
-        d.getSpace().store(node.getId(), "instance-id", instance.getDBInstanceIdentifier());
+        d.getSpace().store(node.getId(), "instance-id", instance.getId());
 
         d.getSpace().store(node.getId(), "extra-atlas-attributes", new ObjectMapper().writeValueAsString(attrs));
 
@@ -174,14 +141,15 @@ public class RDSProvisioner extends ConcurrentComponent
         AWS.Credentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class, Missing.RequireAll)
                                  .otherwise(new IllegalStateException("AWS credentials are not available"));
 
-        AmazonRDSClient rds = new AmazonRDSClient(new BasicAWSCredentials(creds.getAccessKey(), creds.getSecretKey()));
+        creds.setAccessKey(creds.getAccessKey());
+        creds.setSecretKey(creds.getSecretKey());
+        
+        RDSApi rdsApi = AWS.rdsApi(creds);
 
         String mid = d.getSpace().get(hostId, "instance-id")
                       .otherwise(new IllegalStateException("No instance id found, cannot unwind"));
 
-        DeleteDBInstanceRequest req = new DeleteDBInstanceRequest(mid);
-        req.setSkipFinalSnapshot(true);
-        rds.deleteDBInstance(req);
+        rdsApi.getInstanceApi().delete(mid);
         return "cleared";
     }
 
@@ -198,12 +166,14 @@ public class RDSProvisioner extends ConcurrentComponent
         AWS.Credentials creds = d.getSpace().get(AWS.ID, AWS.Credentials.class, Missing.RequireAll)
                                  .otherwise(new IllegalStateException("AWS credentials are not available"));
 
-        AmazonRDSClient rds = new AmazonRDSClient(new BasicAWSCredentials(creds.getAccessKey(), creds.getSecretKey()));
+        creds.setAccessKey(creds.getAccessKey());
+        creds.setSecretKey(creds.getSecretKey());
+        
+        RDSApi rdsApi = AWS.rdsApi(creds);
 
         String instance_id = d.getSpace().get(id, "instance-id").getValue();
-        DeleteDBInstanceRequest req = new DeleteDBInstanceRequest(instance_id);
-        req.setSkipFinalSnapshot(true);
-        rds.deleteDBInstance(req);
+
+        rdsApi.getInstanceApi().delete(instance_id);
     }
 
     public interface RDSConfig

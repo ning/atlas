@@ -1,42 +1,31 @@
 package com.ning.atlas.components.aws;
 
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
-import com.amazonaws.services.ec2.model.Reservation;
-import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
-import com.amazonaws.services.elasticloadbalancing.model.DeregisterInstancesFromLoadBalancerRequest;
-import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRequest;
-import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
-import com.amazonaws.services.elasticloadbalancing.model.DisableAvailabilityZonesForLoadBalancerRequest;
-import com.amazonaws.services.elasticloadbalancing.model.EnableAvailabilityZonesForLoadBalancerRequest;
-import com.amazonaws.services.elasticloadbalancing.model.Instance;
-import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription;
-import com.amazonaws.services.elasticloadbalancing.model.RegisterInstancesWithLoadBalancerRequest;
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
+import static org.jclouds.elb.options.ListLoadBalancersOptions.Builder.names;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.Future;
+
+import org.jclouds.aws.ec2.AWSEC2Client;
+import org.jclouds.aws.ec2.domain.AWSRunningInstance;
+import org.jclouds.elb.ELBApi;
+import org.jclouds.elb.domain.LoadBalancer;
+
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.Host;
 import com.ning.atlas.components.ConcurrentComponent;
 import com.ning.atlas.config.AtlasConfiguration;
-import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Uri;
-
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.Future;
-
-import static java.util.Arrays.asList;
+import com.ning.atlas.spi.protocols.AWS;
+import com.ning.atlas.spi.protocols.AWS.Credentials;
 
 public class ELBAddInstaller extends ConcurrentComponent
 {
-
-    private static final Logger log = Logger.get(ELBAddInstaller.class);
 
     private final Set<String> elbnames = new ConcurrentSkipListSet<String>();
 
@@ -55,19 +44,15 @@ public class ELBAddInstaller extends ConcurrentComponent
         elbnames.add(elb_name);
 
         AtlasConfiguration config = AtlasConfiguration.global();
-        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
-                                                            config.lookup("aws.secret").get());
-        AmazonElasticLoadBalancingClient elb = new AmazonElasticLoadBalancingClient(creds);
+        Credentials creds = new AWS.Credentials();
+        creds.setAccessKey(config.lookup("aws.key").get());
+        creds.setSecretKey(config.lookup("aws.secret").get());
+        ELBApi elb = AWS.elbApi(creds);
 
         String instance_id = d.getSpace().get(host.getId(), "ec2-instance-id")
                               .otherwise(new IllegalStateException(host.getId() + " lacks an ec2-instance-id"));
 
-
-        Instance instance = new Instance(instance_id);
-
-        RegisterInstancesWithLoadBalancerRequest rq = new RegisterInstancesWithLoadBalancerRequest(elb_name,
-                                                                                                   asList(instance));
-        elb.registerInstancesWithLoadBalancer(rq);
+        elb.getInstanceApi().registerInstanceWithLoadBalancer(instance_id, elb_name);
 
         return "okay";
     }
@@ -78,17 +63,15 @@ public class ELBAddInstaller extends ConcurrentComponent
         String elb_name = uri.getFragment();
         elbnames.add(elb_name);
         AtlasConfiguration config = AtlasConfiguration.global();
-        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
-                                                            config.lookup("aws.secret").get());
-        AmazonElasticLoadBalancingClient elb = new AmazonElasticLoadBalancingClient(creds);
+        Credentials creds = new AWS.Credentials();
+        creds.setAccessKey(config.lookup("aws.key").get());
+        creds.setSecretKey(config.lookup("aws.secret").get());
+        ELBApi elb = AWS.elbApi(creds);
 
         String instance_id = d.getSpace().get(hostId, "ec2-instance-id")
                               .otherwise(new IllegalStateException(hostId + " lacks an ec2-instance-id"));
 
-        DeregisterInstancesFromLoadBalancerRequest req = new DeregisterInstancesFromLoadBalancerRequest();
-        req.setInstances(asList(new Instance(instance_id)));
-
-        elb.deregisterInstancesFromLoadBalancer(req);
+        elb.getInstanceApi().deregisterInstanceFromLoadBalancer(instance_id, elb_name);
 
         // TODO figure out how to do this better
         return "okay";
@@ -102,54 +85,32 @@ public class ELBAddInstaller extends ConcurrentComponent
          */
 
         AtlasConfiguration config = AtlasConfiguration.global();
-        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
-                                                            config.lookup("aws.secret").get());
-        AmazonElasticLoadBalancingClient elb = new AmazonElasticLoadBalancingClient(creds);
-        AmazonEC2Client ec2 = new AmazonEC2Client(creds);
+        Credentials creds = new AWS.Credentials();
+        creds.setAccessKey(config.lookup("aws.key").get());
+        creds.setSecretKey(config.lookup("aws.secret").get());
+        
+        ELBApi elb = AWS.elbApi(creds);
+        AWSEC2Client ec2 = AWS.ec2Api(creds);
 
-        DescribeLoadBalancersResult rs = elb.describeLoadBalancers(new DescribeLoadBalancersRequest(Lists.newArrayList(elbnames)));
+        Iterable<LoadBalancer> lbs = elb.getLoadBalancerApi().list(names(elbnames));
 
-        for (LoadBalancerDescription description : rs.getLoadBalancerDescriptions()) {
-            List<String> instance_ids = Lists.transform(description.getInstances(), new Function<Instance, String>()
-            {
-                @Override
-                public String apply(Instance input)
-                {
-                    return input.getInstanceId();
-                }
-            });
-
+        for (LoadBalancer lb : lbs) {
             Set<String> new_zone_set = Sets.newHashSet();
-            DescribeInstancesRequest des_instances_req = new DescribeInstancesRequest();
-            des_instances_req.setInstanceIds(instance_ids);
-            for (Reservation reservation : ec2.describeInstances(des_instances_req).getReservations()) {
-                for (com.amazonaws.services.ec2.model.Instance instance : reservation.getInstances()) {
-                    new_zone_set.add(instance.getPlacement().getAvailabilityZone());
-                }
+            for (AWSRunningInstance instance : Iterables.concat(ec2.getInstanceServices().describeInstancesInRegion(null, Iterables.toArray(lb.getInstanceIds(), String.class)))) {
+                new_zone_set.add(instance.getAvailabilityZone());
             }
 
-            Set<String> old_zone_set = Sets.newHashSet(description.getAvailabilityZones());
+            Set<String> old_zone_set = Sets.newHashSet(lb.getAvailabilityZones());
 
             Set<String> to_remove = Sets.difference(old_zone_set, new_zone_set);
             Set<String> to_add = Sets.difference(new_zone_set, old_zone_set);
 
             if (!to_add.isEmpty()) {
-                EnableAvailabilityZonesForLoadBalancerRequest eazreq = new EnableAvailabilityZonesForLoadBalancerRequest();
-                eazreq.setAvailabilityZones(to_add);
-                eazreq.setLoadBalancerName(description.getLoadBalancerName());
-                elb.enableAvailabilityZonesForLoadBalancer(eazreq);
+                elb.getAvailabilityZoneApi().addAvailabilityZonesToLoadBalancer(to_add, lb.getName());
             }
 
             if (!to_remove.isEmpty()) {
-                DisableAvailabilityZonesForLoadBalancerRequest disreq = new DisableAvailabilityZonesForLoadBalancerRequest();
-                disreq.setAvailabilityZones(to_remove);
-                disreq.setLoadBalancerName(description.getLoadBalancerName());
-                try {
-                    elb.disableAvailabilityZonesForLoadBalancer(disreq);
-                }
-                catch (Exception e) {
-                    log.warn(e, "unable to disable zones %s in elb %s", to_remove, elb);
-                }
+                elb.getAvailabilityZoneApi().removeAvailabilityZonesFromLoadBalancer(to_remove, lb.getName());
             }
         }
     }

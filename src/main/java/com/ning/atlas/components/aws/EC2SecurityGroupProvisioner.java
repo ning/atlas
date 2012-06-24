@@ -1,78 +1,68 @@
 package com.ning.atlas.components.aws;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
-import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
-import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
-import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
-import com.amazonaws.services.ec2.model.IpPermission;
-import com.amazonaws.services.ec2.model.SecurityGroup;
-import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.util.concurrent.Futures;
-import com.ning.atlas.components.ConcurrentComponent;
-import com.ning.atlas.Host;
-import com.ning.atlas.config.AtlasConfiguration;
-import com.ning.atlas.spi.Component;
-import com.ning.atlas.spi.Deployment;
-import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.Uri;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 
-import static java.util.Arrays.asList;
+import org.jclouds.aws.ec2.AWSEC2Client;
+import org.jclouds.ec2.domain.IpPermission;
+import org.jclouds.ec2.domain.SecurityGroup;
+import org.jclouds.iam.IAMApi;
+
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Futures;
+import com.ning.atlas.Host;
+import com.ning.atlas.components.ConcurrentComponent;
+import com.ning.atlas.config.AtlasConfiguration;
+import com.ning.atlas.spi.Component;
+import com.ning.atlas.spi.Deployment;
+import com.ning.atlas.spi.Identity;
+import com.ning.atlas.spi.Uri;
+import com.ning.atlas.spi.protocols.AWS;
+import com.ning.atlas.spi.protocols.AWS.Credentials;
 
 public class EC2SecurityGroupProvisioner extends ConcurrentComponent
 {
+    
     @Override
     public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
         AtlasConfiguration config = AtlasConfiguration.global();
-        BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
-                                                                  config.lookup("aws.secret").get());
-
-        AmazonEC2Client ec2 = new AmazonEC2Client(creds);
-        AmazonIdentityManagementClient iam = new AmazonIdentityManagementClient(creds);
+        Credentials creds = new AWS.Credentials();
+        creds.setAccessKey(config.lookup("aws.key").get());
+        creds.setSecretKey(config.lookup("aws.secret").get());
+        
+        AWSEC2Client ec2Api = AWS.ec2Api(creds);
+        IAMApi iam = AWS.iamApi(creds);
 
         final String group_name = uri.getFragment();
 
+        Set<SecurityGroup> groups = ec2Api.getSecurityGroupServices().describeSecurityGroupsInRegion(null, group_name);
 
-        DescribeSecurityGroupsRequest describe_request = new DescribeSecurityGroupsRequest();
-        describe_request.setGroupNames(asList(group_name));
         SecurityGroup security_group;
-        try {
-            DescribeSecurityGroupsResult describe_result = ec2.describeSecurityGroups(describe_request);
-            security_group = describe_result.getSecurityGroups().get(0);
-        }
-        catch (AmazonServiceException e) {
-            if (e.getErrorCode().equals("InvalidGroup.NotFound")) {
-                security_group = createNewGroup(ec2, group_name);
-            }
-            else {
-                throw e;
-            }
+        if (groups.size() > 0) {
+            security_group = Iterables.get(groups, 0);
+        } else {
+            security_group = createNewGroup(ec2Api, group_name);
         }
 
-        updateGroup(uri, ec2, iam, security_group);
+        updateGroup(uri, ec2Api, iam, security_group);
 
 
         return "okay";
     }
 
     private void updateGroup(Uri<? extends Component> uri,
-                             AmazonEC2Client ec2,
-                             AmazonIdentityManagementClient iam,
+                             AWSEC2Client ec2,
+                             IAMApi iam,
                              SecurityGroup group)
     {
-        String user_id = iam.getUser().getUser().getUserId();
+        String user_id = iam.getCurrentUser().getId();
 
         Set<String> raw_rules = Sets.newHashSet();
         for (Map.Entry<String, Collection<String>> entry : uri.getFullParams().entrySet()) {
@@ -100,7 +90,7 @@ public class EC2SecurityGroupProvisioner extends ConcurrentComponent
             adds.add(rule.toIpPermission());
         }
         if (!adds.isEmpty()) {
-            ec2.authorizeSecurityGroupIngress(new AuthorizeSecurityGroupIngressRequest(group.getGroupName(), adds));
+            ec2.getSecurityGroupServices().authorizeSecurityGroupIngressInRegion(null, group.getName(), adds);
         }
 
         List<IpPermission> removals = Lists.newArrayListWithExpectedSize(to_remove.size());
@@ -115,12 +105,14 @@ public class EC2SecurityGroupProvisioner extends ConcurrentComponent
 
     }
 
-    private SecurityGroup createNewGroup(AmazonEC2Client ec2, String group_name)
+    private SecurityGroup createNewGroup(AWSEC2Client ec2Api, String group_name)
     {
-        ec2.createSecurityGroup(new CreateSecurityGroupRequest(group_name, group_name));
-        DescribeSecurityGroupsRequest req = new DescribeSecurityGroupsRequest();
-        req.setGroupNames(asList(group_name));
-        return ec2.describeSecurityGroups(req).getSecurityGroups().get(0);
+        ec2Api.getSecurityGroupServices().createSecurityGroupInRegion(null, group_name, group_name);
+        Set<SecurityGroup> groups = ec2Api.getSecurityGroupServices().describeSecurityGroupsInRegion(null, group_name);
+        // eventual consistency alert!! could be zero
+        if (groups.size() == 0)
+            groups = ec2Api.getSecurityGroupServices().describeSecurityGroupsInRegion(null, group_name);
+        return groups.iterator().next();
     }
 
     @Override

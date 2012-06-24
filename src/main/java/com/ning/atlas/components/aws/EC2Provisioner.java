@@ -1,23 +1,35 @@
 package com.ning.atlas.components.aws;
 
-import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.ec2.AmazonEC2AsyncClient;
-import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.CreateTagsRequest;
-import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
-import com.amazonaws.services.ec2.model.DescribeInstancesResult;
-import com.amazonaws.services.ec2.model.Instance;
-import com.amazonaws.services.ec2.model.Reservation;
-import com.amazonaws.services.ec2.model.RunInstancesRequest;
-import com.amazonaws.services.ec2.model.RunInstancesResult;
-import com.amazonaws.services.ec2.model.Tag;
-import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
-import com.google.common.collect.Lists;
+
+import static com.google.common.base.Charsets.UTF_8;
+import static com.google.common.base.Throwables.propagate;
+import static com.google.common.collect.Iterables.get;
+import static com.google.common.collect.Iterables.getOnlyElement;
+import static org.jclouds.compute.options.RunScriptOptions.Builder.runAsRoot;
+import static org.jclouds.compute.predicates.NodePredicates.all;
+
+import java.io.File;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.jclouds.compute.ComputeService;
+import org.jclouds.compute.RunNodesException;
+import org.jclouds.compute.domain.ExecResponse;
+import org.jclouds.compute.domain.Image;
+import org.jclouds.compute.domain.NodeMetadata;
+import org.jclouds.compute.domain.Template;
+import org.jclouds.compute.domain.TemplateBuilder;
+import org.jclouds.ec2.compute.options.EC2TemplateOptions;
+
+import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
+import com.google.common.io.Files;
 import com.google.common.util.concurrent.Futures;
 import com.ning.atlas.Host;
-import com.ning.atlas.SSH;
 import com.ning.atlas.components.ConcurrentComponent;
 import com.ning.atlas.config.AtlasConfiguration;
 import com.ning.atlas.logging.Logger;
@@ -27,19 +39,11 @@ import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Uri;
 import com.ning.atlas.spi.protocols.AWS;
+import com.ning.atlas.spi.protocols.AWS.Credentials;
 import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.space.Space;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static java.util.Arrays.asList;
 
 /**
  *
@@ -49,7 +53,7 @@ public class EC2Provisioner extends ConcurrentComponent
     private final static Logger logger = Logger.get(EC2Provisioner.class);
 
     private final ConcurrentMap<String, Boolean>   instanceState = Maps.newConcurrentMap();
-    private final AtomicReference<AmazonEC2Client> ec2           = new AtomicReference<AmazonEC2Client>();
+    private final AtomicReference<ComputeService>    ec2           = new AtomicReference<ComputeService>();
     private final AtomicReference<String>          keypairId     = new AtomicReference<String>();
     private final String credentialName;
 
@@ -61,8 +65,11 @@ public class EC2Provisioner extends ConcurrentComponent
 
     public EC2Provisioner(AWSConfig config)
     {
-        BasicAWSCredentials credentials = new BasicAWSCredentials(config.getAccessKey(), config.getSecretKey());
-        ec2.set(new AmazonEC2AsyncClient(credentials));
+        Credentials creds = new AWS.Credentials();
+        creds.setAccessKey(config.getAccessKey());
+        creds.setSecretKey(config.getSecretKey());
+
+        ec2.set(AWS.computeCtx(creds).getComputeService());
         keypairId.set(config.getKeyPairId());
         this.credentialName = null;
     }
@@ -90,128 +97,119 @@ public class EC2Provisioner extends ConcurrentComponent
         else {
             // spin up an ec2 instance for this node
 
-            final AmazonEC2Client ec2 = EC2Provisioner.this.ec2.get();
+            final ComputeService ec2 = EC2Provisioner.this.ec2.get();
+            TemplateBuilder builder = ec2.templateBuilder(); 
 
             logger.info("Provisioning server for %s", node.getId());
             final String ami_name = uri.getFragment();
-            RunInstancesRequest req = new RunInstancesRequest(ami_name, 1, 1);
-            if (uri.getParams().containsKey("instance_type")) {
-                req.setInstanceType(uri.getParams().get("instance_type"));
-            }
+            builder.imageMatches(new Predicate<Image>(){
 
-            req.setKeyName(keypairId.get());
+                @Override
+                public boolean apply(Image input) {
+                    // in jclouds imageId is currently namespaced w/ region
+                    // providerId is not.
+                    return input.getProviderId().equals(ami_name);
+                }
+                
+            });
+            
+            if (uri.getParams().containsKey("instance_type")) {
+                builder.hardwareId(uri.getParams().get("instance_type"));
+            }
+            
+            Template template = builder.build();
+            template.getOptions().as(EC2TemplateOptions.class).keyPair(keypairId.get());
 
             final String security_group = Maybe.elideNull(uri.getParams().get("security_group")).otherwise("default");
             AWS.waitForEC2SecurityGroup(security_group, deployment.getSpace(), 1, TimeUnit.MINUTES);
-            req.setSecurityGroups(asList(security_group));
-
-            RunInstancesResult rs = ec2.runInstances(req);
-
-            final Instance i = rs.getReservation().getInstances().get(0);
-
-            logger.debug("obtained ec2 instance %s", i.getInstanceId());
-
-            while (true) {
-
-                DescribeInstancesRequest dreq = new DescribeInstancesRequest();
-                dreq.setInstanceIds(Lists.newArrayList(i.getInstanceId()));
-                DescribeInstancesResult res = null;
-                try {
-                    res = ec2.describeInstances(dreq);
-                }
-                catch (AmazonServiceException e) {
-                    // sometimes amazon says the instance doesn't exist yet,
-                    if (!e.getMessage().contains("does not exist")) {
-                        throw new UnsupportedOperationException("Not Yet Implemented!", e);
-                    }
-                }
-                if (res != null) {
-                    Instance i2 = res.getReservations().get(0).getInstances().get(0);
-                    if ("running".equals(i2.getState().getName()) && canSshIn(i2, deployment)) {
-                        logger.info("Obtained instance %s at %s for %s",
-                                    i2.getInstanceId(), i2.getPublicDnsName(), node.getId());
-                        Server server = new Server();
-                        server.setExternalAddress(i2.getPublicDnsName());
-                        server.setInternalAddress(i2.getPrivateDnsName());
-
-                        EC2InstanceInfo info = new EC2InstanceInfo();
-                        info.setEc2InstanceId(i2.getInstanceId());
-                        space.store(node.getId(), info);
-                        space.store(node.getId(), server);
-
-
-                        String name = node.getId().toExternalForm().length() > 255
-                                      ? node.getId().toExternalForm().substring(0, 255)
-                                      : node.getId().toExternalForm();
-                        ec2.createTags(new CreateTagsRequest(asList(i2.getInstanceId()),
-                                                             asList(new Tag("Name", name))));
-
-                        return "created new ec2 instance " + info.getEc2InstanceId();
-                    }
-                    else {
-                        try {
-                            Thread.sleep(1000);
-                        }
-                        catch (InterruptedException e) {
-                            Thread.currentThread().interrupt();
-                            throw new UnsupportedOperationException("Not Yet Implemented!", e);
-                        }
-                    }
-                }
+            template.getOptions().as(EC2TemplateOptions.class).securityGroups(security_group);
+            
+            String name = node.getId().toExternalForm().length() > 255
+                    ? node.getId().toExternalForm().substring(0, 255)
+                    : node.getId().toExternalForm();
+            template.getOptions().userMetadata("Name", name);
+            
+            SSHCredentials creds = SSHCredentials.lookup(deployment.getSpace(), credentialName)
+                                                 .otherwise(SSHCredentials.defaultCredentials(deployment.getSpace()))
+                                                 .otherwise(new IllegalStateException("No SSH credentials available"));
+            String privateKeyText = Files.toString(new File(creds.getKeyFilePath()), UTF_8);  
+            
+            NodeMetadata instance = null;
+            try {
+                instance = getOnlyElement(ec2.createNodesInGroup(name, 1, template));
+                logger.debug("obtained ec2 instance %s", instance.getProviderId());
+            } catch (RunNodesException e) {
+                throw propagate(e);
             }
-        }
-    }
 
-    private boolean canSshIn(Instance i2, Deployment deployment)
-    {
-        try {
-            SSH ssh = new SSH(SSHCredentials.lookup(deployment.getSpace(), credentialName)
-                                            .otherwise(SSHCredentials.defaultCredentials(deployment.getSpace()))
-                                            .otherwise(new IllegalStateException("No SSH credentials available")),
-                              i2.getPublicDnsName());
-            ssh.exec("ls -l");
-            ssh.close();
-            return true;
+            template.getOptions().overrideLoginPrivateKey(privateKeyText);
+            
+            ExecResponse response = ec2.runScriptOnNode(instance.getId(), "ls -l", runAsRoot(false).wrapInInitScript(false).overrideLoginPrivateKey(privateKeyText));
+            if (response.getExitStatus() == 0) {
+                logger.info("Obtained instance %s at %s for %s",
+                        instance.getProviderId(), instance.getPublicAddresses(), node.getId());
+                Server server = new Server();
+                server.setExternalAddress(get(instance.getPublicAddresses(), 0));
+                server.setInternalAddress(get(instance.getPrivateAddresses(), 0));
+
+                EC2InstanceInfo info = new EC2InstanceInfo();
+                info.setEc2InstanceId(instance.getProviderId());
+                space.store(node.getId(), info);
+                space.store(node.getId(), server);
+                return "created new ec2 instance " + info.getEc2InstanceId();
+            } else {
+                throw new RuntimeException("couldn't execute ls -l on instance: " + instance);
+            }
+
         }
-        catch (IOException e) {
-            // cannot get there yet!
-        }
-        return false;
     }
 
     @Override
     public String unwind(Identity hostId, Uri<? extends Component> uri, Deployment d) throws Exception
     {
-        EC2InstanceInfo ec2info = d.getSpace().get(hostId, EC2InstanceInfo.class, Missing.RequireAll)
+        final EC2InstanceInfo ec2info = d.getSpace().get(hostId, EC2InstanceInfo.class, Missing.RequireAll)
                                    .otherwise(new IllegalStateException("Nop instance id found"));
-        final AmazonEC2Client ec2 = EC2Provisioner.this.ec2.get();
-
-        TerminateInstancesRequest req = new TerminateInstancesRequest(asList(ec2info.getEc2InstanceId()));
-
-        ec2.terminateInstances(req);
-
+        String instanceId = ec2info.getEc2InstanceId();
+        destroyInstance(instanceId);
+        
         return "terminated ec2 instance";
+    }
+
+
+    private void destroyInstance(final String instanceId)
+    {
+        final ComputeService ec2 = EC2Provisioner.this.ec2.get();
+        ec2.destroyNodesMatching(new Predicate<NodeMetadata>(){
+
+                @Override
+                public boolean apply(NodeMetadata input) {
+                    // in jclouds nodeId is currently namespaced w/ region
+                    // providerId is not.
+                    return input.getProviderId().equals(instanceId);
+                }
+                
+            });
     }
 
     @Override
     protected void startLocal(Deployment deployment)
     {
         AtlasConfiguration config = AtlasConfiguration.global();
-        BasicAWSCredentials credentials = new BasicAWSCredentials(config.lookup("aws.key").get(),
-                                                                  config.lookup("aws.secret").get());
 
         Space s = deployment.getSpace();
         AWS.SSHKeyPairInfo info = s.get(AWS.ID, AWS.SSHKeyPairInfo.class, Missing.RequireAll)
                                    .otherwise(new IllegalStateException("unable to find aws ssh keypair info"));
 
         this.keypairId.set(info.getKeyPairId());
-        this.ec2.set(new AmazonEC2AsyncClient(credentials));
+        Credentials creds = new AWS.Credentials();
+        creds.setAccessKey(config.lookup("aws.key").get());
+        creds.setSecretKey(config.lookup("aws.secret").get());
 
-        DescribeInstancesResult rs = this.ec2.get().describeInstances();
-        for (Reservation reservation : rs.getReservations()) {
-            for (Instance instance : reservation.getInstances()) {
-                instanceState.put(instance.getInstanceId(), instance.getState().getName().equals("running"));
-            }
+        ec2.set(AWS.computeCtx(creds).getComputeService());
+        
+        Set<? extends NodeMetadata> instances = this.ec2.get().listNodesDetailsMatching(all());
+        for (NodeMetadata instance : instances) {
+            instanceState.put(instance.getProviderId(), instance.getStatus() == NodeMetadata.Status.RUNNING);
         }
 
     }
@@ -228,7 +226,7 @@ public class EC2Provisioner extends ConcurrentComponent
     public void destroy(Identity id, Space space)
     {
         EC2InstanceInfo info = space.get(id, EC2InstanceInfo.class, Missing.RequireAll).getValue();
-        ec2.get().terminateInstances(new TerminateInstancesRequest(asList(info.getEc2InstanceId())));
+        destroyInstance(info.getEc2InstanceId());
         logger.info("destroyed ec2 instance %s", info.getEc2InstanceId());
     }
 
