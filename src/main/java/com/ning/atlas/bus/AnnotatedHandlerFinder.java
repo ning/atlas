@@ -40,7 +40,7 @@ class AnnotatedHandlerFinder implements HandlerFindingStrategy {
   public Multimap<Class<?>, EventHandler> findAllHandlers(Object listener) {
     Multimap<Class<?>, EventHandler> methodsInListener =
         HashMultimap.create();
-    Class clazz = listener.getClass();
+    Class<?> clazz = listener.getClass();
     while (clazz != null) {
       for (Method method : clazz.getMethods()) {
         Subscribe annotation = method.getAnnotation(Subscribe.class);

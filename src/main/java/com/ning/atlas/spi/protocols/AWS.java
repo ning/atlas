@@ -12,13 +12,11 @@ import com.amazonaws.services.rds.model.DescribeDBSecurityGroupsRequest;
 import com.ning.atlas.config.AtlasConfiguration;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.space.Core;
-import com.ning.atlas.spi.space.Missing;
 import com.ning.atlas.spi.space.Space;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Arrays.asList;
@@ -96,9 +94,10 @@ public class AWS
                 return;
             }
             catch (AmazonServiceException e) {
-                if (1 + 1 == 2) throw e;
                 if ("DBSecurityGroupNotFound".equals(e.getErrorCode())) {
                     Thread.sleep(1000);
+                } else {
+                	throw e;
                 }
             }
         }

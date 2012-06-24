@@ -1,27 +1,22 @@
 package com.ning.atlas.main;
 
-import com.ning.atlas.ActualDeployment;
-import com.ning.atlas.Descriptor;
-import com.ning.atlas.Environment;
-import com.ning.atlas.Host;
-import com.ning.atlas.JRubyTemplateParser;
-import com.ning.atlas.SystemMap;
-import com.ning.atlas.logging.Logger;
-import com.ning.atlas.space.SQLiteBackedSpace;
-import com.ning.atlas.spi.space.Space;
-import com.ning.atlas.spi.space.SpaceKey;
-import org.apache.commons.lang3.StringUtils;
-import org.skife.cli.org.iq80.cli.Arguments;
-import org.skife.cli.org.iq80.cli.Command;
-import org.skife.cli.org.iq80.cli.Option;
-import org.skife.cli.org.iq80.cli.OptionType;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.Callable;
 
-import static com.google.common.base.Preconditions.checkState;
+import org.skife.cli.Command;
+import org.skife.cli.Option;
+import org.skife.cli.OptionType;
+
+import com.ning.atlas.ActualDeployment;
+import com.ning.atlas.Descriptor;
+import com.ning.atlas.Environment;
+import com.ning.atlas.JRubyTemplateParser;
+import com.ning.atlas.SystemMap;
+import com.ning.atlas.space.SQLiteBackedSpace;
+import com.ning.atlas.spi.space.Space;
 
 @Command(name = "destroy")
 public class Destroy implements Callable<Void>

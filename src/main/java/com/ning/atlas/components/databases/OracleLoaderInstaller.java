@@ -46,7 +46,8 @@ public class OracleLoaderInstaller extends ConcurrentComponent
         return Futures.immediateFuture("load the <file> into the rds instance");
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public String perform(Host host, Uri<? extends Component> uri, Deployment d) throws Exception
     {
         String fragment = uri.getFragment();

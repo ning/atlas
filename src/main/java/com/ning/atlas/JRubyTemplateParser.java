@@ -13,7 +13,8 @@ import java.util.List;
 
 public class JRubyTemplateParser
 {
-    public List<Template> parseSystem(File template)
+    @SuppressWarnings("unchecked")
+	public List<Template> parseSystem(File template)
     {
         ScriptingContainer container = new ScriptingContainer();
         container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);
@@ -29,7 +30,8 @@ public class JRubyTemplateParser
         return (List<Template>) container.runScriptlet("Atlas.parse_system('" + template.getAbsolutePath() + "')");
     }
 
-    public List<Environment> parseEnvironment(File template)
+    @SuppressWarnings("unchecked")
+	public List<Environment> parseEnvironment(File template)
     {
         ScriptingContainer container = new ScriptingContainer();
         container.setCompileMode(RubyInstanceConfig.CompileMode.OFF);

@@ -1,7 +1,6 @@
 package com.ning.atlas.components.aws;
 
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.AuthorizeSecurityGroupIngressRequest;
@@ -22,8 +21,6 @@ import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Uri;
-import com.ning.atlas.spi.protocols.AWS;
-import com.ning.atlas.spi.space.Missing;
 
 import java.util.Collection;
 import java.util.List;

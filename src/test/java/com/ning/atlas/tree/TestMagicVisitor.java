@@ -34,11 +34,13 @@ public class TestMagicVisitor
         final AtomicInteger pancakes = new AtomicInteger(0);
         Trees.visit(root, new ArrayList<Pancake>(), new MagicVisitor<Waffle, List<Pancake>>() {
 
-            void on(Waffle waffle) {
+            @SuppressWarnings("unused")
+			void on(Waffle waffle) {
                 waffles.incrementAndGet();
             }
 
-            void on(Pancake pancake) {
+            @SuppressWarnings("unused")
+			void on(Pancake pancake) {
                 pancakes.incrementAndGet();
             }
         });
@@ -51,7 +53,8 @@ public class TestMagicVisitor
     {
         List<Pancake> rs = Trees.visit(root, new ArrayList<Pancake>(), new MagicVisitor<Waffle, List<Pancake>>()
         {
-            public List<Pancake> enter(Pancake pancake, List<Pancake> baton)
+            @SuppressWarnings("unused")
+			public List<Pancake> enter(Pancake pancake, List<Pancake> baton)
             {
                 baton.add(pancake);
                 return baton;
@@ -65,7 +68,8 @@ public class TestMagicVisitor
     {
         List<Pancake> rs = Trees.visit(root, new ArrayList<Pancake>(), new MagicVisitor<Waffle, List<Pancake>>(new Object()
         {
-            public List<Pancake> enter(Pancake pancake, List<Pancake> baton)
+            @SuppressWarnings("unused")
+			public List<Pancake> enter(Pancake pancake, List<Pancake> baton)
             {
                 baton.add(pancake);
                 return baton;

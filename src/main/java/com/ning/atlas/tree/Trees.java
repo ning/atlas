@@ -83,7 +83,8 @@ public class Trees
             this.visitor = visitor;
         }
 
-        public BatonType apply(BatonType input)
+        @SuppressWarnings("unchecked")
+		public BatonType apply(BatonType input)
         {
             BatonType b = visitor.enter(tree, input);
             b = visitor.on(tree, b);

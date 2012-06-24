@@ -2,16 +2,11 @@ package com.ning.atlas.space;
 
 import com.google.common.collect.ImmutableSet;
 import com.ning.atlas.spi.Identity;
-import com.ning.atlas.spi.space.Space;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.awt.im.spi.InputMethod;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
-import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 

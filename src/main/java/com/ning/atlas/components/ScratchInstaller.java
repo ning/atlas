@@ -8,17 +8,14 @@ import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
-import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import java.util.Map;
 import java.util.concurrent.Future;
 
 public class ScratchInstaller extends BaseComponent implements Installer
 {
-    private static final ObjectMapper mapper = new ObjectMapper();
 
     @Override
     public Future<Status> install(Host server, Uri<Installer> uri, Deployment deployment)

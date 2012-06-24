@@ -1,7 +1,6 @@
 package com.ning.atlas.spi;
 
 import com.google.common.base.Function;
-import com.google.common.base.Predicate;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -96,7 +95,6 @@ public abstract class Maybe<T> implements Iterable<T>
             }
 
             @Override
-            @SuppressWarnings({"EqualsWhichDoesntCheckParameterClass"})
             public boolean equals(Object obj)
             {
                 return false;
@@ -179,7 +177,7 @@ public abstract class Maybe<T> implements Iterable<T>
         {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
-            DefiniteValue that = (DefiniteValue) o;
+            DefiniteValue<?> that = DefiniteValue.class.cast(o);
             return theValue.equals(that.theValue);
         }
 

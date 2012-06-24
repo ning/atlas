@@ -5,7 +5,6 @@ import com.ning.atlas.spi.LifecycleListener;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.Provisioner;
 
-import java.util.List;
 import java.util.Map;
 
 public interface PluginSystem

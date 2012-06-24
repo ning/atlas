@@ -2,17 +2,14 @@ package com.ning.atlas.space;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.space.Space;
 import org.apache.commons.lang3.tuple.Pair;
-import sun.java2d.pipe.OutlineTextRenderer;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class SpaceQuery

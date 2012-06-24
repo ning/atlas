@@ -1,7 +1,6 @@
 package com.ning.atlas.components.aws;
 
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.identitymanagement.AmazonIdentityManagementClient;
 import com.amazonaws.services.rds.AmazonRDSClient;
@@ -20,8 +19,6 @@ import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Uri;
-import com.ning.atlas.spi.protocols.AWS;
-import com.ning.atlas.spi.space.Missing;
 
 import java.util.Map;
 import java.util.Set;
@@ -44,8 +41,7 @@ public class RDSSecurityGroupProvisioner extends ConcurrentComponent
         req.setDBSecurityGroupName(group_name);
         try {
             DescribeDBSecurityGroupsResult res = rds.describeDBSecurityGroups(req);
-            DBSecurityGroup group = res.getDBSecurityGroups().get(0);
-
+            res.getDBSecurityGroups().get(0);
         }
         catch (AmazonServiceException e) {
             // doesn't exist!
