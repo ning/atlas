@@ -25,7 +25,6 @@ import com.ning.atlas.spi.Component;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Uri;
-import com.ning.atlas.spi.protocols.AWS;
 
 import java.util.List;
 import java.util.Set;
@@ -59,7 +58,6 @@ public class ELBAddInstaller extends ConcurrentComponent
         BasicAWSCredentials creds = new BasicAWSCredentials(config.lookup("aws.key").get(),
                                                             config.lookup("aws.secret").get());
         AmazonElasticLoadBalancingClient elb = new AmazonElasticLoadBalancingClient(creds);
-        AmazonEC2Client ec2 = new AmazonEC2Client(creds);
 
         String instance_id = d.getSpace().get(host.getId(), "ec2-instance-id")
                               .otherwise(new IllegalStateException(host.getId() + " lacks an ec2-instance-id"));

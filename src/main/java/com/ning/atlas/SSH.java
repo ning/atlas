@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -111,20 +112,22 @@ public class SSH
 
     public void forwardLocalPortTo(int localPort, String targetHost, int targetPort) throws IOException
     {
-        final LocalPortForwarder local = ssh.newLocalPortForwarder(new InetSocketAddress("localhost", localPort), targetHost, targetPort);
-        pool.submit(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                try {
-                    local.listen();
-                }
-                catch (IOException e) {
+		final LocalPortForwarder.Parameters params = new LocalPortForwarder.Parameters(
+				"localhost", localPort, targetHost, targetPort);
+		final ServerSocket ss = new ServerSocket();
+		ss.setReuseAddress(true);
+		ss.bind(new InetSocketAddress(params.getLocalHost(), params
+				.getLocalPort()));
+		pool.submit(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					ssh.newLocalPortForwarder(params, ss).listen();
+				} catch (IOException e) {
                     logger.warn(e, "ioexception on local port forwarded");
-                }
-            }
-        });
+				}
+			}
+		});
     }
 
     public String exec(String commandFormatString, Object... args) throws IOException

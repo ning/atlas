@@ -1,7 +1,6 @@
 package com.ning.atlas;
 
 import com.google.common.util.concurrent.Futures;
-import com.ning.atlas.spi.BaseLifecycleListener;
 import com.ning.atlas.spi.Deployment;
 import com.ning.atlas.spi.LifecycleListener;
 

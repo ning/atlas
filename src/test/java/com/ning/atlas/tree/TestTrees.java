@@ -32,7 +32,8 @@ public class TestTrees
     {
         List<Pancake> rs = Trees.visit(root, new ArrayList<Pancake>(), new MagicVisitor<Waffle, List<Pancake>>()
         {
-            public List<Pancake> enter(Pancake pancake, List<Pancake> baton)
+            @SuppressWarnings("unused")
+			public List<Pancake> enter(Pancake pancake, List<Pancake> baton)
             {
                 baton.add(pancake);
                 return baton;
@@ -46,7 +47,8 @@ public class TestTrees
     {
         List<Pancake> rs = Trees.visit(root, new ArrayList<Pancake>(), new MagicVisitor<Waffle, List<Pancake>>(new Object()
         {
-            public List<Pancake> enter(Pancake pancake, List<Pancake> baton)
+            @SuppressWarnings("unused")
+			public List<Pancake> enter(Pancake pancake, List<Pancake> baton)
             {
                 baton.add(pancake);
                 return baton;

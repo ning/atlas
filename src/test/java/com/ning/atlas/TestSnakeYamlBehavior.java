@@ -1,12 +1,8 @@
 package com.ning.atlas;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import org.junit.Test;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
-import org.yaml.snakeyaml.nodes.Node;
-import org.yaml.snakeyaml.nodes.ScalarNode;
 
 import java.util.Map;
 
@@ -15,7 +11,8 @@ import static org.junit.Assert.assertThat;
 
 public class TestSnakeYamlBehavior
 {
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void testFoo() throws Exception
     {
         Map<String, Object> it = (Map<String, Object>) new Yaml().load("top:\n  child1: hello\n  child2: 7");

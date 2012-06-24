@@ -1,8 +1,8 @@
 package com.ning.atlas;
 
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.Lists;
@@ -227,7 +227,7 @@ public class ActualDeployment implements Deployment
     {
         final InstallerCache installer_cache = new InstallerCache(this);
 
-        final Cache<String, Provisioner> provisioner_cache = CacheBuilder.newBuilder()
+        final LoadingCache<String, Provisioner> provisioner_cache = CacheBuilder.newBuilder()
                                                                          .maximumSize(Integer.MAX_VALUE)
                                                                          .concurrencyLevel(10)
                                                                          .removalListener(new RemovalListener<String, Provisioner>()

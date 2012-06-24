@@ -9,8 +9,6 @@ import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.Status;
 import com.ning.atlas.spi.Uri;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -19,7 +17,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class MysqlLoaderInstaller extends BaseComponent implements Installer
 {
-    private final Logger log = LoggerFactory.getLogger(MysqlLoaderInstaller.class);
     private final String sshUser;
     private final String sshKeyFile;
     private final String sqlUrlTemplate;

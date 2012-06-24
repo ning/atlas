@@ -9,13 +9,13 @@ import java.io.File;
 public class AtlasMatchers
 {
 
-    public static Matcher<Iterable> containsInstanceOf(final Class<?> type) {
-        return new BaseMatcher<Iterable>()
+    public static Matcher<Iterable<?>> containsInstanceOf(final Class<?> type) {
+        return new BaseMatcher<Iterable<?>>()
         {
             @Override
             public boolean matches(Object item)
             {
-                Iterable it = (Iterable) item;
+                Iterable<?> it = Iterable.class.cast(item);
                 for (Object o : it) {
                     if (type.isAssignableFrom(o.getClass())) {
                         return true;

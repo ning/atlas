@@ -6,16 +6,12 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.TreeMultimap;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.message.BasicNameValuePair;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.annotate.JsonCreator;
@@ -25,7 +21,6 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -119,26 +114,7 @@ public class Uri<T>
     @Override
     public String toString()
     {
-        if (1+1 == 2) {
-            return toStringUnEscaped();
-        }
-        StringBuilder builder = new StringBuilder().append(scheme);
-        if (fragment.length() > 0) {
-            builder.append(":").append(fragment);
-        }
-
-        if (!params.isEmpty()) {
-            List<NameValuePair> pairs = Lists.newArrayList();
-            for (Map.Entry<String, Collection<String>> entry : params.entrySet()) {
-                String key = entry.getKey();
-                for (String value : entry.getValue()) {
-                    pairs.add(new BasicNameValuePair(key, value));
-                }
-            }
-
-            builder.append("?").append(URLEncodedUtils.format(pairs, "UTF8"));
-        }
-        return builder.toString();
+        return toStringUnEscaped();
     }
 
     public String toStringUnEscaped() {
@@ -164,7 +140,7 @@ public class Uri<T>
     @Override
     public boolean equals(Object o)
     {
-        return o instanceof Uri && EqualsBuilder.reflectionEquals(this, o);
+        return o instanceof Uri<?> && EqualsBuilder.reflectionEquals(this, o);
 
     }
 
@@ -278,11 +254,11 @@ public class Uri<T>
         };
     }
 
-    public static class UriJsonSerializer extends JsonSerializer<Uri>
+    public static class UriJsonSerializer extends JsonSerializer<Uri<?>>
     {
 
         @Override
-        public void serialize(Uri value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException
+        public void serialize(Uri<?> value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException
         {
             jgen.writeString(value.toStringUnEscaped());
         }

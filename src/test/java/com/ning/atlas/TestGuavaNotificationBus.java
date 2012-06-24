@@ -26,7 +26,8 @@ public class TestGuavaNotificationBus
 
         final CountDownLatch latch = new CountDownLatch(1);
         bus.register(new Object() {
-            @Subscribe
+            @SuppressWarnings("unused")
+			@Subscribe
             public void on(String msg) {
                 System.out.println(msg);
                 latch.countDown();

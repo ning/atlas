@@ -1,6 +1,5 @@
 package com.ning.atlas;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -9,7 +8,6 @@ import com.ning.atlas.spi.Installer;
 import com.ning.atlas.spi.My;
 import com.ning.atlas.spi.Provisioner;
 import com.ning.atlas.spi.Uri;
-import org.stringtemplate.v4.ST;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -111,27 +109,4 @@ public class ServerTemplate extends Template
         return base;
     }
 
-    private static class DeTemplaterizer<T> implements Function<Uri<T>, Uri<T>>
-    {
-        private final Uri<Base> base;
-        private final My        my;
-
-        public DeTemplaterizer(Uri<Base> base, My my)
-        {
-            this.base = base;
-            this.my = my;
-        }
-
-        @Override
-        public Uri<T> apply(Uri<T> input)
-        {
-            if (input.isTemplate()) {
-                return new UriTemplate<T>(input).apply(ImmutableMap.of("base", this.base,
-                                                                       "server", this.my.asMap()));
-            }
-            else {
-                return input;
-            }
-        }
-    }
 }

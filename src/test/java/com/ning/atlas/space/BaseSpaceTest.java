@@ -170,7 +170,8 @@ public abstract class BaseSpaceTest
         assertThat(EqualsBuilder.reflectionEquals(ct, it), equalTo(true));
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void testComplexObjectBehavior2() throws Exception
     {
         Identity id = Identity.root().createChild("waffle", "ketchup");

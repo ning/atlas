@@ -1,5 +1,23 @@
 package com.ning.atlas.main;
 
+import static com.google.common.base.Preconditions.checkState;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.Callable;
+
+import jnr.ffi.Library;
+import jnr.ffi.Pointer;
+import jnr.ffi.annotations.In;
+import jnr.ffi.annotations.Out;
+import jnr.ffi.byref.IntByReference;
+
+import org.skife.cli.Arguments;
+import org.skife.cli.Command;
+import org.skife.cli.Option;
+import org.skife.cli.OptionType;
+
 import com.ning.atlas.Descriptor;
 import com.ning.atlas.Host;
 import com.ning.atlas.JRubyTemplateParser;
@@ -9,24 +27,6 @@ import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.protocols.SSHCredentials;
 import com.ning.atlas.spi.protocols.Server;
 import com.ning.atlas.spi.space.Space;
-import com.ning.atlas.spi.space.SpaceKey;
-import jnr.ffi.Library;
-import jnr.ffi.Pointer;
-import jnr.ffi.annotations.In;
-import jnr.ffi.annotations.Out;
-import jnr.ffi.byref.IntByReference;
-import org.apache.commons.lang3.StringUtils;
-import org.skife.cli.org.iq80.cli.Arguments;
-import org.skife.cli.org.iq80.cli.Command;
-import org.skife.cli.org.iq80.cli.Option;
-import org.skife.cli.org.iq80.cli.OptionType;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.Callable;
-
-import static com.google.common.base.Preconditions.checkState;
 
 @Command(name = "ssh")
 public class SSHCommand implements Callable<Void>
