@@ -1,10 +1,11 @@
 package com.ning.atlas.main;
 
-import com.ning.atlas.config.AtlasConfiguration;
-import org.skife.cli.org.iq80.cli.Cli;
-import org.skife.cli.org.iq80.cli.Help;
-
 import java.util.concurrent.Callable;
+
+import org.skife.cli.Cli;
+import org.skife.cli.Help;
+
+import com.ning.atlas.config.AtlasConfiguration;
 
 public class Main
 {

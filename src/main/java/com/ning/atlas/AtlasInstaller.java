@@ -159,7 +159,8 @@ public class AtlasInstaller extends ConcurrentComponent
             return Host.class;
         }
 
-        @Override
+        @SuppressWarnings("unchecked")
+		@Override
         public void serialize(Host value, JsonGenerator jgen, SerializerProvider provider) throws IOException
         {
             Maybe<Server> s = space.get(value.getId(), Server.class, Missing.RequireAll);
@@ -181,20 +182,23 @@ public class AtlasInstaller extends ConcurrentComponent
         private final Host host;
         private final Server server;
         private final Map<String, String> environment;
-        private final Map attributes;
+        @SuppressWarnings("unchecked")
+		private final Map attributes;
 
         private static final ObjectMapper mapper = new ObjectMapper();
 
-        @JsonAnyGetter
-        public Map getProperties() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
+        @SuppressWarnings("unchecked")
+		@JsonAnyGetter
+        public Map<?,?> getProperties() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException
         {
-            Map map = mapper.convertValue(host, Map.class);
+            Map<?,?> map = mapper.convertValue(host, Map.class);
             map.remove("children");
             map.putAll(attributes);
             return map;
         }
 
-        public ExtraHost(Host host,
+        @SuppressWarnings("unchecked")
+		public ExtraHost(Host host,
                          Server server,
                          Map<String, String> environment,
                          Map attributes)

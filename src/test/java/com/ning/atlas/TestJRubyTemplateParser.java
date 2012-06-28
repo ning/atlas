@@ -134,7 +134,8 @@ public class TestJRubyTemplateParser
         assertThat(r.get(2).getIntValue(), equalTo(3));
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void testSimpleEnvironment() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
@@ -147,7 +148,8 @@ public class TestJRubyTemplateParser
         assertThat(b.getInitUris(), equalTo(asList(u)));
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void testParameterizedInstallersPopulated() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
@@ -160,7 +162,8 @@ public class TestJRubyTemplateParser
 
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void testInstallers2() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();
@@ -173,7 +176,8 @@ public class TestJRubyTemplateParser
 
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void testInstallers3() throws Exception
     {
         JRubyTemplateParser p = new JRubyTemplateParser();

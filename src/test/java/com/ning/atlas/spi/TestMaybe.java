@@ -6,7 +6,6 @@ import org.jruby.RubyInstanceConfig;
 import org.jruby.embed.ScriptingContainer;
 import org.junit.Test;
 
-import static java.lang.String.format;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;

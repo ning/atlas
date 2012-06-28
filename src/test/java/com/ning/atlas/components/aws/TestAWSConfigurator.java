@@ -18,7 +18,7 @@ public class TestAWSConfigurator
     public void testFoo() throws Exception
     {
         try {
-            AWSConfigurator c = new AWSConfigurator(ImmutableMap.<String, String>of("ssh_foo", "hello@world"));
+            new AWSConfigurator(ImmutableMap.<String, String>of("ssh_foo", "hello@world"));
         } catch (Exception e) {
             fail(e.getMessage());
         }

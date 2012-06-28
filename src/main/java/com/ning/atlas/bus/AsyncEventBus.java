@@ -19,7 +19,6 @@ package com.ning.atlas.bus;
 import com.google.common.annotations.Beta;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 /**

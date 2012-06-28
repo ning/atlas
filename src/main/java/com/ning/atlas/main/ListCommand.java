@@ -1,5 +1,17 @@
 package com.ning.atlas.main;
 
+import static com.google.common.base.Preconditions.checkState;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.Callable;
+
+import org.apache.commons.lang3.StringUtils;
+import org.skife.cli.Command;
+import org.skife.cli.Option;
+import org.skife.cli.OptionType;
+
 import com.ning.atlas.Descriptor;
 import com.ning.atlas.Host;
 import com.ning.atlas.JRubyTemplateParser;
@@ -7,18 +19,6 @@ import com.ning.atlas.SystemMap;
 import com.ning.atlas.space.SQLiteBackedSpace;
 import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.space.SpaceKey;
-import org.apache.commons.lang3.StringUtils;
-import org.skife.cli.org.iq80.cli.Arguments;
-import org.skife.cli.org.iq80.cli.Command;
-import org.skife.cli.org.iq80.cli.Option;
-import org.skife.cli.org.iq80.cli.OptionType;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.Callable;
-
-import static com.google.common.base.Preconditions.checkState;
 
 @Command(name = "ls")
 public class ListCommand implements Callable<Void>

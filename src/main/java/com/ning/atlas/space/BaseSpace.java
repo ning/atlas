@@ -2,7 +2,6 @@ package com.ning.atlas.space;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.primitives.Primitives;
-import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.Maybe;
 import com.ning.atlas.spi.space.Missing;
@@ -29,7 +28,7 @@ public abstract class BaseSpace implements Space
                 String prop_name = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, pd.getName());
                 try {
                     Object value = pd.getReadMethod().invoke(it);
-                    Class pt = pd.getPropertyType();
+                    Class<?> pt = pd.getPropertyType();
                     String json;
                     if (String.class.equals(pt) || Primitives.allPrimitiveTypes().contains(pt)) {
                         json = mapper.convertValue(value, String.class);
@@ -92,7 +91,7 @@ public abstract class BaseSpace implements Space
             if (pd.getWriteMethod() != null) {
                 String prop_name = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, pd.getName());
                 String json_val = get(id, prop_name).otherwise((String) null);
-                Class pt = pd.getPropertyType();
+                Class<?> pt = pd.getPropertyType();
                 final Object val;
                 if (json_val != null) {
                     if (String.class.equals(pt) || Primitives.allPrimitiveTypes().contains(pt)) {

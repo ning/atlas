@@ -8,16 +8,12 @@ import com.ning.atlas.logging.Logger;
 import com.ning.atlas.spi.Identity;
 import com.ning.atlas.spi.space.Space;
 import com.ning.atlas.spi.space.SpaceKey;
-import org.apache.commons.lang3.tuple.Pair;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.logging.PrintStreamLog;
 import org.skife.jdbi.v2.sqlobject.Bind;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
-import org.skife.jdbi.v2.sqlobject.customizers.Define;
 import org.skife.jdbi.v2.sqlobject.customizers.Mapper;
-import org.skife.jdbi.v2.sqlobject.stringtemplate.StringTemplate3StatementLocator;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
 import java.io.File;

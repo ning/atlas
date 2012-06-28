@@ -1,8 +1,8 @@
 package com.ning.atlas;
 
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import org.junit.Test;
@@ -19,7 +19,7 @@ public class TestCacheBehavior
     public void testFoo() throws Exception
     {
         final Set<String> whacked = new ConcurrentSkipListSet<String>();
-        Cache<String, Integer> sizes = CacheBuilder
+        LoadingCache<String, Integer> sizes = CacheBuilder
             .newBuilder()
             .removalListener(new RemovalListener<String, Integer>()
             {

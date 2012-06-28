@@ -1,11 +1,5 @@
 package com.ning.atlas.config;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Maps;
-import com.google.common.io.Closeables;
-import org.skife.cli.org.iq80.cli.config.Configuration;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -14,6 +8,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Properties;
+
+import org.skife.cli.config.Configuration;
+
+import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
+import com.google.common.collect.Maps;
+import com.google.common.io.Closeables;
 
 public class AtlasConfiguration implements Configuration
 {

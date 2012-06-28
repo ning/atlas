@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class MagicVisitor<TreeType extends Tree, BatonType> implements Visitor<TreeType, BatonType>
 {
-    private static final ConcurrentMap<Class, Dispatcher> DISPATCH_CACHE = new ConcurrentHashMap<Class, Dispatcher>();
+    private static final ConcurrentMap<Class<?>, Dispatcher> DISPATCH_CACHE = new ConcurrentHashMap<Class<?>, Dispatcher>();
 
     private final Object     target;
     private final Dispatcher dispatcher;
@@ -79,11 +79,12 @@ public class MagicVisitor<TreeType extends Tree, BatonType> implements Visitor<T
         return withBaton(node, baton, dispatcher.exitsWithBaton);
     }
 
-    private <BatonType, TreeType> BatonType withBaton(TreeType node,
-                                                      BatonType baton,
-                                                      Map<Class, Method> handlers)
+    @SuppressWarnings("unchecked")
+	private BatonType withBaton(TreeType node,
+                                          BatonType baton,
+                                          Map<Class<?>, Method> handlers)
     {
-        Class tt = node.getClass();
+        Class<?> tt = node.getClass();
         if (handlers.containsKey(tt)) {
             Method m = handlers.get(tt);
             try {
@@ -96,10 +97,10 @@ public class MagicVisitor<TreeType extends Tree, BatonType> implements Visitor<T
         return baton;
     }
 
-    private <TreeType> void withOutBaton(TreeType node,
-                                         Map<Class, Method> handlers)
+    private void withOutBaton(TreeType node,
+                                         Map<Class<?>, Method> handlers)
     {
-        Class tt = node.getClass();
+        Class<?> tt = node.getClass();
         if (handlers.containsKey(tt)) {
             Method m = handlers.get(tt);
             try {
@@ -113,13 +114,13 @@ public class MagicVisitor<TreeType extends Tree, BatonType> implements Visitor<T
 
     private static class Dispatcher
     {
-        private final Map<Class, Method> entersWithBaton = new HashMap<Class, Method>();
-        private final Map<Class, Method> exitsWithBaton  = new HashMap<Class, Method>();
-        private final Map<Class, Method> onsWithBaton    = new HashMap<Class, Method>();
+        private final Map<Class<?>, Method> entersWithBaton = new HashMap<Class<?>, Method>();
+        private final Map<Class<?>, Method> exitsWithBaton  = new HashMap<Class<?>, Method>();
+        private final Map<Class<?>, Method> onsWithBaton    = new HashMap<Class<?>, Method>();
 
-        private final Map<Class, Method> entersNoBaton = new HashMap<Class, Method>();
-        private final Map<Class, Method> exitsNoBaton  = new HashMap<Class, Method>();
-        private final Map<Class, Method> onsNoBaton    = new HashMap<Class, Method>();
+        private final Map<Class<?>, Method> entersNoBaton = new HashMap<Class<?>, Method>();
+        private final Map<Class<?>, Method> exitsNoBaton  = new HashMap<Class<?>, Method>();
+        private final Map<Class<?>, Method> onsNoBaton    = new HashMap<Class<?>, Method>();
 
 
     }

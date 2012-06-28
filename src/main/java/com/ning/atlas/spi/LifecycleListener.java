@@ -1,7 +1,5 @@
 package com.ning.atlas.spi;
 
-import com.ning.atlas.ActualDeployment;
-
 import java.util.concurrent.Future;
 
 public interface LifecycleListener

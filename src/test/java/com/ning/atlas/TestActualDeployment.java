@@ -28,7 +28,8 @@ public class TestActualDeployment
     private SystemMap   map;
     private Space space;
 
-    @Before
+    @SuppressWarnings("unchecked")
+	@Before
     public void setUp() throws Exception
     {
         ServerTemplate child = new ServerTemplate("child",
