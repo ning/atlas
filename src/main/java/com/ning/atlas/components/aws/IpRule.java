@@ -1,14 +1,14 @@
 package com.ning.atlas.components.aws;
 
-import com.amazonaws.services.ec2.model.IpPermission;
-import com.amazonaws.services.ec2.model.UserIdGroupPair;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static java.util.Arrays.asList;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.jclouds.ec2.domain.IpPermission;
+import org.jclouds.ec2.domain.IpProtocol;
+import org.jclouds.ec2.util.IpPermissions;
 
 abstract class IpRule
 {
@@ -35,18 +35,18 @@ abstract class IpRule
         if (permission.getUserIdGroupPairs().size() == 1) {
             // group rule!
 
-            UserIdGroupPair pair = permission.getUserIdGroupPairs().get(0);
-            return new GroupRule(pair.getUserId(),
-                                 permission.getIpProtocol(),
-                                 permission.getFromPort().toString(),
-                                 pair.getGroupName());
+            Entry<String, String> pair = permission.getUserIdGroupPairs().entries().iterator().next();
+            return new GroupRule(pair.getKey(),
+                                 permission.getIpProtocol().toString(),
+                                 permission.getFromPort() + "",
+                                 pair.getValue());
 
         }
         else if (permission.getIpRanges().size() == 1) {
             // cidr rule!
-            String cidr = permission.getIpRanges().get(0);
-            return new CIDRRule(permission.getIpProtocol(),
-                                permission.getFromPort().toString(),
+            String cidr = permission.getIpRanges().iterator().next();
+            return new CIDRRule(permission.getIpProtocol().toString(),
+                                permission.getFromPort() + "",
                                 cidr);
         }
         else {
@@ -91,12 +91,7 @@ abstract class IpRule
         @Override
         public IpPermission toIpPermission()
         {
-            IpPermission perm = new IpPermission();
-            perm.setFromPort(port);
-            perm.setToPort(port);
-            perm.setIpProtocol(proto);
-            perm.setIpRanges(asList(ipRange));
-            return perm;
+            return IpPermissions.permit(IpProtocol.fromValue(proto)).fromPort(port).to(port).originatingFromCidrBlock(ipRange);
         }
     }
 
@@ -118,15 +113,7 @@ abstract class IpRule
         @Override
         public IpPermission toIpPermission()
         {
-            IpPermission perm = new IpPermission();
-            perm.setIpProtocol(proto);
-            perm.setToPort(port);
-            perm.setFromPort(port);
-            UserIdGroupPair pair = new UserIdGroupPair();
-            pair.setGroupName(group);
-            pair.setUserId(userId);
-            perm.setUserIdGroupPairs(asList(pair));
-            return perm;
+            return IpPermissions.permit(IpProtocol.fromValue(proto)).fromPort(port).to(port).originatingFromUserAndSecurityGroup(userId, group);
         }
     }
 }

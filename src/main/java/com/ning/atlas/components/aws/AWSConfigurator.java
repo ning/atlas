@@ -1,20 +1,5 @@
 package com.ning.atlas.components.aws;
 
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.CreateKeyPairRequest;
-import com.amazonaws.services.ec2.model.CreateKeyPairResult;
-import com.google.common.base.Splitter;
-import com.google.common.io.Files;
-import com.ning.atlas.config.AtlasConfiguration;
-import com.ning.atlas.spi.space.Missing;
-import com.ning.atlas.spi.BaseLifecycleListener;
-import com.ning.atlas.spi.Deployment;
-import com.ning.atlas.spi.space.Space;
-import com.ning.atlas.spi.protocols.AWS;
-import com.ning.atlas.spi.protocols.SSHCredentials;
-import org.apache.commons.lang3.tuple.Pair;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -27,8 +12,23 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.jclouds.aws.ec2.AWSEC2Client;
+import org.jclouds.ec2.domain.KeyPair;
+
+import com.google.common.base.Splitter;
+import com.google.common.io.Files;
+import com.ning.atlas.config.AtlasConfiguration;
+import com.ning.atlas.spi.BaseLifecycleListener;
+import com.ning.atlas.spi.Deployment;
+import com.ning.atlas.spi.protocols.AWS;
+import com.ning.atlas.spi.protocols.SSHCredentials;
+import com.ning.atlas.spi.space.Missing;
+import com.ning.atlas.spi.space.Space;
+
 public class AWSConfigurator extends BaseLifecycleListener
 {
+    
     private final ExecutorService            es            = Executors.newCachedThreadPool();
     private final List<Pair<String, String>> credentialIds = new CopyOnWriteArrayList<Pair<String, String>>();
 
@@ -83,14 +83,13 @@ public class AWSConfigurator extends BaseLifecycleListener
 
                 final AWS.SSHKeyPairInfo info;
                 if (!pemfile.exists() || !s.get(AWS.ID, AWS.SSHKeyPairInfo.class, Missing.RequireAll).isKnown()) {
-                    // no pemfile OR no ssh keypair stuff, make one!
-                    AmazonEC2Client client = new AmazonEC2Client(new BasicAWSCredentials(creds.getAccessKey(),
-                                                                                         creds.getSecretKey()));
                     final String name = UUID.randomUUID().toString();
-                    CreateKeyPairRequest req = new CreateKeyPairRequest(name);
-                    CreateKeyPairResult res = client.createKeyPair(req);
+
+                    AWSEC2Client client = AWS.ec2Api(creds);
+                    
+                    KeyPair res = client.getKeyPairServices().createKeyPairInRegion(null, name);
                     try {
-                        Files.write(res.getKeyPair().getKeyMaterial(),
+                        Files.write(res.getKeyMaterial(),
                                     pemfile,
                                     Charset.forName("UTF8"));
 
