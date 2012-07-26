@@ -1,13 +1,19 @@
 package com.ning.atlas.components.aws;
 
-import com.amazonaws.services.ec2.model.IpPermission;
-import com.amazonaws.services.ec2.model.UserIdGroupPair;
-import org.junit.Test;
-
-import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+
+import java.util.Map.Entry;
+
+import org.jclouds.ec2.domain.IpPermission;
+import org.jclouds.ec2.domain.IpProtocol;
+import org.jclouds.ec2.util.IpPermissions;
+import org.junit.Test;
+
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 
 public class TestEC2SecurityGroupProvisioner
 {
@@ -19,8 +25,8 @@ public class TestEC2SecurityGroupProvisioner
         IpPermission perm = rule.toIpPermission();
         assertThat(perm.getFromPort(), equalTo(22));
         assertThat(perm.getToPort(), equalTo(22));
-        assertThat(perm.getIpProtocol(), equalTo("tcp"));
-        assertThat(perm.getIpRanges(), equalTo(asList("0.0.0.0/0")));
+        assertThat(perm.getIpProtocol(), equalTo(IpProtocol.TCP));
+        assertEquals(perm.getIpRanges(), ImmutableSet.<String>of("0.0.0.0/0"));
     }
 
     @Test
@@ -31,10 +37,11 @@ public class TestEC2SecurityGroupProvisioner
         IpPermission perm = rule.toIpPermission();
         assertThat(perm.getFromPort(), equalTo(22));
         assertThat(perm.getToPort(), equalTo(22));
-        assertThat(perm.getIpProtocol(), equalTo("tcp"));
+        assertThat(perm.getIpProtocol(), equalTo(IpProtocol.TCP));
         assertThat(perm.getUserIdGroupPairs().size(), equalTo(1));
-        assertThat(perm.getUserIdGroupPairs().get(0).getGroupName(), equalTo("default"));
-        assertThat(perm.getUserIdGroupPairs().get(0).getUserId(), equalTo("1"));
+        Entry<String, String> pair = perm.getUserIdGroupPairs().entries().iterator().next();
+        assertThat(pair.getValue(), equalTo("default"));
+        assertThat(pair.getKey(), equalTo("1"));
     }
 
     @Test
@@ -48,11 +55,7 @@ public class TestEC2SecurityGroupProvisioner
     @Test
     public void testFromPermission() throws Exception
     {
-        IpPermission perm = new IpPermission();
-        perm.setIpProtocol("tcp");
-        perm.setFromPort(22);
-        perm.setToPort(22);
-        perm.setIpRanges(asList("0.0.0.0/0"));
+        IpPermission perm = IpPermissions.permit(IpProtocol.TCP).fromPort(22).to(22).originatingFromCidrBlock("0.0.0.0/0");
 
         IpRule r = IpRule.fromPermission(perm);
 
@@ -63,14 +66,7 @@ public class TestEC2SecurityGroupProvisioner
     @Test
     public void testFromPermissionWithGroup() throws Exception
     {
-        IpPermission perm = new IpPermission();
-        perm.setIpProtocol("tcp");
-        perm.setFromPort(22);
-        perm.setToPort(22);
-        UserIdGroupPair pair = new UserIdGroupPair();
-        pair.setGroupName("woof");
-        pair.setUserId("1");
-        perm.setUserIdGroupPairs(asList(pair));
+        IpPermission perm = IpPermissions.permit(IpProtocol.TCP).fromPort(22).to(22).originatingFromUserAndSecurityGroup("1", "woof");
 
         IpRule r = IpRule.fromPermission(perm);
 
@@ -81,20 +77,8 @@ public class TestEC2SecurityGroupProvisioner
     @Test
     public void testRandomRule() throws Exception
     {
-        IpPermission perm = new IpPermission();
-        perm.setIpProtocol("tcp");
-        perm.setFromPort(22);
-        perm.setToPort(22);
-
-        UserIdGroupPair pair = new UserIdGroupPair();
-        pair.setGroupName("woof");
-        pair.setUserId("1");
-
-        UserIdGroupPair pair2 = new UserIdGroupPair();
-        pair2.setGroupName("meow");
-        pair.setUserId("2");
-
-        perm.setUserIdGroupPairs(asList(pair, pair2));
+        IpPermission perm = IpPermissions.permit(IpProtocol.TCP).fromPort(22).to(22).toEC2SecurityGroups(
+                ImmutableMultimap.of("1", "woof", "2", "meow"));
 
         IpRule r = IpRule.fromPermission(perm);
 
